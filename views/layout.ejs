@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Connect with your campus community. Share, discover, and engage with fellow students.' %>">
+    <meta name="keywords" content="campus, students, social media, university, college, community">
+    <meta name="author" content="UConnect">
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="<%= title %> | UConnect">
+    <meta property="og:description" content="<%= typeof description !== 'undefined' ? description : 'Connect with your campus community' %>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= typeof url !== 'undefined' ? url : '' %>">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+
+    <!-- Additional page-specific CSS -->
+    <% if (typeof additionalCSS !== 'undefined') { %>
+        <% additionalCSS.forEach(css => { %>
+            <link href="<%= css %>" rel="stylesheet">
+        <% }) %>
+    <% } %>
+</head>
+<body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/" class="brand-link">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>UConnect</span>
+                </a>
+            </div>
+
+            <% if (user) { %>
+                <!-- Authenticated Navigation -->
+                <div class="nav-menu">
+                    <div class="nav-links">
+                        <a href="/posts" class="nav-link <%= currentPath === '/posts' ? 'active' : '' %>">
+                            <i class="fas fa-home"></i>
+                            <span>Feed</span>
+                        </a>
+                        <a href="/posts/create" class="nav-link <%= currentPath === '/posts/create' ? 'active' : '' %>">
+                            <i class="fas fa-plus"></i>
+                            <span>Create</span>
+                        </a>
+                        <a href="/users/campus" class="nav-link <%= currentPath === '/users/campus' ? 'active' : '' %>">
+                            <i class="fas fa-users"></i>
+                            <span>Campus</span>
+                        </a>
+                        <% if (user.role === 'admin') { %>
+                            <a href="/admin" class="nav-link <%= currentPath.startsWith('/admin') ? 'active' : '' %>">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Admin</span>
+                            </a>
+                        <% } %>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="user-menu">
+                        <div class="user-dropdown">
+                            <button class="user-btn" onclick="toggleUserMenu()">
+                                <img src="<%= user.avatar ? '/uploads/avatars/' + user.avatar : '/images/default-avatar.png' %>"
+                                     alt="<%= user.displayName %>" class="user-avatar">
+                                <span class="user-name"><%= user.displayName %></span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu" id="userDropdown">
+                                <a href="/users/profile" class="dropdown-item">
+                                    <i class="fas fa-user"></i>
+                                    My Profile
+                                </a>
+                                <a href="/users/settings/profile" class="dropdown-item">
+                                    <i class="fas fa-cog"></i>
+                                    Settings
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="/auth/logout" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            <% } else { %>
+                <!-- Guest Navigation -->
+                <div class="nav-menu">
+                    <div class="nav-links">
+                        <a href="/auth/login" class="nav-link">Login</a>
+                        <a href="/auth/register" class="btn btn-primary">Join Now</a>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Mobile Menu -->
+        <% if (user) { %>
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="/posts" class="mobile-menu-item">
+                    <i class="fas fa-home"></i>
+                    Feed
+                </a>
+                <a href="/posts/create" class="mobile-menu-item">
+                    <i class="fas fa-plus"></i>
+                    Create Post
+                </a>
+                <a href="/users/campus" class="mobile-menu-item">
+                    <i class="fas fa-users"></i>
+                    Campus Users
+                </a>
+                <a href="/users/profile" class="mobile-menu-item">
+                    <i class="fas fa-user"></i>
+                    My Profile
+                </a>
+                <a href="/users/settings/profile" class="mobile-menu-item">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+                <% if (user.role === 'admin') { %>
+                    <a href="/admin" class="mobile-menu-item">
+                        <i class="fas fa-shield-alt"></i>
+                        Admin Panel
+                    </a>
+                <% } %>
+                <div class="mobile-menu-divider"></div>
+                <a href="/auth/logout" class="mobile-menu-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        <% } %>
+    </nav>
+
+    <!-- Flash Messages -->
+    <% if (messages && (messages.success || messages.error || messages.warning || messages.info)) { %>
+        <div class="flash-messages">
+            <% if (messages.success) { %>
+                <% messages.success.forEach(message => { %>
+                    <div class="flash-message flash-success">
+                        <i class="fas fa-check-circle"></i>
+                        <span><%= message %></span>
+                        <button onclick="this.parentElement.remove()" class="flash-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                <% }) %>
+            <% } %>
+
+            <% if (messages.error) { %>
+                <% messages.error.forEach(message => { %>
+                    <div class="flash-message flash-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><%= message %></span>
+                        <button onclick="this.parentElement.remove()" class="flash-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                <% }) %>
+            <% } %>
+
+            <% if (messages.warning) { %>
+                <% messages.warning.forEach(message => { %>
+                    <div class="flash-message flash-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span><%= message %></span>
+                        <button onclick="this.parentElement.remove()" class="flash-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                <% }) %>
+            <% } %>
+
+            <% if (messages.info) { %>
+                <% messages.info.forEach(message => { %>
+                    <div class="flash-message flash-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span><%= message %></span>
+                        <button onclick="this.parentElement.remove()" class="flash-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+    <% } %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <%- include(bodyTemplate || 'partials/default-body') %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>UConnect</h4>
+                    <p>Connecting students across campuses, fostering community and collaboration.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <% if (user) { %>
+                            <li><a href="/posts">Feed</a></li>
+                            <li><a href="/users/campus">Campus Users</a></li>
+                            <li><a href="/users/settings/profile">Settings</a></li>
+                        <% } else { %>
+                            <li><a href="/auth/login">Login</a></li>
+                            <li><a href="/auth/register">Join Now</a></li>
+                        <% } %>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <%= new Date().getFullYear() %> UConnect. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+
+    <!-- Additional page-specific JavaScript -->
+    <% if (typeof additionalJS !== 'undefined') { %>
+        <% additionalJS.forEach(js => { %>
+            <script src="<%= js %>"></script>
+        <% }) %>
+    <% } %>
+
+    <!-- Auto-hide flash messages -->
+    <script>
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(message => {
+                message.style.opacity = '0';
+                setTimeout(() => message.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

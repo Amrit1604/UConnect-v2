@@ -1,0 +1,125 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <a href="/" class="brand-link">
+                <i class="fas fa-graduation-cap"></i>
+                <span>UConnect</span>
+            </a>
+        </div>
+
+        <% if (user) { %>
+            <!-- Authenticated Navigation -->
+            <div class="nav-menu">
+                <div class="nav-links">
+                    <a href="/posts" class="nav-link <%= currentPath === '/posts' ? 'active' : '' %>">
+                        <i class="fas fa-home"></i>
+                        <span>Feed</span>
+                    </a>
+                    <a href="/posts/create" class="nav-link <%= currentPath === '/posts/create' ? 'active' : '' %>">
+                        <i class="fas fa-plus"></i>
+                        <span>Create</span>
+                    </a>
+                    <a href="/users/campus" class="nav-link <%= currentPath === '/users/campus' ? 'active' : '' %>">
+                        <i class="fas fa-users"></i>
+                        <span>Campus</span>
+                    </a>
+                    <% if (user.role === 'admin') { %>
+                        <a href="/admin" class="nav-link <%= currentPath.startsWith('/admin') ? 'active' : '' %>">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Admin</span>
+                        </a>
+                    <% } %>
+                </div>
+
+                <!-- Theme Toggle -->
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                    <i class="fas fa-sun" id="themeIcon"></i>
+                </button>
+
+                <!-- User Menu -->
+                <div class="user-menu">
+                    <div class="user-dropdown">
+                        <button class="user-btn" onclick="toggleUserMenu()">
+                            <img src="<%= user.avatarUrl %>"
+                                 alt="@<%= user.username %>" class="user-avatar">
+                            <span class="user-name">@<%= user.username %></span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="userDropdown">
+                            <a href="/users/profile" class="dropdown-item">
+                                <i class="fas fa-user"></i>
+                                My Profile
+                            </a>
+                            <a href="/users/settings/profile" class="dropdown-item">
+                                <i class="fas fa-cog"></i>
+                                Settings
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="/auth/logout" class="dropdown-item">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        <% } else { %>
+            <!-- Guest Navigation -->
+            <div class="nav-menu">
+                <div class="nav-links">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                        <i class="fas fa-sun" id="themeIcon"></i>
+                    </button>
+                    <a href="/auth/login" class="nav-link">Login</a>
+                    <a href="/auth/register" class="btn btn-primary">Join Now</a>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Mobile Menu -->
+    <% if (user) { %>
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="/posts" class="mobile-menu-item">
+                <i class="fas fa-home"></i>
+                Feed
+            </a>
+            <a href="/posts/create" class="mobile-menu-item">
+                <i class="fas fa-plus"></i>
+                Create Post
+            </a>
+            <a href="/users/campus" class="mobile-menu-item">
+                <i class="fas fa-users"></i>
+                Campus Users
+            </a>
+            <a href="/users/profile" class="mobile-menu-item">
+                <i class="fas fa-user"></i>
+                My Profile
+            </a>
+            <a href="/users/settings/profile" class="mobile-menu-item">
+                <i class="fas fa-cog"></i>
+                Settings
+            </a>
+            <div class="mobile-menu-item theme-toggle-mobile" onclick="toggleTheme()">
+                <i class="fas fa-sun" id="themeIconMobile"></i>
+                Toggle Theme
+            </div>
+            <% if (user.role === 'admin') { %>
+                <a href="/admin" class="mobile-menu-item">
+                    <i class="fas fa-shield-alt"></i>
+                    Admin Panel
+                </a>
+            <% } %>
+            <div class="mobile-menu-divider"></div>
+            <a href="/auth/logout" class="mobile-menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </a>
+        </div>
+    <% } %>
+</nav>

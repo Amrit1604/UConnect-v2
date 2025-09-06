@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/auth.css" rel="stylesheet">
+</head>
+<body class="auth-page">
+    <!-- Navigation -->
+    <%- include('../partials/navbar') %>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">
+                        <i class="fas fa-envelope-open"></i>
+                        <h1>Verify Your Email</h1>
+                    </div>
+                    <p><%= typeof message !== 'undefined' ? message : 'We need to verify your email address before you can access your account.' %></p>
+                </div>
+
+                <div class="verification-status">
+                    <div class="status-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <h3>Check Your Email or Console</h3>
+                    <p>For development purposes, check the console for your verification link. In production, this would be sent via email.</p>
+                </div>
+
+                <div class="verification-steps">
+                    <h4>What to do next:</h4>
+                    <ol>
+                        <li>Check the server console for your verification link</li>
+                        <li>Click the verification link</li>
+                        <li>Return here to sign in</li>
+                    </ol>
+                </div>
+
+                <!-- Resend Verification Form -->
+                <div class="resend-section">
+                    <h4>Need a new verification link?</h4>
+                    <form method="POST" action="/auth/resend-verification" class="resend-form">
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope"></i>
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="form-input"
+                                placeholder="your.name@university.edu.in"
+                                required
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-secondary btn-full">
+                            <i class="fas fa-paper-plane"></i>
+                            Resend Verification Link
+                        </button>
+                    </form>
+                </div>
+
+                <div class="auth-footer">
+                    <p>Already verified? <a href="/auth/login">Sign in here</a></p>
+                    <p>Need to register? <a href="/auth/register">Create an account</a></p>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3>Need Help?</h3>
+                <div class="help-items">
+                    <div class="help-item">
+                        <i class="fas fa-question-circle"></i>
+                        <div>
+                            <h4>Link not working?</h4>
+                            <p>Make sure you're using the most recent verification link from the console.</p>
+                        </div>
+                    </div>
+                    <div class="help-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h4>Link expired?</h4>
+                            <p>Verification links expire after 24 hours. Request a new one above.</p>
+                        </div>
+                    </div>
+                    <div class="help-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Wrong email address?</h4>
+                            <p>You'll need to register again with the correct email address.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <%- include('../partials/footer') %>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/posts.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <%- include('../partials/navbar') %>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+<div class="feed-container">
+    <!-- Feed Header -->
+    <div class="feed-header">
+        <div class="container">
+            <div class="feed-title">
+                <h1><%= title %></h1>
+                <p>Connect with your campus community</p>
+            </div>
+
+            <div class="feed-actions">
+                <a href="/posts/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Create Post
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="feed-layout">
+            <!-- Main Feed -->
+            <div class="feed-main">
+                <!-- Filter Tabs -->
+                <div class="feed-filters">
+                    <a href="/posts?filter=recent" class="filter-tab <%= currentFilter === 'recent' ? 'active' : '' %>">
+                        <i class="fas fa-clock"></i>
+                        Recent
+                    </a>
+                    <a href="/posts?filter=trending" class="filter-tab <%= currentFilter === 'trending' ? 'active' : '' %>">
+                        <i class="fas fa-fire"></i>
+                        Trending
+                    </a>
+                </div>
+
+                <!-- Posts List -->
+                <div class="posts-list">
+                    <% if (posts && posts.length > 0) { %>
+                        <% posts.forEach(post => { %>
+                            <article class="post-card" data-post-id="<%= post._id %>">
+                                <!-- Post Header -->
+                                <div class="post-header">
+                                    <div class="post-author">
+                                        <img src="<%= post.author.avatar ? '/uploads/avatars/' + post.author.avatar : '/images/default-avatar.png' %>"
+                                             alt="<%= post.author.displayName %>"
+                                             class="author-avatar">
+                                        <div class="author-info">
+                                            <a href="/users/<%= post.author._id %>" class="author-name">
+                                                <%= post.author.displayName %>
+                                            </a>
+                                            <span class="post-time" data-time="<%= post.createdAt %>">
+                                                <%= post.timeAgo %>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="post-menu">
+                                        <button class="post-menu-btn" onclick="togglePostMenu('<%= post._id %>')">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </button>
+                                        <div class="post-menu-dropdown" id="postMenu<%= post._id %>">
+                                            <% if (post.author._id.toString() === user.id) { %>
+                                                <a href="/posts/<%= post._id %>/edit" class="menu-item">
+                                                    <i class="fas fa-edit"></i>
+                                                    Edit Post
+                                                </a>
+                                                <button onclick="deletePost('<%= post._id %>')" class="menu-item delete">
+                                                    <i class="fas fa-trash"></i>
+                                                    Delete Post
+                                                </button>
+                                            <% } else { %>
+                                                <button onclick="reportPost('<%= post._id %>')" class="menu-item">
+                                                    <i class="fas fa-flag"></i>
+                                                    Report Post
+                                                </button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Post Content -->
+                                <div class="post-content">
+                                    <p class="post-text"><%- post.content.replace(/\n/g, '<br>') %></p>
+
+                                    <% if (post.media && post.media.length > 0) { %>
+                                        <div class="post-media">
+                                            <% post.media.forEach(media => { %>
+                                                <% if (media.type === 'image') { %>
+                                                    <img src="/uploads/posts/<%= media.filename %>"
+                                                         alt="Post image"
+                                                         class="post-image"
+                                                         onclick="openImageModal(this.src)">
+                                                <% } %>
+                                            <% }) %>
+                                        </div>
+                                    <% } %>
+                                </div>
+
+                                <!-- Post Actions -->
+                                <div class="post-actions">
+                                    <button class="action-btn like-btn <%= post.isLikedBy(user.id) ? 'liked' : '' %>"
+                                            onclick="toggleLike('<%= post._id %>')">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="like-count"><%= post.likeCount %></span>
+                                    </button>
+
+                                    <a href="/posts/<%= post._id %>" class="action-btn">
+                                        <i class="fas fa-comment"></i>
+                                        <span><%= post.commentCount %></span>
+                                    </a>
+
+                                    <button class="action-btn" onclick="sharePost('<%= post._id %>')">
+                                        <i class="fas fa-share"></i>
+                                        Share
+                                    </button>
+                                </div>
+
+                                <!-- Recent Comments Preview -->
+                                <% if (post.comments && post.comments.length > 0) { %>
+                                    <div class="comments-preview">
+                                        <% const recentComments = post.comments.slice(-2); %>
+                                        <% recentComments.forEach(comment => { %>
+                                            <div class="comment-preview">
+                                                <img src="<%= comment.author.avatar ? '/uploads/avatars/' + comment.author.avatar : '/images/default-avatar.png' %>"
+                                                     alt="<%= comment.author.displayName %>"
+                                                     class="comment-avatar">
+                                                <div class="comment-content">
+                                                    <span class="comment-author"><%= comment.author.displayName %></span>
+                                                    <span class="comment-text"><%= comment.content %></span>
+                                                </div>
+                                            </div>
+                                        <% }) %>
+
+                                        <% if (post.comments.length > 2) { %>
+                                            <a href="/posts/<%= post._id %>" class="view-all-comments">
+                                                View all <%= post.commentCount %> comments
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                            </article>
+                        <% }) %>
+                    <% } else { %>
+                        <!-- Empty State -->
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h3>No posts yet</h3>
+                            <p>Be the first to share something with your campus community!</p>
+                            <a href="/posts/create" class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Create Your First Post
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Load More -->
+                <% if (hasNextPage) { %>
+                    <div class="load-more">
+                        <a href="/posts?page=<%= currentPage + 1 %>&filter=<%= currentFilter %>"
+                           class="btn btn-outline">
+                            Load More Posts
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="feed-sidebar">
+                <!-- Campus Stats -->
+                <div class="sidebar-card">
+                    <h3>Campus Stats</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number"><%= campusUsers %></span>
+                            <span class="stat-label">Students</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number"><%= userStats.totalUsers %></span>
+                            <span class="stat-label">Total Users</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="sidebar-card">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions">
+                        <a href="/posts/create" class="quick-action">
+                            <i class="fas fa-plus"></i>
+                            Create Post
+                        </a>
+                        <a href="/users/campus" class="quick-action">
+                            <i class="fas fa-users"></i>
+                            Browse Campus
+                        </a>
+                        <a href="/users/profile" class="quick-action">
+                            <i class="fas fa-user"></i>
+                            My Profile
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Campus Info -->
+                <div class="sidebar-card">
+                    <h3>Your Campus</h3>
+                    <div class="campus-info">
+                        <div class="campus-name">
+                            <i class="fas fa-graduation-cap"></i>
+                            <%= user.campus %>
+                        </div>
+                        <p>Connect with fellow students from your campus</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal" id="reportModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Report Post</h3>
+            <button class="modal-close" onclick="closeModal('reportModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="reportForm" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Reason for reporting:</label>
+                    <select name="reason" class="form-select" required>
+                        <option value="">Select a reason</option>
+                        <option value="spam">Spam</option>
+                        <option value="inappropriate">Inappropriate content</option>
+                        <option value="harassment">Harassment</option>
+                        <option value="fake">Fake information</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Additional details (optional):</label>
+                    <textarea name="description" class="form-textarea"
+                              placeholder="Provide more details about why you're reporting this post..."
+                              maxlength="500"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('reportModal')">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Submit Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal" id="imageModal">
+    <div class="modal-content image-modal-content">
+        <button class="modal-close" onclick="closeModal('imageModal')">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="modalImage" src="" alt="Full size image">
+    </div>
+</div>
+    </main>
+
+    <!-- Footer -->
+    <%- include('../partials/footer') %>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+    <script src="/js/posts.js"></script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+/* Error Page Styles - UConnect */
+
+.error-page {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.error-container {
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+    color: white;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.error-content {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.error-illustration {
+    margin-bottom: 2rem;
+}
+
+.error-illustration i {
+    font-size: 4rem;
+    opacity: 0.8;
+    animation: bounce 2s infinite;
+}
+
+.error-code {
+    font-size: 5rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(45deg, #fff, #f0f0f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 1rem 0;
+    opacity: 0.9;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    margin: 1.5rem 0 2rem;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+}
+
+.error-suggestions {
+    margin-top: 2rem;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.error-suggestions h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.error-suggestions ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.error-suggestions li {
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.error-stack {
+    margin-top: 2rem;
+    text-align: left;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.error-stack summary {
+    padding: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.error-stack summary:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.error-stack pre {
+    margin: 0;
+    padding: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #f8f8f2;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 0 0 8px 8px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .error-content {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+
+    .error-code {
+        font-size: 3.5rem;
+    }
+
+    .error-title {
+        font-size: 1.5rem;
+    }
+
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 250px;
+        justify-content: center;
+    }
+
+    .error-suggestions {
+        text-align: center;
+    }
+
+    .error-suggestions ul {
+        text-align: left;
+        display: inline-block;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-container {
+        width: 95%;
+    }
+
+    .error-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .error-illustration i {
+        font-size: 3rem;
+    }
+
+    .error-code {
+        font-size: 2.5rem;
+    }
+
+    .error-title {
+        font-size: 1.3rem;
+    }
+
+    .error-message {
+        font-size: 1rem;
+    }
+}

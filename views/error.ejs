@@ -1,0 +1,75 @@
+<%- include('layout', {
+    title: title,
+    bodyClass: 'error-page',
+    additionalCSS: ['/css/error.css']
+}) %>
+
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-illustration">
+            <% if (error.status === 404) { %>
+                <i class="fas fa-search"></i>
+            <% } else if (error.status === 403) { %>
+                <i class="fas fa-lock"></i>
+            <% } else if (error.status === 500) { %>
+                <i class="fas fa-exclamation-triangle"></i>
+            <% } else { %>
+                <i class="fas fa-question-circle"></i>
+            <% } %>
+        </div>
+
+        <div class="error-details">
+            <h1 class="error-code"><%= error.status || 500 %></h1>
+            <h2 class="error-title">
+                <% if (error.status === 404) { %>
+                    Page Not Found
+                <% } else if (error.status === 403) { %>
+                    Access Forbidden
+                <% } else if (error.status === 500) { %>
+                    Server Error
+                <% } else { %>
+                    Something Went Wrong
+                <% } %>
+            </h2>
+            <p class="error-message">
+                <%= error.message || 'An unexpected error occurred. Please try again later.' %>
+            </p>
+        </div>
+
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                Go Home
+            </a>
+            <button onclick="history.back()" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Go Back
+            </button>
+            <% if (user) { %>
+                <a href="/posts" class="btn btn-outline">
+                    <i class="fas fa-comments"></i>
+                    View Feed
+                </a>
+            <% } %>
+        </div>
+
+        <% if (error.status === 404) { %>
+            <div class="error-suggestions">
+                <h3>What you can do:</h3>
+                <ul>
+                    <li>Check the URL for typos</li>
+                    <li>Use the navigation menu to find what you're looking for</li>
+                    <li>Search for content using the search feature</li>
+                    <li>Contact support if you believe this is an error</li>
+                </ul>
+            </div>
+        <% } %>
+
+        <% if (showStack && process.env.NODE_ENV === 'development') { %>
+            <details class="error-stack">
+                <summary>Technical Details (Development Only)</summary>
+                <pre><%= showStack %></pre>
+            </details>
+        <% } %>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+<% if (messages && (messages.success || messages.error || messages.warning || messages.info)) { %>
+    <div class="flash-messages">
+        <% if (messages.success) { %>
+            <% messages.success.forEach(message => { %>
+                <div class="flash-message flash-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span><%= message %></span>
+                    <button onclick="this.parentElement.remove()" class="flash-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            <% }) %>
+        <% } %>
+        
+        <% if (messages.error) { %>
+            <% messages.error.forEach(message => { %>
+                <div class="flash-message flash-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span><%= message %></span>
+                    <button onclick="this.parentElement.remove()" class="flash-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            <% }) %>
+        <% } %>
+        
+        <% if (messages.warning) { %>
+            <% messages.warning.forEach(message => { %>
+                <div class="flash-message flash-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span><%= message %></span>
+                    <button onclick="this.parentElement.remove()" class="flash-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            <% }) %>
+        <% } %>
+        
+        <% if (messages.info) { %>
+            <% messages.info.forEach(message => { %>
+                <div class="flash-message flash-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span><%= message %></span>
+                    <button onclick="this.parentElement.remove()" class="flash-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+<% } %>

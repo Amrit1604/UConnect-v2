@@ -1,0 +1,34 @@
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>UConnect</h4>
+                <p>Connecting students across campuses, fostering community and collaboration.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <% if (user) { %>
+                        <li><a href="/posts">Feed</a></li>
+                        <li><a href="/users/campus">Campus Users</a></li>
+                        <li><a href="/users/settings/profile">Settings</a></li>
+                    <% } else { %>
+                        <li><a href="/auth/login">Login</a></li>
+                        <li><a href="/auth/register">Join Now</a></li>
+                    <% } %>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/help">Help Center</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <%= new Date().getFullYear() %> UConnect. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
