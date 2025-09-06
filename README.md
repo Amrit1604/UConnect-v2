@@ -86,7 +86,7 @@ A secure, student-focused social media platform designed exclusively for Indian 
    ```
 
 7. **Access the application**
-   Open your browser and navigate to `http://localhost:3000`
+   Open your browser and navigate to `http://localhost:4000`
 
 ## 🔧 Configuration
 
@@ -281,4 +281,4 @@ If you encounter any issues or have questions:
 
 ---
 
-**UConnect** - Connecting students, fostering community, building the future. 🎓✨
+**UConnect** - Connecting students, fostering community, building the future. 🎓✨"# UConnect-v2" 
