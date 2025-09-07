@@ -7,7 +7,8 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Post = require('../models/Post');
 const User = require('../models/User');
-const { requireOwnership, logActivity } = require('../middleware/auth');
+const { requireAuth, requireOwnership, logActivity } = require('../middleware/auth');
+const { uploadPostImage, optimizeImage } = require('../middleware/uploadImages');
 
 const router = express.Router();
 
@@ -16,7 +17,14 @@ const postValidation = [
   body('content')
     .trim()
     .isLength({ min: 1, max: 2000 })
-    .withMessage('Post content must be between 1 and 2000 characters')
+    .withMessage('Post content must be between 1 and 2000 characters'),
+  body('category').isIn([
+    'lost-found', 'hostels', 'canteen', 'pgs', 'general',
+    'study', 'staff', 'events', 'sports', 'academics'
+  ]),
+  body('tags').optional().isArray().withMessage('Tags must be an array'),
+  body('location').optional().isLength({ max: 100 }).withMessage('Location cannot exceed 100 characters'),
+  body('priority').optional().isIn(['low', 'normal', 'high', 'urgent'])
 ];
 
 const commentValidation = [
@@ -26,21 +34,139 @@ const commentValidation = [
     .withMessage('Comment must be between 1 and 500 characters')
 ];
 
-// GET /posts - Show main feed
-router.get('/', async (req, res) => {
+// GET /posts - 🚀 ADVANCED FEED WITH CATEGORIES & SEARCH
+router.get('/', requireAuth, async (req, res) => {
   try {
+    // 🚨 Ensure user has a campus assigned
+    if (!req.user.campus) {
+      console.log(`⚠️ User ${req.user.username} has no campus, setting to 'Main Campus'`);
+      await User.findByIdAndUpdate(req.user._id, { campus: 'Main Campus' });
+      req.user.campus = 'Main Campus';
+    }
+
     const page = parseInt(req.query.page) || 1;
     const limit = 20;
     const skip = (page - 1) * limit;
     const filter = req.query.filter || 'recent';
+    const category = req.query.category;
+    const search = req.query.search;
+    const tag = req.query.tag;
 
     let posts;
+    let currentCategory = category || 'all';
 
-    if (filter === 'trending') {
+    // 🎯 ADVANCED FILTERING LOGIC
+    if (search || tag || (category && category !== 'all')) {
+      // Use advanced search
+      const tags = tag ? [tag] : [];
+      posts = await Post.searchPosts(req.user.campus, search, category, tags, limit);
+    } else if (filter === 'trending') {
       posts = await Post.getTrending(req.user.campus, limit);
+    } else if (filter === 'popular') {
+      posts = await Post.find({
+        campus: req.user.campus,
+        isActive: true,
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      })
+      .populate('author', 'username avatar avatarType avatarSeed')
+      .populate('comments.author', 'username avatar avatarType avatarSeed')
+      .sort({ engagementScore: -1 })
+      .skip(skip)
+      .limit(limit);
     } else {
       posts = await Post.getRecent(req.user.campus, limit, skip);
     }
+
+    // �️ Filter out posts with missing authors to prevent errors
+    posts = posts.filter(post => post.author && post.author._id);
+    console.log(`📊 Filtered posts: ${posts.length} posts with valid authors`);
+
+    // �📊 Get category statistics
+    const categoryStats = await Post.getCategoryStats(req.user.campus);
+    const categoryStatsObj = {};
+    categoryStats.forEach(stat => {
+      categoryStatsObj[stat._id] = stat.count;
+    });
+
+    // 🔥 Get trending posts for sidebar
+    const trendingPosts = await Post.getTrending(req.user.campus, 10);
+
+    // 📈 Get user statistics for sidebar
+    const userStats = await User.getStats();
+    const campusUsers = await User.countDocuments({
+      campus: req.user.campus,
+      isVerified: true,
+      isActive: true
+    });
+
+    // 💎 Calculate total engagement
+    const totalLikes = await Post.aggregate([
+      { $match: { campus: req.user.campus, isActive: true } },
+      { $project: { likeCount: { $size: '$likes' } } },
+      { $group: { _id: null, total: { $sum: '$likeCount' } } }
+    ]);
+
+    const totalComments = await Post.aggregate([
+      { $match: { campus: req.user.campus, isActive: true } },
+      { $project: { commentCount: { $size: '$comments' } } },
+      { $group: { _id: null, total: { $sum: '$commentCount' } } }
+    ]);
+
+    // 🎨 Category display names for beautiful UI
+    const categoryDisplayNames = {
+      'lost-found': '🔍 Lost & Found',
+      'hostels': '🏠 Hostels',
+      'canteen': '🍕 Canteen',
+      'pgs': '🏡 PGs',
+      'general': '💬 General',
+      'study': '📚 Study Groups',
+      'staff': '👨‍🏫 Staff',
+      'events': '🎉 Events',
+      'sports': '⚽ Sports',
+      'academics': '🎓 Academics'
+    };
+
+    res.render('posts/feed-instagram', {
+      title: `${currentCategory === 'all' ? 'Campus Feed' : categoryDisplayNames[currentCategory] || 'Posts'}`,
+      posts,
+      trendingPosts,
+      currentFilter: filter,
+      currentCategory,
+      currentPage: page,
+      hasNextPage: posts.length === limit,
+      userStats,
+      campusUsers,
+      categoryStats: categoryStatsObj,
+      categoryDisplayNames,
+      totalPosts: posts.length,
+      totalLikes: totalLikes[0]?.total || 0,
+      totalComments: totalComments[0]?.total || 0,
+      searchQuery: search,
+      selectedTag: tag,
+      user: req.user
+    });
+
+  } catch (error) {
+    console.error('🚨 Feed error:', error);
+    req.flash('error', 'Failed to load posts');
+    res.redirect('/');
+  }
+});
+
+// GET /posts/category/:category - Category filtering
+router.get('/category/:category', requireAuth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+    const category = req.params.category;
+
+    const posts = await Post.find({ campus: req.user.campus, category: category, isActive: true })
+      .populate('author', 'username avatar avatarType avatarSeed')
+      .populate('comments.author', 'username avatar avatarType avatarSeed')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     // Get user statistics for sidebar
     const userStats = await User.getStats();
@@ -51,9 +177,9 @@ router.get('/', async (req, res) => {
     });
 
     res.render('posts/feed', {
-      title: 'Campus Feed',
+      title: `${category} Posts`,
       posts,
-      currentFilter: filter,
+      currentFilter: 'recent',
       currentPage: page,
       hasNextPage: posts.length === limit,
       userStats,
@@ -62,57 +188,115 @@ router.get('/', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Feed error:', error);
-    req.flash('error', 'Failed to load posts');
-    res.redirect('/');
+    console.error('Category feed error:', error);
+    req.flash('error', 'Failed to load posts for this category');
+    res.redirect('/posts');
   }
 });
 
-// GET /posts/create - Show create post form
-router.get('/create', (req, res) => {
-  res.render('posts/create', {
+// GET /posts/create - Show post creation form
+router.get('/create', requireAuth, (req, res) => {
+  res.render('posts/create-ultimate', {
     title: 'Create Post',
     errors: [],
     formData: {}
   });
 });
 
-// POST /posts/create - Handle post creation
-router.post('/create',
-  postValidation,
-  logActivity('create post'),
-  async (req, res) => {
+// POST /posts/create - 🎯 ULTIMATE CREATE POST WITH IMAGES & REAL-TIME
+router.post('/create', requireAuth, uploadPostImage.array('images', 5), postValidation, logActivity('create post'), async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.render('posts/create', {
+        return res.render('posts/create-ultimate', {
           title: 'Create Post',
           errors: errors.array(),
           formData: req.body
         });
       }
 
-      const { content } = req.body;
+      const { content, category, tags, location, priority } = req.body;
+
+      // Process uploaded images
+      const images = [];
+      if (req.files && req.files.length > 0) {
+        for (const file of req.files) {
+          // Optimize image
+          await optimizeImage(file.path);
+
+          images.push({
+            filename: file.filename,
+            originalName: file.originalname,
+            size: file.size,
+            mimetype: file.mimetype,
+            url: `/uploads/posts/${file.filename}`
+          });
+
+          console.log(`📸 Image uploaded: ${file.filename}`);
+        }
+      }
+
+      // 🏷️ Process tags - split by comma and clean
+      let processedTags = [];
+      if (tags) {
+        if (Array.isArray(tags)) {
+          processedTags = tags.filter(tag => tag.trim()).map(tag => tag.trim().toLowerCase());
+        } else if (typeof tags === 'string') {
+          processedTags = tags.split(',').filter(tag => tag.trim()).map(tag => tag.trim().toLowerCase());
+        }
+      }
 
       const post = new Post({
         author: req.user._id,
         content,
-        campus: req.user.campus
+        category: category || 'general',
+        tags: processedTags,
+        location: location?.trim(),
+        priority: priority || 'normal',
+        images: images, // Add images to post
+        campus: req.user.campus || 'Main Campus' // Fallback for users without campus
       });
 
-      await post.save();
+      // 🚨 If user has no campus, update them with default campus
+      if (!req.user.campus) {
+        console.log(`⚠️ User ${req.user.username} has no campus, setting to 'Main Campus'`);
+        await User.findByIdAndUpdate(req.user._id, { campus: 'Main Campus' });
+        req.user.campus = 'Main Campus';
+      }
 
-      // Update user stats
+      await post.save();
+      console.log(`📝 Post created with ${images.length} images by:`, req.user.username);
+
+      // 🚀 REAL-TIME SOCKET.IO BROADCAST
+      const io = req.app.get('io');
+      if (io) {
+        const populatedPost = await Post.findById(post._id)
+          .populate('author', 'username name avatar avatarType avatarSeed');
+
+        io.to(post.campus).emit('new-post', {
+          post: populatedPost,
+          campus: post.campus
+        });
+        console.log(`⚡ Real-time broadcast: New post to ${post.campus}`);
+      }
+
+      // 📊 Update user stats
       await User.findByIdAndUpdate(req.user._id, {
         $inc: { 'stats.postsCount': 1 }
       });
 
-      req.flash('success', 'Post created successfully!');
-      res.redirect('/posts');
+      req.flash('success', `✅ ${category === 'lost-found' ? 'Lost item reported' : 'Post created'} successfully!`);
+
+      // 🎯 Smart redirect based on category
+      if (category && category !== 'general') {
+        res.redirect(`/posts?category=${category}`);
+      } else {
+        res.redirect('/posts');
+      }
 
     } catch (error) {
-      console.error('Post creation error:', error);
-      res.render('posts/create', {
+      console.error('🚨 Post creation error:', error);
+      res.render('posts/create-advanced', {
         title: 'Create Post',
         errors: [{ msg: 'Failed to create post. Please try again.' }],
         formData: req.body
@@ -122,11 +306,11 @@ router.post('/create',
 );
 
 // GET /posts/:id - Show single post
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireAuth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('author', 'displayName username email avatar avatarSeed avatarType')
-      .populate('comments.author', 'displayName username email avatar avatarSeed avatarType');
+      .populate('author', 'username avatar avatarType avatarSeed')
+      .populate('comments.author', 'username avatar avatarType avatarSeed');
 
     if (!post || !post.isActive) {
       req.flash('error', 'Post not found');
@@ -138,6 +322,16 @@ router.get('/:id', async (req, res) => {
       req.flash('error', 'You can only view posts from your campus');
       return res.redirect('/posts');
     }
+
+    // Ensure virtual fields are included
+    if (post.author) {
+      post.author = post.author.toObject({ virtuals: true });
+    }
+    post.comments.forEach(comment => {
+      if (comment.author) {
+        comment.author = comment.author.toObject({ virtuals: true });
+      }
+    });
 
     res.render('posts/single', {
       title: 'Post Details',
@@ -154,6 +348,7 @@ router.get('/:id', async (req, res) => {
 
 // POST /posts/:id/like - Toggle like on post
 router.post('/:id/like',
+  requireAuth,
   logActivity('like/unlike post'),
   async (req, res) => {
     try {
@@ -186,12 +381,26 @@ router.post('/:id/like',
 
       await post.save();
 
+      // 🚀 REAL-TIME SOCKET.IO BROADCAST
+      const io = req.app.get('io');
+      if (io) {
+        io.to(post.campus).emit('post-liked', {
+          postId: post._id,
+          likes: post.likeCount,
+          isLiked: liked,
+          likedBy: req.user.username
+        });
+        console.log(`⚡ Real-time broadcast: Post ${liked ? 'liked' : 'unliked'} by ${req.user.username}`);
+      }
+
       // Return JSON for AJAX requests
       if (req.xhr || req.headers.accept?.includes('application/json')) {
         return res.json({
           success: true,
           liked,
-          likeCount: post.likeCount
+          likeCount: post.likeCount,
+          likes: post.likeCount, // For frontend compatibility
+          isLiked: liked
         });
       }
 
@@ -210,6 +419,7 @@ router.post('/:id/like',
 
 // POST /posts/:id/comment - Add comment to post
 router.post('/:id/comment',
+  requireAuth,
   commentValidation,
   logActivity('add comment'),
   async (req, res) => {
@@ -242,6 +452,31 @@ router.post('/:id/comment',
         $inc: { 'stats.commentsCount': 1 }
       });
 
+      // 🚀 REAL-TIME SOCKET.IO BROADCAST FOR NEW COMMENT
+      const io = req.app.get('io');
+      if (io) {
+        // Get the latest comment with author info
+        const populatedPost = await Post.findById(post._id)
+          .populate('comments.author', 'username avatar avatarType avatarSeed');
+
+        const latestComment = populatedPost.comments[populatedPost.comments.length - 1];
+
+        io.to(post.campus).emit('new-comment', {
+          postId: post._id,
+          comment: {
+            _id: latestComment._id,
+            content: latestComment.content,
+            createdAt: latestComment.createdAt,
+            author: {
+              _id: latestComment.author._id,
+              username: latestComment.author.username,
+              avatarUrl: latestComment.author.avatarUrl
+            }
+          }
+        });
+        console.log(`⚡ Real-time broadcast: New comment on post by ${req.user.username}`);
+      }
+
       req.flash('success', 'Comment added successfully!');
       res.redirect(`/posts/${req.params.id}`);
 
@@ -255,6 +490,7 @@ router.post('/:id/comment',
 
 // POST /posts/:id/report - Report a post
 router.post('/:id/report',
+  requireAuth,
   body('reason').isIn(['spam', 'inappropriate', 'harassment', 'fake', 'other']),
   body('description').optional().isLength({ max: 500 }),
   logActivity('report post'),
@@ -402,7 +638,7 @@ router.get('/user/:userId', async (req, res) => {
     const posts = await Post.getByUser(userId, limit, skip);
 
     res.render('posts/user-posts', {
-      title: `${user.displayName}'s Posts`,
+      title: `${user.name}'s Posts`,
       posts,
       profileUser: user,
       currentPage: page,

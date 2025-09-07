@@ -133,19 +133,7 @@ router.post('/profile', [
             privacy: req.session.user.privacy
         });
 
-        req.session.user = {
-            id: updatedUser._id,
-            email: updatedUser.email,
-            displayName: updatedUser.displayName,
-            username: updatedUser.username,
-            avatar: updatedUser.avatar,
-            avatarType: updatedUser.avatarType,
-            avatarUrl: updatedUser.avatarUrl,
-            role: updatedUser.role,
-            campus: updatedUser.campus,
-            bio: updatedUser.bio,
-            privacy: updatedUser.privacy
-        };
+        req.session.user = updatedUser;
 
         console.log('✅ GODLY SUCCESS: Profile updated and session synced!');
         console.log('New session user:', {
@@ -172,7 +160,7 @@ router.post('/profile', [
 });
 
 // Avatar Upload
-router.post('/avatar', upload.uploadAvatarTemp.single('avatar'), async (req, res) => {
+router.post('/avatar', upload.uploadAvatar.single('avatar'), async (req, res) => {
     try {
         console.log('🔥 AVATAR UPLOAD REQUEST:');
         console.log('User ID:', req.user.id);
@@ -183,7 +171,7 @@ router.post('/avatar', upload.uploadAvatarTemp.single('avatar'), async (req, res
                 originalname: req.file.originalname,
                 mimetype: req.file.mimetype,
                 size: req.file.size,
-                bufferLength: req.file.buffer?.length
+                filename: req.file.filename
             });
         }
 
@@ -193,38 +181,25 @@ router.post('/avatar', upload.uploadAvatarTemp.single('avatar'), async (req, res
             return res.redirect('/users/settings/profile');
         }
 
-        // Convert buffer to base64 and save
-        const avatarData = {
-            data: req.file.buffer,
-            contentType: req.file.mimetype
-        };
-
-        console.log('� Saving avatar to database...');
-        console.log('Avatar data size:', avatarData.data.length);
-        console.log('Content type:', avatarData.contentType);
-
-        const result = await User.findByIdAndUpdate(req.user.id, {
-            avatar: avatarData,
+        const updatedUser = await User.findByIdAndUpdate(req.user.id, {
+            avatar: req.file.filename,
             avatarType: 'upload',
             updatedAt: new Date()
         }, { new: true }).select('-password');
 
         console.log('📊 Database update result:');
-        console.log('Avatar Type:', result.avatarType);
-        console.log('Avatar URL length:', result.avatarUrl?.length);
-        console.log('Has avatar data:', !!result.avatar);
+        console.log('Avatar Type:', updatedUser.avatarType);
+        console.log('Avatar Filename:', updatedUser.avatar);
 
         // Update session data with new avatar
         console.log('🔄 Updating session avatar data...');
         console.log('Old session avatar type:', req.session.user.avatarType);
 
-        req.session.user.avatar = result.avatar;
-        req.session.user.avatarType = result.avatarType;
-        req.session.user.avatarUrl = result.avatarUrl;
+        req.session.user = updatedUser;
 
         console.log('✅ Session avatar updated:');
         console.log('New session avatar type:', req.session.user.avatarType);
-        console.log('New session avatar URL length:', req.session.user.avatarUrl?.length);
+        console.log('New session avatar filename:', req.session.user.avatar);
 
         req.flash('success', 'Avatar updated successfully! 🎉');
         res.redirect('/users/settings/profile');
@@ -271,10 +246,7 @@ router.post('/avatar-api', async (req, res) => {
             avatarSeed: req.session.user.avatarSeed
         });
 
-        req.session.user.avatar = updatedUser.avatar;
-        req.session.user.avatarSeed = updatedUser.avatarSeed;
-        req.session.user.avatarType = updatedUser.avatarType;
-        req.session.user.avatarUrl = updatedUser.avatarUrl;
+        req.session.user = updatedUser;
 
         console.log('✅ Session updated:', {
             avatarType: req.session.user.avatarType,
@@ -320,10 +292,7 @@ router.post('/remove-avatar', async (req, res) => {
             hasAvatar: !!req.session.user.avatar
         });
 
-        req.session.user.avatar = updatedUser.avatar;
-        req.session.user.avatarSeed = updatedUser.avatarSeed;
-        req.session.user.avatarType = updatedUser.avatarType;
-        req.session.user.avatarUrl = updatedUser.avatarUrl;
+        req.session.user = updatedUser;
 
         console.log('✅ Session updated:', {
             avatarType: req.session.user.avatarType,

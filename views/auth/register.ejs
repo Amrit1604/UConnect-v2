@@ -66,26 +66,26 @@
                             </div>
                         </div>
 
-                        <!-- Display Name Field -->
+                        <!-- Name Field -->
                         <div class="form-group">
-                            <label for="displayName" class="form-label">
+                            <label for="name" class="form-label">
                                 <span style="margin-right: 5px;">👤</span>
-                                Display Name
+                                Name
                             </label>
                             <input
                                 type="text"
-                                id="displayName"
-                                name="displayName"
+                                id="name"
+                                name="name"
                                 class="form-input"
-                                placeholder="How you want to be known"
-                                value="<%= formData.displayName || '' %>"
+                                placeholder="Your full name"
+                                value="<%= formData.name || '' %>"
                                 required
                                 autocomplete="name"
                                 maxlength="50"
                             >
                             <div class="form-help">
                                 <span style="margin-right: 5px;">💡</span>
-                                This is your public display name (can contain spaces)
+                                Your real name (kept private for security)
                             </div>
                         </div>
 

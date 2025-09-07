@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+
+    <style>
+        /* 🚀 PROFESSIONAL INSTAGRAM-LIKE FEED */
+        body {
+            background: #fafafa;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .posts-container {
+            min-height: 100vh;
+            padding-top: 4rem;
+            background: #fafafa;
+        }
+
+        .posts-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 📱 MOBILE RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .posts-layout {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .categories-sidebar {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 1000;
+                padding: 0;
+                border-radius: 0;
+            }
+
+            .categories-sidebar.mobile-open {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .categories-sidebar .sidebar-content {
+                background: white;
+                border-radius: 12px;
+                padding: 2rem;
+                margin: 2rem;
+                max-height: 80vh;
+                overflow-y: auto;
+                width: calc(100% - 4rem);
+                max-width: 400px;
+            }
+
+            .trending-sidebar {
+                display: none;
+            }
+        }
+
+        /* MOBILE CATEGORY TOGGLE BUTTON */
+        .mobile-category-toggle {
+            display: none;
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-category-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-category-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .sidebar-close {
+                display: block !important;
+            }
+        }
+
+        /* CATEGORIES SIDEBAR */
+        .categories-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 6rem;
+        }
+
+        .categories-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .categories-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .category-item:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .category-item.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .category-count {
+            margin-left: auto;
+            background: #e5e7eb;
+            color: #6b7280;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .category-item.active .category-count {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* MAIN FEED */
+        .posts-main {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .posts-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .posts-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .create-post-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .create-post-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .posts-feed {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .post-card {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .post-card:hover {
+            background: #f9fafb;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-decoration: none;
+            position: relative;
+        }
+
+        .author-avatar img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+
+        .author-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: #1f2937;
+            text-decoration: none;
+        }
+
+        .post-time {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .post-category {
+            background: #f3f4f6;
+            color: #4b5563;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .post-content {
+            margin-bottom: 1rem;
+        }
+
+        .post-text {
+            color: #1f2937;
+            line-height: 1.6;
+            margin: 0 0 1rem 0;
+        }
+
+        .post-location {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-tag {
+            background: #ddd6fe;
+            color: #7c3aed;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .post-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: none;
+            border: none;
+            color: #6b7280;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .priority-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .priority-badge.urgent {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .priority-badge.high {
+            background: #fffbeb;
+            color: #d97706;
+        }
+
+        /* RIGHT SIDEBAR */
+        .posts-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-widget {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .widget-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .posts-layout {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .categories-sidebar,
+            .posts-sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <%- include('../partials/navbar') %>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <div class="posts-container">
+        <div class="posts-layout">
+
+            <!-- 🎯 CATEGORIES SIDEBAR -->
+            <div class="categories-sidebar" id="categoriesSidebar">
+                <div class="sidebar-content">
+                    <div class="categories-header">
+                        <span>🎯</span>
+                        <h2 class="categories-title">Categories</h2>
+                        <button class="sidebar-close" onclick="toggleMobileCategories()" style="display: none; margin-left: auto; background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+                    </div>
+
+                <div class="categories-list">
+                    <a href="/posts" class="category-item <%= !currentCategory || currentCategory === 'all' ? 'active' : '' %>">
+                        <span>🌟</span>
+                        <span>All Posts</span>
+                        <span class="category-count"><%= posts ? posts.length : 0 %></span>
+                    </a>
+
+                    <a href="/posts?category=lost-found" class="category-item <%= currentCategory === 'lost-found' ? 'active' : '' %>">
+                        <span>🔍</span>
+                        <span>Lost & Found</span>
+                        <span class="category-count"><%= categoryStats['lost-found'] || 0 %></span>
+                    </a>
+
+                    <a href="/posts?category=hostels" class="category-item <%= currentCategory === 'hostels' ? 'active' : '' %>">
+                        <span>🏠</span>
+                        <span>Hostels</span>
+                        <span class="category-count"><%= categoryStats['hostels'] || 0 %></span>
+                    </a>
+
+                    <a href="/posts?category=canteen" class="category-item <%= currentCategory === 'canteen' ? 'active' : '' %>">
+                        <span>🍕</span>
+                        <span>Canteen</span>
+                        <span class="category-count"><%= categoryStats['canteen'] || 0 %></span>
+                    </a>
+
+                    <a href="/posts?category=study" class="category-item <%= currentCategory === 'study' ? 'active' : '' %>">
+                        <span>📚</span>
+                        <span>Study Groups</span>
+                        <span class="category-count"><%= categoryStats['study'] || 0 %></span>
+                    </a>
+
+                    <a href="/posts?category=events" class="category-item <%= currentCategory === 'events' ? 'active' : '' %>">
+                        <span>🎉</span>
+                        <span>Events</span>
+                        <span class="category-count"><%= categoryStats['events'] || 0 %></span>
+                    </a>
+
+                    <a href="/posts?category=sports" class="category-item <%= currentCategory === 'sports' ? 'active' : '' %>">
+                        <span>⚽</span>
+                        <span>Sports</span>
+                        <span class="category-count"><%= categoryStats['sports'] || 0 %></span>
+                    </a>
+
+                    <a href="/posts?category=academics" class="category-item <%= currentCategory === 'academics' ? 'active' : '' %>">
+                        <span>🎓</span>
+                        <span>Academics</span>
+                        <span class="category-count"><%= categoryStats['academics'] || 0 %></span>
+                    </a>
+
+                    <a href="/posts?category=general" class="category-item <%= currentCategory === 'general' ? 'active' : '' %>">
+                        <span>💬</span>
+                        <span>General</span>
+                        <span class="category-count"><%= categoryStats['general'] || 0 %></span>
+                    </a>
+                </div>
+                </div>
+            </div>
+
+            <!-- 📱 MAIN POSTS FEED -->
+            <div class="posts-main">
+                <div class="posts-header">
+                    <h1 class="posts-title">
+                        <span>🔥</span>
+                        <%= currentCategory === 'all' || !currentCategory ? 'Campus Feed' :
+                            currentCategory === 'lost-found' ? 'Lost & Found' :
+                            currentCategory === 'hostels' ? 'Hostels' :
+                            currentCategory === 'canteen' ? 'Canteen' :
+                            currentCategory === 'study' ? 'Study Groups' :
+                            currentCategory === 'events' ? 'Events' :
+                            currentCategory === 'sports' ? 'Sports' :
+                            currentCategory === 'academics' ? 'Academics' :
+                            'General' %>
+                    </h1>
+                    <a href="/posts/create" class="create-post-btn">
+                        <span>➕</span> Create Post
+                    </a>
+                </div>
+
+                <div class="posts-feed">
+                    <% if (posts && posts.length > 0) { %>
+                        <% posts.forEach(post => { %>
+                            <article class="post-card">
+                                <!-- Post Header -->
+                                <div class="post-header">
+                                    <div class="post-author">
+                                        <% if (post.author) { %>
+                                        <a href="/users/<%= post.author.username ? post.author.username : post.author._id %>" class="author-avatar">
+                                            <%
+                                            // Generate avatar URL based on User model logic
+                                            let avatarUrl;
+                                            if (post.author.avatar && post.author.avatarType === 'upload') {
+                                                avatarUrl = `/uploads/avatars/${post.author.avatar}`;
+                                            } else if (post.author.avatarSeed && post.author.avatarType === 'api') {
+                                                avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author.avatarSeed}`;
+                                            } else {
+                                                const seed = post.author.username || 'default';
+                                                avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+                                            }
+                                            %>
+                                            <% if (avatarUrl) { %>
+                                                <img src="<%= avatarUrl %>"
+                                                     alt="<%= post.author.username || 'User' %>'s avatar"
+                                                     onload="console.log('✅ Avatar loaded:', '<%= avatarUrl %>')"
+                                                     onerror="console.log('❌ Avatar failed:', '<%= avatarUrl %>'); this.style.display='none';">
+                                            <% } %>
+                                        <% } else { %>
+                                        <div class="author-avatar">
+                                            <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=unknown" alt="Unknown User's avatar">
+                                        <% } %>
+                                            <!-- Always show fallback letter -->
+                                            <span style="position: absolute; z-index: 1;">
+                                                <%= post.author && post.author.username ? post.author.username.charAt(0).toUpperCase() : '?' %>
+                                            </span>
+                                        </a>
+                                        <div class="author-info">
+                                            <a href="/users/<%= post.author && post.author.username ? post.author.username : post.author._id %>" class="author-name">
+                                                @<%= post.author && post.author.username ? post.author.username : 'Unknown' %>
+                                            </a>
+                                            <time class="post-time">
+                                                <%= new Date(post.createdAt).toLocaleDateString() %>
+                                            </time>
+                                        </div>
+                                    </div>
+                                    <div class="post-category">
+                                        <span>
+                                            <%= post.category === 'lost-found' ? '🔍' :
+                                                post.category === 'hostels' ? '🏠' :
+                                                post.category === 'canteen' ? '🍕' :
+                                                post.category === 'pgs' ? '🏡' :
+                                                post.category === 'study' ? '📚' :
+                                                post.category === 'events' ? '🎉' :
+                                                post.category === 'sports' ? '⚽' :
+                                                post.category === 'academics' ? '🎓' :
+                                                post.category === 'staff' ? '👨‍🏫' : '💬' %>
+                                        </span>
+                                        <%= post.category.charAt(0).toUpperCase() + post.category.slice(1).replace('-', ' & ') %>
+                                    </div>
+                                </div>
+
+                                <!-- Post Content -->
+                                <div class="post-content">
+                                    <p class="post-text"><%= post.content %></p>
+
+                                    <% if (post.location) { %>
+                                        <div class="post-location">
+                                            <span>📍</span> <%= post.location %>
+                                        </div>
+                                    <% } %>
+
+                                    <% if (post.tags && post.tags.length > 0) { %>
+                                        <div class="post-tags">
+                                            <% post.tags.forEach(tag => { %>
+                                                <a href="/posts?tag=<%= tag %>" class="post-tag">#<%= tag %></a>
+                                            <% }); %>
+                                        </div>
+                                    <% } %>
+                                </div>
+
+                                <!-- Post Actions -->
+                                <div class="post-actions">
+                                    <div class="action-buttons">
+                                        <button class="action-btn">
+                                            <span>🤍</span>
+                                            <span><%= post.likes ? post.likes.length : 0 %></span>
+                                        </button>
+
+                                        <a href="/posts/<%= post._id %>" class="action-btn">
+                                            <span>💬</span>
+                                            <span><%= post.comments ? post.comments.length : 0 %></span>
+                                        </a>
+
+                                        <button class="action-btn">
+                                            <span>↗️</span>
+                                        </button>
+                                    </div>
+
+                                    <% if (post.priority === 'urgent') { %>
+                                        <span class="priority-badge urgent">🚨 URGENT</span>
+                                    <% } else if (post.priority === 'high') { %>
+                                        <span class="priority-badge high">⚡ HIGH</span>
+                                    <% } %>
+                                </div>
+                            </article>
+                        <% }); %>
+                    <% } else { %>
+                        <!-- Empty State -->
+                        <div class="empty-state">
+                            <div class="empty-icon">💬</div>
+                            <h3>Welcome to UConnect!</h3>
+                            <p>Be the first to share something with your campus community.</p>
+                            <a href="/posts/create" class="create-post-btn">
+                                <span>➕</span> Create Your First Post
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- 🎯 RIGHT SIDEBAR -->
+            <div class="posts-sidebar">
+                <!-- Campus Stats Widget -->
+                <div class="sidebar-widget">
+                    <div class="widget-header">
+                        <span>📊</span>
+                        <h3 class="widget-title">Campus Stats</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number"><%= campusUsers || 0 %></div>
+                            <div class="stat-label">👥 Students</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number"><%= posts ? posts.length : 0 %></div>
+                            <div class="stat-label">📝 Posts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number"><%= totalLikes || 0 %></div>
+                            <div class="stat-label">❤️ Likes</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number"><%= totalComments || 0 %></div>
+                            <div class="stat-label">💬 Comments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📱 MOBILE CATEGORY TOGGLE BUTTON -->
+        <button class="mobile-category-toggle" onclick="toggleMobileCategories()" title="Browse Categories">
+            🎯
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <%- include('../partials/footer') %>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+
+    <!-- Socket.IO Client for Real-time Features -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        // 🚀 REAL-TIME SOCKET.IO - INSTAGRAM-LIKE FEATURES
+        const socket = io();
+
+        // Join campus room for real-time updates
+        socket.emit('join-campus', '<%= user.campus %>');
+        console.log('🚀 Joined campus room:', '<%= user.campus %>');
+
+        // 📱 Real-time new post updates (like Instagram)
+        socket.on('new-post', (data) => {
+            console.log('⚡ New post received:', data);
+            showNewPostNotification();
+        });
+
+        // 💙 Real-time like updates
+        socket.on('post-liked', (data) => {
+            console.log('⚡ Post like update:', data);
+            updateLikeCount(data.postId, data.likes, data.isLiked);
+        });
+
+        // 💬 Real-time comment updates
+        socket.on('new-comment', (data) => {
+            console.log('⚡ New comment:', data);
+            addCommentToPost(data.postId, data.comment);
+        });
+
+        // 🌟 Helper functions for real-time updates
+        function updateLikeCount(postId, likes, isLiked) {
+            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postElement) {
+                const likeBtn = postElement.querySelector('.like-btn');
+                if (likeBtn) {
+                    likeBtn.innerHTML = `<i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> ${likes}`;
+                    likeBtn.classList.toggle('liked', isLiked);
+
+                    // Add heart animation (Instagram-style)
+                    if (isLiked) {
+                        addHeartAnimation(postId);
+                    }
+                }
+            }
+        }
+
+        function addCommentToPost(postId, comment) {
+            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postElement) {
+                const commentsSection = postElement.querySelector('.comments-section');
+                if (commentsSection) {
+                    const commentElement = document.createElement('div');
+                    commentElement.className = 'comment new-comment';
+                    commentElement.innerHTML = `
+                        <strong>${comment.author.username}:</strong> ${comment.content}
+                    `;
+                    commentsSection.appendChild(commentElement);
+
+                    // Animate in
+                    setTimeout(() => {
+                        commentElement.classList.remove('new-comment');
+                    }, 2000);
+                }
+            }
+        }
+
+        function showNewPostNotification() {
+            // Show Instagram-style notification
+            const notification = document.createElement('div');
+            notification.className = 'new-post-notification';
+            notification.innerHTML = `
+                <i class="fas fa-plus-circle"></i>
+                New post available
+                <button onclick="window.location.reload()">Refresh</button>
+            `;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4caf50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 1000;
+                animation: slideInRight 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        function addHeartAnimation(postId) {
+            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postElement) {
+                const heart = document.createElement('div');
+                heart.className = 'heart-animation';
+                heart.innerHTML = '<i class="fas fa-heart"></i>';
+                heart.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 3em;
+                    color: #e91e63;
+                    pointer-events: none;
+                    animation: heartPop 1s ease forwards;
+                `;
+                postElement.style.position = 'relative';
+                postElement.appendChild(heart);
+
+                // Remove after animation
+                setTimeout(() => {
+                    heart.remove();
+                }, 1000);
+            }
+        }
+
+        // 📱 Enhanced like function with real-time broadcast
+        async function toggleLike(postId) {
+            try {
+                const response = await fetch(`/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('👍 Like response:', data);
+                    // The real-time update will come via socket
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+
+        // 🔄 Auto-refresh connection handling
+        socket.on('connect', () => {
+            console.log('⚡ Connected to real-time server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('❌ Disconnected from real-time server');
+        });
+
+        console.log('🚀 Real-time features initialized - Instagram-like experience activated!');
+
+        // 📱 MOBILE CATEGORY TOGGLE FUNCTIONALITY
+        function toggleMobileCategories() {
+            const sidebar = document.getElementById('categoriesSidebar');
+            if (sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.remove('mobile-open');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('mobile-open');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            }
+        }
+
+        // Close on overlay click
+        document.getElementById('categoriesSidebar').addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleMobileCategories();
+            }
+        });
+    </script>
+
+    <!-- Real-time CSS for animations -->
+    <style>
+        .new-comment {
+            background: #e3f2fd;
+            animation: slideIn 0.3s ease;
+        }
+
+        .liked {
+            color: #e91e63 !important;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes heartPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+        }
+    </style>
+</body>
+</html>

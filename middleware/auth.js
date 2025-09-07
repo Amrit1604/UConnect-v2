@@ -49,9 +49,32 @@ const requireAuth = async (req, res, next) => {
       return res.redirect('/auth/verify-email');
     }
 
+    // 🔧 ENSURE CAMPUS IS SET - DEFAULT TO CHITKARA IF NULL
+    if (!user.campus) {
+      console.log('⚠️ User campus is null, setting to chitkara:', user.username);
+      user.campus = 'chitkara';
+      await user.save();
+    }
+
     console.log('✅ Auth successful for user:', user.username);
+    console.log('🏫 User campus:', user.campus);
+
     // Attach user to request object
     req.user = user;
+
+    // 🔄 REFRESH SESSION WITH LATEST USER DATA
+    req.session.user = {
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      username: user.username,
+      avatar: user.avatar,
+      avatarType: user.avatarType,
+      avatarUrl: user.avatarUrl,
+      role: user.role,
+      campus: user.campus // This will now be properly set
+    };
+
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);

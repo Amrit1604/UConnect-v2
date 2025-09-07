@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/posts.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <%- include('../partials/navbar') %>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Main Content -->
+    <main class="feed-container">
+        <div class="feed-layout">
+            <!-- Left Sidebar -->
+            <div class="feed-sidebar-left">
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-chart-line"></i> Profile Stats
+                    </div>
+                    <div class="widget-content">
+                        <div class="quick-stats">
+                            <div class="stat-item">
+                                <span class="stat-number"><%= posts.length %></span>
+                                <span class="stat-label">Posts</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number"><%= profileUser.stats?.followersCount || 0 %></span>
+                                <span class="stat-label">Followers</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number"><%= profileUser.stats?.followingCount || 0 %></span>
+                                <span class="stat-label">Following</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Feed -->
+            <div class="feed-main">
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <img src="<%= profileUser.avatarUrl %>" alt="<%= profileUser.username %>" class="profile-avatar">
+                    <div class="profile-info">
+                        <h1><%= profileUser.username %></h1>
+                        <p class="username">@<%= profileUser.username %></p>
+                        <div class="profile-stats">
+                            <div class="profile-stat">
+                                <span class="profile-stat-number"><%= posts.length %></span>
+                                <span class="profile-stat-label">posts</span>
+                            </div>
+                            <div class="profile-stat">
+                                <span class="profile-stat-number"><%= profileUser.stats?.followersCount || 0 %></span>
+                                <span class="profile-stat-label">followers</span>
+                            </div>
+                            <div class="profile-stat">
+                                <span class="profile-stat-number"><%= profileUser.stats?.followingCount || 0 %></span>
+                                <span class="profile-stat-label">following</span>
+                            </div>
+                        </div>
+                        <% if (profileUser.bio) { %>
+                            <p class="profile-bio"><%= profileUser.bio %></p>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Posts List -->
+                <div class="posts-list">
+                    <% if (posts && posts.length > 0) { %>
+                        <% posts.forEach(post => { %>
+                            <article class="post-card" data-post-id="<%= post._id %>">
+                                <!-- Post Header -->
+                                <div class="post-header">
+                                    <div class="post-author">
+                                        <div class="author-avatar">
+                                            <img src="<%= post.author.avatarUrl %>" alt="<%= post.author.username %>">
+                                        </div>
+                                        <div class="author-info">
+                                            <a href="/users/<%= post.author._id %>" class="author-name">
+                                                <%= post.author.username %>
+                                            </a>
+                                            <span class="post-time" data-time="<%= post.createdAt %>">
+                                                <%= post.timeAgo %>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="post-menu">
+                                        <button class="post-menu-btn" onclick="togglePostMenu('<%= post._id %>')">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </button>
+                                        <div class="post-menu-dropdown" id="postMenu<%= post._id %>">
+                                            <% if (post.author._id.toString() === user.id) { %>
+                                                <a href="/posts/<%= post._id %>/edit" class="menu-item">
+                                                    <i class="fas fa-edit"></i> Edit Post
+                                                </a>
+                                                <button onclick="deletePost('<%= post._id %>')" class="menu-item delete">
+                                                    <i class="fas fa-trash"></i> Delete Post
+                                                </button>
+                                            <% } else { %>
+                                                <button onclick="reportPost('<%= post._id %>')" class="menu-item">
+                                                    <i class="fas fa-flag"></i> Report Post
+                                                </button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Post Media (if exists) -->
+                                <% if (post.media && post.media.length > 0) { %>
+                                    <div class="post-media">
+                                        <% post.media.forEach(media => { %>
+                                            <% if (media.type === 'image') { %>
+                                                <img src="<%= media.url %>" alt="Post image" loading="lazy">
+                                            <% } else if (media.type === 'video') { %>
+                                                <video controls>
+                                                    <source src="<%= media.url %>" type="<%= media.mimeType %>">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            <% } %>
+                                        <% }) %>
+                                    </div>
+                                <% } %>
+
+                                <!-- Post Actions -->
+                                <div class="post-actions">
+                                    <div class="action-buttons-left">
+                                        <button class="action-btn like-btn <%= post.isLikedBy(user.id) ? 'liked' : '' %>"
+                                                onclick="toggleLike('<%= post._id %>')">
+                                            <i class="<%= post.isLikedBy(user.id) ? 'fas' : 'far' %> fa-heart"></i>
+                                        </button>
+
+                                        <a href="/posts/<%= post._id %>" class="action-btn">
+                                            <i class="far fa-comment"></i>
+                                        </a>
+
+                                        <button class="action-btn share-btn" onclick="sharePost('<%= post._id %>')">
+                                            <i class="far fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Post Content -->
+                                <div class="post-content">
+                                    <% if (post.likeCount > 0) { %>
+                                        <div style="padding: 0 16px 8px; font-size: 14px; font-weight: 600;">
+                                            <span class="like-count"><%= post.likeCount %></span> 
+                                            <%= post.likeCount === 1 ? 'like' : 'likes' %>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <% if (post.content && post.content.trim()) { %>
+                                        <p class="post-text">
+                                            <span style="font-weight: 600;"><%= post.author.username %></span>
+                                            <%- post.content.replace(/\n/g, '<br>') %>
+                                        </p>
+                                    <% } %>
+
+                                    <% if (post.commentCount > 0) { %>
+                                        <div style="padding: 0 16px 8px; font-size: 14px; color: #8e8e8e;">
+                                            <a href="/posts/<%= post._id %>" style="color: #8e8e8e; text-decoration: none;">
+                                                View all <%= post.commentCount %> <%= post.commentCount === 1 ? 'comment' : 'comments' %>
+                                            </a>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </article>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <h3>No posts yet</h3>
+                            <p><%= profileUser.username %> hasn't shared any posts yet.</p>
+                            <% if (profileUser._id.toString() === user.id) { %>
+                                <div style="margin-top: 24px;">
+                                    <a href="/posts/create" class="btn" style="background: #0095f6; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                                        Create Your First Post
+                                    </a>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Load More -->
+                <% if (hasNextPage) { %>
+                    <div class="load-more">
+                        <a href="/posts/user/<%= profileUser._id %>?page=<%= currentPage + 1 %>"
+                           class="btn">
+                            Load More Posts
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="feed-sidebar-right">
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-user-plus"></i> Suggested for you
+                    </div>
+                    <div class="widget-content">
+                        <!-- Add suggested users here in the future -->
+                        <div class="user-suggestion">
+                            <div class="suggestion-info">
+                                <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=user1" alt="User" class="suggestion-avatar">
+                                <div class="suggestion-details">
+                                    <h4>@explore_more</h4>
+                                    <p>Suggested for you</p>
+                                </div>
+                            </div>
+                            <button class="follow-btn">Follow</button>
+                        </div>
+                        <div class="user-suggestion">
+                            <div class="suggestion-info">
+                                <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=user2" alt="User" class="suggestion-avatar">
+                                <div class="suggestion-details">
+                                    <h4>@photo_lover</h4>
+                                    <p>Suggested for you</p>
+                                </div>
+                            </div>
+                            <button class="follow-btn">Follow</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-info-circle"></i> About UConnect
+                    </div>
+                    <div class="widget-content">
+                        <p style="font-size: 12px; color: #8e8e8e; line-height: 16px;">
+                            Connect with your campus community. Share moments, discover events, and stay connected with fellow students.
+                        </p>
+                        <div style="margin-top: 16px; font-size: 11px; color: #c7c7c7;">
+                            © 2025 UConnect. Made with ❤️ for students.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <%- include('../partials/footer') %>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+    <script src="/js/posts.js"></script>
+    
+    <script>
+        // Instagram-like post menu toggle
+        function togglePostMenu(postId) {
+            const menu = document.getElementById('postMenu' + postId);
+            const allMenus = document.querySelectorAll('.post-menu-dropdown');
+            
+            // Close all other menus
+            allMenus.forEach(m => {
+                if (m.id !== 'postMenu' + postId) {
+                    m.classList.remove('show');
+                }
+            });
+            
+            // Toggle current menu
+            menu.classList.toggle('show');
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.post-menu')) {
+                document.querySelectorAll('.post-menu-dropdown').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+
+        // Enhanced like animation
+        function toggleLike(postId) {
+            const likeBtn = document.querySelector(`[data-post-id="${postId}"] .like-btn`);
+            const icon = likeBtn.querySelector('i');
+            const isLiked = likeBtn.classList.contains('liked');
+
+            if (isLiked) {
+                likeBtn.classList.remove('liked');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            } else {
+                likeBtn.classList.add('liked');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                
+                // Add animation
+                icon.style.animation = 'heartBeat 0.3s ease';
+                setTimeout(() => {
+                    icon.style.animation = '';
+                }, 300);
+            }
+
+            // Here you would typically send an AJAX request to update the like status
+            // For now, we'll just update the UI
+        }
+
+        function sharePost(postId) {
+            // Implement share functionality
+            alert('Share functionality coming soon!');
+        }
+
+        function deletePost(postId) {
+            if (confirm('Are you sure you want to delete this post?')) {
+                // Implement delete functionality
+                window.location.href = `/posts/${postId}/delete`;
+            }
+        }
+
+        function reportPost(postId) {
+            if (confirm('Are you sure you want to report this post?')) {
+                // Implement report functionality
+                alert('Post reported. Thank you for helping keep our community safe.');
+            }
+        }
+    </script>
+</body>
+</html>

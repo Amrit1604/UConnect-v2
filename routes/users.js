@@ -11,9 +11,12 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const User = require('../models/User');
 const Post = require('../models/Post');
-const { sensitiveOperationLimit, logActivity } = require('../middleware/auth');
+const { requireAuth, sensitiveOperationLimit, logActivity } = require('../middleware/auth');
 
 const router = express.Router();
+
+// 🔒 APPLY AUTHENTICATION TO ALL USER ROUTES
+router.use(requireAuth);
 
 // Configure multer for avatar uploads
 const storage = multer.diskStorage({
@@ -91,7 +94,16 @@ const passwordValidation = [
 // GET /users/profile - Show user profile
 router.get('/profile', async (req, res) => {
   try {
+    console.log('🔍 PROFILE ROUTE: User ID:', req.user._id);
+    console.log('🔍 PROFILE ROUTE: User object:', req.user);
+
     const user = await User.findById(req.user._id);
+    if (!user) {
+      console.error('❌ User not found in database:', req.user._id);
+      req.flash('error', 'User not found');
+      return res.redirect('/posts');
+    }
+
     const userPosts = await Post.getByUser(req.user._id, 10, 0);
 
     res.render('users/profile', {
@@ -112,28 +124,47 @@ router.get('/profile', async (req, res) => {
 // GET /users/:id - Show other user's profile
 router.get('/:id', async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userIdentifier = req.params.id;
+    console.log('🔍 USER PROFILE ROUTE: Identifier:', userIdentifier);
 
-    if (userId === req.user._id.toString()) {
+    // Check if this is the current user's own profile
+    if (userIdentifier === req.user._id.toString() || userIdentifier === req.user.username) {
       return res.redirect('/users/profile');
     }
 
-    const user = await User.findById(userId);
+    let user;
+
+    // Try to find user by ObjectId first, then by username
+    const mongoose = require('mongoose');
+    if (mongoose.Types.ObjectId.isValid(userIdentifier)) {
+      console.log('🔍 Searching by ObjectId:', userIdentifier);
+      user = await User.findById(userIdentifier);
+    } else {
+      console.log('🔍 Searching by username:', userIdentifier);
+      user = await User.findOne({ username: userIdentifier });
+    }
+
     if (!user || !user.isActive) {
+      console.log('❌ User not found or inactive:', userIdentifier);
       req.flash('error', 'User not found');
       return res.redirect('/posts');
     }
 
+    console.log('✅ Found user:', user.username, 'Campus:', user.campus);
+
     // Check if user is from same campus
     if (user.campus !== req.user.campus) {
+      console.log('❌ Campus mismatch:', user.campus, 'vs', req.user.campus);
       req.flash('error', 'You can only view profiles from your campus');
       return res.redirect('/posts');
     }
 
-    const userPosts = await Post.getByUser(userId, 10, 0);
+    const userPosts = await Post.getByUser(user._id, 10, 0);
+
+    console.log('✅ Rendering profile for user:', user.username);
 
     res.render('users/profile', {
-      title: `${user.displayName}'s Profile`,
+      title: `${user.name || user.displayName || user.username}'s Profile`,
       profileUser: user,
       posts: userPosts,
       isOwnProfile: false,
@@ -149,14 +180,24 @@ router.get('/:id', async (req, res) => {
 
 // GET /users/settings/profile - Show profile settings
 router.get('/settings/profile', (req, res) => {
-  res.render('users/settings/profile', {
-    title: 'Profile Settings',
-    errors: [],
-    formData: {
-      displayName: req.user.displayName
-    },
-    user: req.user
-  });
+  try {
+    console.log('🔍 SETTINGS ROUTE: User object:', req.user);
+    console.log('🔍 SETTINGS ROUTE: User name:', req.user.name);
+    console.log('🔍 SETTINGS ROUTE: User displayName:', req.user.displayName);
+
+    res.render('users/settings/profile', {
+      title: 'Profile Settings',
+      errors: [],
+      formData: {
+        displayName: req.user.name || req.user.displayName || req.user.username || ''
+      },
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Settings profile error:', error);
+    req.flash('error', 'Failed to load profile settings');
+    res.redirect('/posts');
+  }
 });
 
 // POST /users/settings/profile - Update profile
@@ -289,24 +330,39 @@ router.post('/settings/avatar',
         try {
           const oldAvatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
           await fs.unlink(oldAvatarPath);
+          console.log('🗑️ Deleted old avatar:', user.avatar);
         } catch (error) {
           console.log('Old avatar deletion failed:', error.message);
         }
       }
 
-      // Update user with new avatar
-      const avatarData = fsSync.readFileSync(req.file.path);
-      user.avatar = {
-        data: avatarData,
-        contentType: req.file.mimetype
-      };
+      // Create final avatar filename
+      const fileExtension = path.extname(req.file.originalname);
+      const avatarFilename = `avatar-${user._id}-${Date.now()}${fileExtension}`;
+      const finalAvatarPath = path.join(__dirname, '../public/uploads/avatars', avatarFilename);
+
+      // Ensure avatars directory exists
+      const avatarsDir = path.join(__dirname, '../public/uploads/avatars');
+      try {
+        await fs.mkdir(avatarsDir, { recursive: true });
+      } catch (error) {
+        console.log('Avatars directory already exists');
+      }
+
+      // Move uploaded file to final location
+      await fs.rename(req.file.path, finalAvatarPath);
+
+      // Update user with avatar filename (NOT binary data!)
+      user.avatar = avatarFilename;
       user.avatarType = 'upload';
-      user.avatarUrl = `data:${req.file.mimetype};base64,${avatarData.toString('base64')}`;
       await user.save();
 
-      // Update session
+      console.log('✅ Avatar uploaded successfully:', avatarFilename);
+      console.log('📂 Avatar URL will be:', user.avatarUrl);
+
+      // Update session with new avatar info
       req.session.user.avatar = user.avatar;
-      req.session.user.avatarType = 'upload';
+      req.session.user.avatarType = user.avatarType;
       req.session.user.avatarUrl = user.avatarUrl;
 
       await new Promise((resolve, reject) => {
@@ -315,9 +371,6 @@ router.post('/settings/avatar',
           else resolve();
         });
       });
-
-      // Clean up temporary file
-      fsSync.unlinkSync(req.file.path);
 
       console.log('📁 Avatar uploaded successfully');
       req.flash('success', 'Avatar updated successfully!');
@@ -702,6 +755,49 @@ router.get('/campus', async (req, res) => {
   } catch (error) {
     console.error('Campus users error:', error);
     req.flash('error', 'Failed to load campus users');
+    res.redirect('/posts');
+  }
+});
+
+// GET /users/:username - 🔥 INSTAGRAM-LIKE PROFILE BY USERNAME
+router.get('/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    // Find user by username
+    const user = await User.findOne({ username: username.toLowerCase() }).populate('avatar');
+
+    if (!user) {
+      req.flash('error', 'User not found');
+      return res.redirect('/posts');
+    }
+
+    // Check if it's the user's own profile
+    if (req.user && req.user._id.toString() === user._id.toString()) {
+      return res.redirect('/users/profile');
+    }
+
+    // Get user's posts for their profile
+    const userPosts = await Post.find({ author: user._id })
+      .populate('author', 'username name avatar campus')
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    // Get user stats
+    const postCount = await Post.countDocuments({ author: user._id });
+
+    res.render('users/profile', {
+      title: `@${user.username} | UConnect`,
+      profileUser: user,
+      posts: userPosts,
+      postCount: postCount,
+      isOwnProfile: false,
+      currentUser: req.user
+    });
+
+  } catch (error) {
+    console.error('Username profile error:', error);
+    req.flash('error', 'Failed to load user profile');
     res.redirect('/posts');
   }
 });

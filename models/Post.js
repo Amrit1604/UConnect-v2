@@ -43,6 +43,46 @@ const postSchema = new mongoose.Schema({
     required: true
   },
 
+  category: {
+    type: String,
+    enum: [
+      'lost-found',     // 🔍 Lost & Found Items
+      'hostels',        // 🏠 Hostel Related
+      'canteen',        // 🍕 Food & Canteen
+      'pgs',            // 🏡 PG & Accommodation
+      'general',        // 💬 General Discussion
+      'study',          // 📚 Study Groups & Academic
+      'staff',          // 👨‍🏫 Staff & Faculty
+      'events',         // 🎉 Campus Events
+      'sports',         // ⚽ Sports & Fitness
+      'academics'       // 🎓 Academic Resources
+    ],
+    required: [true, 'Post category is required'],
+    default: 'general'
+  },
+
+  // 🏷️ Advanced tagging system
+  tags: [{
+    type: String,
+    trim: true,
+    lowercase: true,
+    maxlength: [20, 'Tag cannot exceed 20 characters']
+  }],
+
+  // 🚨 Priority level for important posts
+  priority: {
+    type: String,
+    enum: ['low', 'normal', 'high', 'urgent'],
+    default: 'normal'
+  },
+
+  // 📍 Location for lost & found, events etc.
+  location: {
+    type: String,
+    maxlength: [100, 'Location cannot exceed 100 characters'],
+    trim: true
+  },
+
   content: {
     type: String,
     required: [true, 'Post content is required'],
@@ -56,7 +96,31 @@ const postSchema = new mongoose.Schema({
     }
   },
 
-  // For future image/media support
+  // 🖼️ Image support for posts
+  images: [{
+    filename: {
+      type: String,
+      required: true
+    },
+    originalName: {
+      type: String,
+      required: true
+    },
+    size: {
+      type: Number,
+      required: true
+    },
+    mimetype: {
+      type: String,
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    }
+  }],
+
+  // For future media/video support
   media: [{
     type: {
       type: String,
@@ -161,6 +225,15 @@ postSchema.index({ campus: 1, createdAt: -1 });
 postSchema.index({ isActive: 1, createdAt: -1 });
 postSchema.index({ engagementScore: -1, createdAt: -1 });
 postSchema.index({ 'likes.user': 1 });
+postSchema.index({ category: 1, campus: 1, createdAt: -1 });
+postSchema.index({ tags: 1 });
+postSchema.index({ priority: 1, createdAt: -1 });
+// Text index for search functionality
+postSchema.index({
+  content: 'text',
+  tags: 'text',
+  location: 'text'
+});
 
 // Virtual for like count
 postSchema.virtual('likeCount').get(function() {
@@ -267,7 +340,7 @@ postSchema.statics.getTrending = function(campus, limit = 10) {
     isActive: true,
     createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
   })
-  .populate('author', 'displayName username email avatar avatarSeed avatarType')
+  .populate('author', 'username avatar avatarType avatarSeed')
   .sort({ engagementScore: -1 })
   .limit(limit);
 };
@@ -278,8 +351,8 @@ postSchema.statics.getRecent = function(campus, limit = 20, skip = 0) {
     campus: campus,
     isActive: true
   })
-  .populate('author', 'displayName username email avatar avatarSeed avatarType')
-  .populate('comments.author', 'displayName username email avatar avatarSeed avatarType')
+  .populate('author', 'username avatar avatarType avatarSeed')
+  .populate('comments.author', 'username avatar avatarType avatarSeed')
   .sort({ createdAt: -1 })
   .skip(skip)
   .limit(limit);
@@ -291,11 +364,79 @@ postSchema.statics.getByUser = function(userId, limit = 20, skip = 0) {
     author: userId,
     isActive: true
   })
-  .populate('author', 'displayName username email avatar avatarSeed avatarType')
-  .populate('comments.author', 'displayName username email avatar avatarSeed avatarType')
+  .populate('author', 'username avatar avatarType avatarSeed')
+  .populate('comments.author', 'username avatar avatarType avatarSeed')
   .sort({ createdAt: -1 })
   .skip(skip)
   .limit(limit);
+};
+
+// 🚀 ADVANCED: Get posts by category
+postSchema.statics.getByCategory = function(campus, category, limit = 20, skip = 0) {
+  return this.find({
+    campus: campus,
+    category: category,
+    isActive: true
+  })
+  .populate('author', 'username avatar avatarType avatarSeed')
+  .populate('comments.author', 'username avatar avatarType avatarSeed')
+  .sort({ createdAt: -1 })
+  .skip(skip)
+  .limit(limit);
+};
+
+// 🎯 ADVANCED: Search posts with filters
+postSchema.statics.searchPosts = function(campus, searchQuery, category = null, tags = [], limit = 20) {
+  let query = {
+    campus: campus,
+    isActive: true
+  };
+
+  // Add text search
+  if (searchQuery) {
+    query.$text = { $search: searchQuery };
+  }
+
+  // Add category filter
+  if (category && category !== 'all') {
+    query.category = category;
+  }
+
+  // Add tags filter
+  if (tags.length > 0) {
+    query.tags = { $in: tags };
+  }
+
+  return this.find(query)
+    .populate('author', 'username avatar avatarType avatarSeed')
+    .populate('comments.author', 'username avatar avatarType avatarSeed')
+    .sort(searchQuery ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
+    .limit(limit);
+};
+
+// 📊 ADVANCED: Get category statistics
+postSchema.statics.getCategoryStats = function(campus) {
+  return this.aggregate([
+    {
+      $match: {
+        campus: campus,
+        isActive: true,
+        createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
+      }
+    },
+    {
+      $group: {
+        _id: '$category',
+        count: { $sum: 1 },
+        totalLikes: { $sum: { $size: '$likes' } },
+        totalComments: { $sum: { $size: '$comments' } },
+        avgEngagement: { $avg: '$engagementScore' }
+      }
+    },
+    {
+      $sort: { count: -1 }
+    }
+  ]);
 };
 
 // Static method to get reported posts for admin
@@ -303,8 +444,8 @@ postSchema.statics.getReported = function() {
   return this.find({
     isReported: true
   })
-  .populate('author', 'displayName email')
-  .populate('reports.reporter', 'displayName email')
+  .populate('author', 'name email')
+  .populate('reports.reporter', 'name email')
   .sort({ reportCount: -1, createdAt: -1 });
 };
 

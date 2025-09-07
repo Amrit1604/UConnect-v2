@@ -21,7 +21,6 @@
 
     <!-- CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="/css/main.css" rel="stylesheet">
 
     <!-- Additional page-specific CSS -->
@@ -71,8 +70,8 @@
                         <div class="user-dropdown">
                             <button class="user-btn" onclick="toggleUserMenu()">
                                 <img src="<%= user.avatar ? '/uploads/avatars/' + user.avatar : '/images/default-avatar.png' %>"
-                                     alt="<%= user.displayName %>" class="user-avatar">
-                                <span class="user-name"><%= user.displayName %></span>
+                                     alt="<%= user.name %>" class="user-avatar">
+                                <span class="user-name"><%= user.name %></span>
                                 <i class="fas fa-chevron-down"></i>
                             </button>
                             <div class="dropdown-menu" id="userDropdown">

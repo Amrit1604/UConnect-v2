@@ -10,6 +10,8 @@ const morgan = require('morgan');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const path = require('path');
+const http = require('http');
+const socketIo = require('socket.io');
 require('dotenv').config();
 
 // Import routes
@@ -18,12 +20,21 @@ const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
+const chatRoutes = require('./routes/chat');
 
 // Import middleware
 const { requireAuth, requireAdmin } = require('./middleware/auth');
 const errorHandler = require('./middleware/errorHandler');
+const { urlDetectorMiddleware, createUrlTestRoute } = require('./utils/smartUrl');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 const PORT = process.env.PORT || 4000;
 
 // Database connection
@@ -99,6 +110,9 @@ app.use(session({
 // Flash messages
 app.use(flash());
 
+// Smart URL detection middleware 🌍
+app.use(urlDetectorMiddleware);
+
 // View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -122,9 +136,16 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/auth', authRoutes);
-app.use('/posts', requireAuth, postRoutes);
-app.use('/users', requireAuth, userRoutes);
-app.use('/admin', requireAuth, requireAdmin, adminRoutes);
+app.use('/posts', postRoutes);
+app.use('/users', userRoutes);
+app.use('/admin', adminRoutes);
+app.use('/settings', settingsRoutes);
+app.use('/chat', chatRoutes);
+
+// URL test route for debugging 🔧
+app.use('/debug', createUrlTestRoute());
+
+// Root route
 
 // Home route
 app.get('/', (req, res) => {
@@ -164,6 +185,107 @@ app.use((req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
+// 🔥 SOCKET.IO REAL-TIME FEATURES ⚡
+io.on('connection', (socket) => {
+  console.log('🚀 User connected:', socket.id);
+
+  // Join user to their campus room
+  socket.on('join-campus', (campus) => {
+    socket.join(campus);
+    console.log(`👥 User joined campus: ${campus}`);
+  });
+
+  // Handle new post creation
+  socket.on('new-post', (postData) => {
+    console.log('📝 New post created:', postData.content?.substring(0, 30) + '...');
+    // Broadcast to all users in the same campus
+    socket.to(postData.campus).emit('post-created', postData);
+  });
+
+  // Handle real-time likes
+  socket.on('like-post', (data) => {
+    socket.to(data.campus).emit('post-liked', data);
+  });
+
+  // Handle real-time comments
+  socket.on('new-comment', (data) => {
+    socket.to(data.campus).emit('comment-added', data);
+  });
+
+  // Handle typing indicators
+  socket.on('typing', (data) => {
+    socket.to(data.campus).emit('user-typing', data);
+  });
+
+  // 🔐 SECRET CHAT FUNCTIONALITY 🔐
+
+  // Join private room
+  socket.on('joinPrivateRoom', (data) => {
+    const { roomId } = data;
+    socket.join(roomId);
+    console.log(`🔒 User joined private room: ${roomId}`);
+  });
+
+  // Handle private messages
+  socket.on('sendPrivateMessage', async (data) => {
+    const { roomId, message } = data;
+
+    try {
+      // Save message to database
+      const PrivateChat = require('./models/PrivateChat');
+      const newMessage = new PrivateChat({
+        roomId: roomId,
+        sender: socket.userId,
+        message: message,
+        timestamp: new Date()
+      });
+
+      await newMessage.save();
+      await newMessage.populate('sender', 'name username avatarUrl');
+
+      // Emit to all users in the private room
+      const messageData = {
+        sender: {
+          id: newMessage.sender._id,
+          name: newMessage.sender.name,
+          username: newMessage.sender.username,
+          avatarUrl: newMessage.sender.avatarUrl
+        },
+        message: newMessage.message,
+        timestamp: newMessage.timestamp.toLocaleTimeString()
+      };
+
+      io.to(roomId).emit('newPrivateMessage', messageData);
+      console.log(`💬 Private message sent in room: ${roomId}`);
+    } catch (error) {
+      console.error('Error sending private message:', error);
+      socket.emit('messageError', { error: 'Failed to send message' });
+    }
+  });
+
+  // Handle typing in private rooms
+  socket.on('privateTyping', (data) => {
+    const { roomId, isTyping } = data;
+    socket.to(roomId).emit('userTyping', {
+      userId: socket.userId,
+      isTyping: isTyping
+    });
+  });
+
+  // Store user ID when they connect (set by auth middleware)
+  socket.on('setUserId', (userId) => {
+    socket.userId = userId;
+    console.log(`🔑 User ID set for socket: ${userId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('👋 User disconnected:', socket.id);
+  });
+});
+
+// Make io accessible to routes
+app.set('io', io);
+
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
@@ -174,10 +296,11 @@ process.on('SIGTERM', () => {
 });
 
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 UConnect server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📱 Access the app at: http://localhost:${PORT}`);
+  console.log(`⚡ Socket.IO enabled for real-time features!`);
 });
 
 module.exports = app;

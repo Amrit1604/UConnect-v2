@@ -97,7 +97,7 @@ class EmailService {
    * @param {string} options.displayName - User's display name
    * @param {string} options.verificationUrl - Verification URL
    */
-  async sendVerificationEmail({ to, username, displayName, verificationUrl }) {
+  async sendVerificationEmail({ to, username, name, verificationUrl }) {
     console.log('📧 Attempting to send verification email...');
     console.log('🎯 Recipient:', to);
     console.log('🔧 Service configured:', this.isConfigured);
@@ -115,14 +115,14 @@ class EmailService {
 
     const htmlContent = this.generateVerificationEmailHTML({
       username,
-      displayName,
+      name,
       verificationUrl,
       to
     });
 
     const textContent = this.generateVerificationEmailText({
       username,
-      displayName,
+      name,
       verificationUrl
     });
 
@@ -172,7 +172,7 @@ class EmailService {
   /**
    * Generate HTML email template for verification
    */
-  generateVerificationEmailHTML({ username, displayName, verificationUrl, to }) {
+  generateVerificationEmailHTML({ username, name, verificationUrl, to }) {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -331,7 +331,7 @@ class EmailService {
 
             <div class="content">
                 <div class="welcome">
-                    Welcome to UConnect, ${displayName}! 👋
+                    Welcome to UConnect, ${name}! 👋
                 </div>
 
                 <div class="message">
@@ -383,9 +383,9 @@ class EmailService {
   /**
    * Generate text email template for verification (fallback)
    */
-  generateVerificationEmailText({ username, displayName, verificationUrl }) {
+  generateVerificationEmailText({ username, name, verificationUrl }) {
     return `
-🎓 Welcome to UConnect, ${displayName}!
+🎓 Welcome to UConnect, ${name}!
 
 Thanks for joining our campus community! We're excited to have you connect with fellow students from your university.
 
@@ -408,7 +408,7 @@ If you have any questions, please contact our support team.
   /**
    * Send password reset email (for future use)
    */
-  async sendPasswordResetEmail({ to, username, displayName, resetUrl }) {
+  async sendPasswordResetEmail({ to, username, name, resetUrl }) {
     // Implementation for password reset emails
     // This is for future enhancement
     console.log('Password reset email functionality - Coming soon!');
@@ -417,7 +417,7 @@ If you have any questions, please contact our support team.
   /**
    * Send welcome email after successful verification
    */
-  async sendWelcomeEmail({ to, username, displayName }) {
+  async sendWelcomeEmail({ to, username, name }) {
     // Implementation for welcome emails
     // This is for future enhancement
     console.log('Welcome email functionality - Coming soon!');

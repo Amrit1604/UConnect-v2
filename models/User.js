@@ -22,18 +22,18 @@ const userSchema = new mongoose.Schema({
     }
   },
 
-  displayName: {
+  name: {
     type: String,
-    required: [true, 'Display name is required'],
+    required: [true, 'Name is required'],
     trim: true,
-    minlength: [2, 'Display name must be at least 2 characters'],
-    maxlength: [50, 'Display name cannot exceed 50 characters'],
+    minlength: [2, 'Name must be at least 2 characters'],
+    maxlength: [50, 'Name cannot exceed 50 characters'],
     validate: {
       validator: function(name) {
         // Allow letters, numbers, spaces, and basic punctuation
         return /^[a-zA-Z0-9\s\-_.]+$/.test(name);
       },
-      message: 'Display name contains invalid characters'
+      message: 'Name contains invalid characters'
     }
   },
 
@@ -68,8 +68,8 @@ const userSchema = new mongoose.Schema({
   },
 
   avatar: {
-    data: Buffer, // For uploaded images
-    contentType: String
+    type: String, // Store filename/path for uploaded images, or seed for API avatars
+    default: null
   },
 
   avatarSeed: {
@@ -184,12 +184,16 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   toJSON: {
+    virtuals: true,
     transform: function(doc, ret) {
       delete ret.password;
       delete ret.verificationToken;
       delete ret.resetPasswordToken;
       return ret;
     }
+  },
+  toObject: {
+    virtuals: true
   }
 });
 
@@ -286,9 +290,18 @@ userSchema.statics.getStats = async function() {
 
 // Virtual for avatar URL
 userSchema.virtual('avatarUrl').get(function() {
-  if (this.avatar && this.avatar.data && this.avatarType === 'upload') {
-    // Return base64 data URL for uploaded images
-    return `data:${this.avatar.contentType};base64,${this.avatar.data.toString('base64')}`;
+  if (this.avatar && this.avatarType === 'upload') {
+    // Check if uploaded avatar file exists, fallback to API if not
+    const fs = require('fs');
+    const uploadPath = `public/uploads/avatars/${this.avatar}`;
+    if (fs.existsSync(uploadPath)) {
+      return `/uploads/avatars/${this.avatar}`;
+    } else {
+      // File missing, fallback to API avatar
+      console.log(`⚠️ Avatar file not found: ${uploadPath}, using API fallback`);
+      const seed = this.avatarSeed || this.username || this.email.split('@')[0] || 'default';
+      return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+    }
   } else if (this.avatarSeed && this.avatarType === 'api') {
     // Return API-generated avatar
     return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;

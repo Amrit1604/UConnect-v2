@@ -6,6 +6,7 @@ const User = require('../models/User');
 const { redirectIfAuthenticated, validateEduEmail, sensitiveOperationLimit } = require('../middleware/auth');
 const { uploadAvatarTemp, saveTempAvatarToDisk } = require('../middleware/upload');
 const emailService = require('../services/emailService');
+const { getSmartBaseUrl } = require('../utils/smartUrl');
 
 const router = express.Router();
 
@@ -18,16 +19,17 @@ const registerValidation = [
     .isEmail()
     .normalizeEmail()
     .custom(value => {
-      if (!value.endsWith('.edu.in')) {
-        throw new Error('Please use a valid .edu.in email address');
+      // Allow both .edu.in and gmail.com for testing purposes
+      if (!value.endsWith('.edu.in') && !value.endsWith('@gmail.com')) {
+        throw new Error('Please use a valid .edu.in email address or Gmail for testing');
       }
       return true;
     }),
-  body('displayName')
+  body('name')
     .trim()
     .isLength({ min: 2, max: 50 })
     .matches(/^[a-zA-Z0-9\s\-_.]+$/)
-    .withMessage('Display name can only contain letters, numbers, spaces, hyphens, underscores, and periods'),
+    .withMessage('Name can only contain letters, numbers, spaces, hyphens, underscores, and periods'),
   body('username')
     .trim()
     .isLength({ min: 3, max: 20 })
@@ -79,7 +81,7 @@ router.post('/register',
         });
       }
 
-      const { email, displayName, username, password, avatarType } = req.body;
+      const { email, name, username, password, avatarType } = req.body;
 
       // Check if user already exists in MongoDB (verified users only)
       const existingUser = await User.findOne({
@@ -99,7 +101,7 @@ router.post('/register',
       // Prepare user data for temporary storage (DON'T save to MongoDB yet!)
       const tempUserData = {
         email,
-        displayName,
+        name,
         username,
         password, // Will be hashed when actually saving
         isVerified: false,
@@ -137,21 +139,25 @@ router.post('/register',
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
       };
 
-      // Create verification URL with short token
-      const verificationUrl = `${req.protocol}://${req.get('host')}/auth/verify-email?token=${verificationToken}`;
+      // Create environment-aware verification URL 🌍
+      const baseUrl = getSmartBaseUrl(req);
+      const verificationUrl = `${baseUrl}/auth/verify-email?token=${verificationToken}`;
+
+      console.log('🌍 Using smart base URL:', baseUrl);
+      console.log('🔗 Generated verification URL:', verificationUrl);
 
       try {
         // Send verification email with godly-level email service! 🚀⚡
         await emailService.sendVerificationEmail({
           to: email,
           username: username,
-          displayName: displayName,
+          name: name,
           verificationUrl: verificationUrl
         });
 
         console.log('\n🎉 EMAIL SENT SUCCESSFULLY! 🎉');
         console.log(`📧 Verification email sent to: ${email}`);
-        console.log(`👤 User: ${displayName} (@${username})`);
+        console.log(`👤 User: ${name} (@${username})`);
         console.log(`🔗 Verification URL: ${verificationUrl}`);
         console.log('⚠️  USER DATA NOT SAVED TO MONGODB YET - AWAITING VERIFICATION');
         console.log('=====================================\n');
@@ -163,7 +169,7 @@ router.post('/register',
 
         // Log verification link to console as fallback
         console.log('\n=== EMAIL FALLBACK - VERIFICATION LINK ===');
-        console.log(`User: ${displayName} (${email})`);
+        console.log(`User: ${name} (${email})`);
         console.log(`Verification Link: ${verificationUrl}`);
         console.log(`Token expires in: 24 hours`);
         console.log('⚠️  USER DATA NOT SAVED TO MONGODB YET - AWAITING VERIFICATION');
@@ -256,11 +262,12 @@ router.post('/login',
       user.lastLogin = new Date();
       await user.save();
 
+
       // Create session
       req.session.user = {
         id: user._id,
         email: user.email,
-        displayName: user.displayName,
+        name: user.name,
         username: user.username,
         avatar: user.avatar,
         avatarType: user.avatarType,
@@ -269,8 +276,24 @@ router.post('/login',
         campus: user.campus
       };
 
-      req.flash('success', `Welcome back, @${user.username}!`);
-      res.redirect('/posts');
+      console.log('💾 LOGIN DEBUG - Session data created:');
+      console.log('Session user:', req.session.user);
+
+      // Explicitly save session before redirect
+      req.session.save((err) => {
+        if (err) {
+          console.error('❌ Session save error:', err);
+          return res.render('auth/login', {
+            title: 'Login to UConnect',
+            errors: [{ msg: 'Login failed. Please try again.' }],
+            formData: req.body
+          });
+        }
+
+        console.log('✅ Session saved successfully');
+        req.flash('success', `Welcome back, @${user.username}!`);
+        res.redirect('/posts');
+      });
 
     } catch (error) {
       console.error('Login error:', error);
@@ -318,7 +341,7 @@ router.get('/verify-email', async (req, res) => {
     const tempUserData = req.session.pendingRegistration;
       console.log('\n🔍 PROCESSING EMAIL VERIFICATION...');
       console.log(`📧 Email: ${tempUserData.email}`);
-      console.log(`👤 User: ${tempUserData.displayName}`);
+      console.log(`👤 User: ${tempUserData.name}`);
 
       // Check if user already exists (someone might have registered with same data)
       const existingUser = await User.findOne({
@@ -335,38 +358,41 @@ router.get('/verify-email', async (req, res) => {
         return res.redirect('/auth/login');
       }
 
-      // Handle avatar - save to database properly
-      let avatarData = null;
+      // Handle avatar - save to filesystem properly
+      let avatarFilename = null;
       let avatarSeed = null;
-      let avatarType = tempUserData.avatarType;
+      let avatarType = tempUserData.avatarType || 'api';
 
       if (tempUserData.avatarType === 'upload' && tempUserData.tempAvatar) {
         try {
           console.log(`💾 Processing uploaded avatar: ${tempUserData.tempAvatar.originalname}`);
 
-          // Convert base64 back to Buffer for database storage
+          // Convert base64 back to Buffer
           const avatarBuffer = Buffer.from(tempUserData.tempAvatar.data, 'base64');
 
-          avatarData = {
-            data: avatarBuffer,
-            contentType: tempUserData.tempAvatar.mimetype
-          };
+          // Save to filesystem with proper filename
+          const { saveTempAvatarToDisk } = require('../middleware/upload');
+          avatarFilename = await saveTempAvatarToDisk(avatarBuffer, tempUserData.tempAvatar.originalname);
 
-          console.log(`✅ Avatar data prepared for database storage`);
+          console.log(`✅ Avatar file saved: ${avatarFilename}`);
         } catch (avatarError) {
           console.error('❌ Error processing avatar:', avatarError);
           // Fallback to API avatar if upload fails
           avatarType = 'api';
-          avatarSeed = tempUserData.avatarSeed || crypto.randomBytes(8).toString('hex');
+          avatarSeed = crypto.randomBytes(8).toString('hex');
         }
       } else if (tempUserData.avatarType === 'api') {
         avatarSeed = tempUserData.avatarSeed || crypto.randomBytes(8).toString('hex');
+      } else {
+        // Default fallback
+        avatarType = 'api';
+        avatarSeed = crypto.randomBytes(8).toString('hex');
       }
 
       // NOW CREATE THE USER IN MONGODB! 🚀
       const userData = {
         email: tempUserData.email,
-        displayName: tempUserData.displayName,
+        name: tempUserData.name,
         username: tempUserData.username,
         password: tempUserData.password,
         avatarType: avatarType,
@@ -376,10 +402,11 @@ router.get('/verify-email', async (req, res) => {
       };
 
       // Add avatar data based on type
-      if (avatarType === 'upload' && avatarData) {
-        userData.avatar = avatarData;
+      if (avatarType === 'upload' && avatarFilename) {
+        userData.avatar = avatarFilename; // Store just the filename
       } else {
         userData.avatarSeed = avatarSeed;
+        userData.avatar = null; // Clear avatar field for API type
       }
 
       const newUser = new User(userData);
@@ -456,21 +483,25 @@ router.post('/resend-verification',
       req.session.pendingRegistration.verificationToken = verificationToken;
       req.session.pendingRegistration.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-      // Create verification URL with short token
-      const verificationUrl = `${req.protocol}://${req.get('host')}/auth/verify-email?token=${verificationToken}`;
+      // Create environment-aware verification URL 🌍
+      const baseUrl = getSmartBaseUrl(req);
+      const verificationUrl = `${baseUrl}/auth/verify-email?token=${verificationToken}`;
+
+      console.log('🌍 Resend - Using smart base URL:', baseUrl);
+      console.log('🔗 Resend - Generated verification URL:', verificationUrl);
 
       try {
         // Send verification email
         await emailService.sendVerificationEmail({
           to: email,
           username: tempUserData.username,
-          displayName: tempUserData.displayName,
+          name: tempUserData.name,
           verificationUrl: verificationUrl
         });
 
         console.log('\n🔄 VERIFICATION EMAIL RESENT! 🔄');
         console.log(`📧 Verification email resent to: ${email}`);
-        console.log(`👤 User: ${tempUserData.displayName} (@${tempUserData.username})`);
+        console.log(`👤 User: ${tempUserData.name} (@${tempUserData.username})`);
         console.log(`🔗 Verification URL: ${verificationUrl}`);
         console.log('⚠️  USER DATA STILL IN SESSION - AWAITING VERIFICATION');
         console.log('====================================\n');
@@ -482,7 +513,7 @@ router.post('/resend-verification',
 
         // Log verification link to console as fallback
         console.log('\n=== RESEND EMAIL FALLBACK - VERIFICATION LINK ===');
-        console.log(`User: ${tempUserData.displayName} (${email})`);
+        console.log(`User: ${tempUserData.name} (${email})`);
         console.log(`Verification Link: ${verificationUrl}`);
         console.log(`Token expires in: 24 hours`);
         console.log('⚠️  USER DATA STILL IN SESSION - AWAITING VERIFICATION');

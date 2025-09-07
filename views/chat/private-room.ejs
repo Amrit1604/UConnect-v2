@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <style>
+        /* 🔥 HULK-POWERED PRIVATE CHAT STYLES 🔥 */
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            margin: 0;
+            position: relative;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #fd79a8 100%);
+            padding: 1rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .other-user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.8);
+            object-fit: cover;
+        }
+
+        .chat-header-info h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .chat-header-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-action-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .chat-action-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            position: relative;
+        }
+
+        .messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        .message.own {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #667eea;
+        }
+
+        .message.own .message-avatar {
+            border-color: #ff6b6b;
+        }
+
+        .message-content {
+            max-width: 70%;
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .message.own .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-text {
+            margin: 0;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+
+        .message.own .message-time {
+            opacity: 0.9;
+        }
+
+        .message-input-container {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .message-input-form {
+            display: flex;
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            min-height: 44px;
+            max-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .room-warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 12px;
+            border: 1px solid #ffeaa7;
+            text-align: center;
+            font-weight: 500;
+            color: #856404;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 0.5rem 1rem;
+            color: #666;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .online-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .chat-header {
+                padding: 0.75rem;
+            }
+
+            .chat-header-info h2 {
+                font-size: 1rem;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .message-input-form {
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <img src="<%= otherUser.avatarUrl %>" alt="<%= otherUser.name %>" class="other-user-avatar">
+                <div class="chat-header-info">
+                    <h2>🔒 <span class="online-status"></span><%= otherUser.name %></h2>
+                    <p>Private Chat • Room expires in <span id="timeRemaining"></span></p>
+                </div>
+            </div>
+            <div class="chat-actions">
+                <button class="chat-action-btn" onclick="toggleEmoji()" title="Emoji">😊</button>
+                <button class="chat-action-btn" onclick="leaveRoom()" title="Leave Room">🚪</button>
+            </div>
+        </div>
+
+        <!-- Room Warning -->
+        <div class="room-warning">
+            ⏰ <strong>Secret Room Active!</strong> This private chat will automatically expire in 24 hours. All messages will be permanently deleted.
+        </div>
+
+        <!-- Messages Container -->
+        <div class="messages-container" id="messagesContainer">
+            <div class="messages-list" id="messagesList">
+                <% messages.forEach(message => { %>
+                    <div class="message <%= message.sender._id.toString() === user._id.toString() ? 'own' : '' %>">
+                        <img src="<%= message.sender.avatarUrl %>" alt="<%= message.sender.name %>" class="message-avatar">
+                        <div class="message-content">
+                            <p class="message-text"><%= message.message %></p>
+                            <div class="message-time"><%= message.formattedTime %></div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+            <div class="typing-indicator" id="typingIndicator">
+                <span id="typingUser"></span> is typing...
+            </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="message-input-container">
+            <form class="message-input-form" id="messageForm">
+                <textarea
+                    id="messageInput"
+                    class="message-input"
+                    placeholder="Type your secret message..."
+                    rows="1"
+                    maxlength="1000"
+                    required></textarea>
+                <button type="submit" class="send-button" id="sendButton">
+                    <span>🚀</span> Send
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // 🔥 HULK-POWERED REAL-TIME CHAT 🔥
+        const socket = io();
+        const roomId = '<%= roomId %>';
+        const currentUserId = '<%= user._id %>';
+        const otherUser = {
+            id: '<%= otherUser._id %>',
+            name: '<%= otherUser.name %>',
+            username: '<%= otherUser.username %>',
+            avatarUrl: '<%= otherUser.avatarUrl %>'
+        };
+
+        // Join private room
+        socket.emit('joinPrivateRoom', { roomId: roomId });
+
+        // DOM elements
+        const messagesList = document.getElementById('messagesList');
+        const messageInput = document.getElementById('messageInput');
+        const messageForm = document.getElementById('messageForm');
+        const sendButton = document.getElementById('sendButton');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Handle message form submission
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            sendMessage();
+        });
+
+        // Handle Enter key (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Send message function
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Disable send button
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<span>⏳</span> Sending...';
+
+            // Emit message
+            socket.emit('sendPrivateMessage', {
+                roomId: roomId,
+                message: message
+            });
+
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+        }
+
+        // Listen for new messages
+        socket.on('newPrivateMessage', function(data) {
+            addMessage(data);
+            scrollToBottom();
+
+            // Re-enable send button
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<span>🚀</span> Send';
+        });
+
+        // Add message to UI
+        function addMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${data.sender.id === currentUserId ? 'own' : ''}`;
+
+            messageDiv.innerHTML = `
+                <img src="${data.sender.avatarUrl}" alt="${data.sender.name}" class="message-avatar">
+                <div class="message-content">
+                    <p class="message-text">${escapeHtml(data.message)}</p>
+                    <div class="message-time">${data.timestamp}</div>
+                </div>
+            `;
+
+            messagesList.appendChild(messageDiv);
+        }
+
+        // Typing indicators
+        let typingTimer;
+        messageInput.addEventListener('input', function() {
+            socket.emit('privateTyping', { roomId: roomId, isTyping: true });
+
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                socket.emit('privateTyping', { roomId: roomId, isTyping: false });
+            }, 1000);
+        });
+
+        socket.on('userTyping', function(data) {
+            if (data.userId !== currentUserId) {
+                if (data.isTyping) {
+                    document.getElementById('typingUser').textContent = otherUser.name;
+                    typingIndicator.style.display = 'block';
+                } else {
+                    typingIndicator.style.display = 'none';
+                }
+            }
+        });
+
+        // Room expiry countdown
+        const roomExpiry = new Date('<%= chatRequest.roomExpiry %>');
+        function updateTimeRemaining() {
+            const now = new Date();
+            const diff = roomExpiry - now;
+
+            if (diff <= 0) {
+                document.getElementById('timeRemaining').textContent = 'EXPIRED';
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+                return;
+            }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById('timeRemaining').textContent = `${hours}h ${minutes}m`;
+        }
+
+        updateTimeRemaining();
+        setInterval(updateTimeRemaining, 60000); // Update every minute
+
+        // Utility functions
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function leaveRoom() {
+            if (confirm('Are you sure you want to leave this private chat? You won\'t be able to return.')) {
+                window.location.href = '/posts';
+            }
+        }
+
+        function toggleEmoji() {
+            // Simple emoji picker (can be enhanced)
+            const emojis = ['😊', '😂', '❤️', '👍', '🔥', '💯', '🎉', '😎', '🤔', '👋'];
+            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+            messageInput.value += emoji;
+            messageInput.focus();
+        }
+
+        // Initial scroll to bottom
+        scrollToBottom();
+
+        // Handle connection events
+        socket.on('connect', function() {
+            console.log('🔥 HULK CHAT: Connected to private room');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('💥 HULK CHAT: Disconnected from private room');
+        });
+
+        console.log('🔥 HULK CHAT: Private room initialized successfully!');
+    </script>
+</body>
+</html>

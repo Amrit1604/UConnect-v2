@@ -2,7 +2,7 @@
     <div class="nav-container">
         <div class="nav-brand">
             <a href="/" class="brand-link">
-                <i class="fas fa-graduation-cap"></i>
+                <span>🎓</span>
                 <span>UConnect</span>
             </a>
         </div>
@@ -12,20 +12,24 @@
             <div class="nav-menu">
                 <div class="nav-links">
                     <a href="/posts" class="nav-link <%= currentPath === '/posts' ? 'active' : '' %>">
-                        <i class="fas fa-home"></i>
+                        <span>🏠</span>
                         <span>Feed</span>
                     </a>
                     <a href="/posts/create" class="nav-link <%= currentPath === '/posts/create' ? 'active' : '' %>">
-                        <i class="fas fa-plus"></i>
+                        <span>➕</span>
                         <span>Create</span>
                     </a>
+                    <a href="/chat/requests" class="nav-link <%= currentPath === '/chat/requests' ? 'active' : '' %>">
+                        <span>🔐</span>
+                        <span>Secret Chat</span>
+                    </a>
                     <a href="/users/campus" class="nav-link <%= currentPath === '/users/campus' ? 'active' : '' %>">
-                        <i class="fas fa-users"></i>
+                        <span>👥</span>
                         <span>Campus</span>
                     </a>
                     <% if (user.role === 'admin') { %>
                         <a href="/admin" class="nav-link <%= currentPath.startsWith('/admin') ? 'active' : '' %>">
-                            <i class="fas fa-shield-alt"></i>
+                            <span>🛡️</span>
                             <span>Admin</span>
                         </a>
                     <% } %>
@@ -33,7 +37,7 @@
 
                 <!-- Theme Toggle -->
                 <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-                    <i class="fas fa-sun" id="themeIcon"></i>
+                    <span>☀️</span>
                 </button>
 
                 <!-- User Menu -->
@@ -43,20 +47,20 @@
                             <img src="<%= user.avatarUrl %>"
                                  alt="@<%= user.username %>" class="user-avatar">
                             <span class="user-name">@<%= user.username %></span>
-                            <i class="fas fa-chevron-down"></i>
+                            <span>▼</span>
                         </button>
                         <div class="dropdown-menu" id="userDropdown">
                             <a href="/users/profile" class="dropdown-item">
-                                <i class="fas fa-user"></i>
+                                <span>👤</span>
                                 My Profile
                             </a>
                             <a href="/users/settings/profile" class="dropdown-item">
-                                <i class="fas fa-cog"></i>
+                                <span>⚙️</span>
                                 Settings
                             </a>
                             <div class="dropdown-divider"></div>
                             <a href="/auth/logout" class="dropdown-item">
-                                <i class="fas fa-sign-out-alt"></i>
+                                <span>🚪</span>
                                 Logout
                             </a>
                         </div>
@@ -66,14 +70,14 @@
 
             <!-- Mobile Menu Toggle -->
             <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                <i class="fas fa-bars"></i>
+                <span>☰</span>
             </button>
         <% } else { %>
             <!-- Guest Navigation -->
             <div class="nav-menu">
                 <div class="nav-links">
                     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-                        <i class="fas fa-sun" id="themeIcon"></i>
+                        <span>☀️</span>
                     </button>
                     <a href="/auth/login" class="nav-link">Login</a>
                     <a href="/auth/register" class="btn btn-primary">Join Now</a>
@@ -86,38 +90,42 @@
     <% if (user) { %>
         <div class="mobile-menu" id="mobileMenu">
             <a href="/posts" class="mobile-menu-item">
-                <i class="fas fa-home"></i>
+                <span>🏠</span>
                 Feed
             </a>
             <a href="/posts/create" class="mobile-menu-item">
-                <i class="fas fa-plus"></i>
+                <span>➕</span>
                 Create Post
             </a>
+            <a href="/chat/requests" class="mobile-menu-item">
+                <span>🔐</span>
+                Secret Chat
+            </a>
             <a href="/users/campus" class="mobile-menu-item">
-                <i class="fas fa-users"></i>
+                <span>👥</span>
                 Campus Users
             </a>
             <a href="/users/profile" class="mobile-menu-item">
-                <i class="fas fa-user"></i>
+                <span>👤</span>
                 My Profile
             </a>
             <a href="/users/settings/profile" class="mobile-menu-item">
-                <i class="fas fa-cog"></i>
+                <span>⚙️</span>
                 Settings
             </a>
             <div class="mobile-menu-item theme-toggle-mobile" onclick="toggleTheme()">
-                <i class="fas fa-sun" id="themeIconMobile"></i>
+                <span>☀️</span>
                 Toggle Theme
             </div>
             <% if (user.role === 'admin') { %>
                 <a href="/admin" class="mobile-menu-item">
-                    <i class="fas fa-shield-alt"></i>
+                    <span>🛡️</span>
                     Admin Panel
                 </a>
             <% } %>
             <div class="mobile-menu-divider"></div>
             <a href="/auth/logout" class="mobile-menu-item">
-                <i class="fas fa-sign-out-alt"></i>
+                <span>🚪</span>
                 Logout
             </a>
         </div>

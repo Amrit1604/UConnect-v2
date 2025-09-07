@@ -19,38 +19,83 @@
     <%- include('../partials/flash-messages') %>
 
     <!-- Main Content -->
-    <main class="main-content">
-<div class="feed-container">
-    <!-- Feed Header -->
-    <div class="feed-header">
-        <div class="container">
-            <div class="feed-title">
-                <h1><%= title %></h1>
-                <p>Connect with your campus community</p>
-            </div>
-
-            <div class="feed-actions">
-                <a href="/posts/create" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Create Post
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
+    <main class="feed-container">
         <div class="feed-layout">
+            <!-- Left Sidebar -->
+            <div class="feed-sidebar-left">
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-graduation-cap"></i> Campus
+                    </div>
+                    <div class="widget-content">
+                        <div class="campus-info">
+                            <h4><%= user.campus %></h4>
+                            <p><%= campusUsers %> students connected</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-chart-line"></i> Stats
+                    </div>
+                    <div class="widget-content">
+                        <div class="quick-stats">
+                            <div class="stat-item">
+                                <span class="stat-number"><%= userStats.totalUsers %></span>
+                                <span class="stat-label">Users</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number"><%= posts.length %></span>
+                                <span class="stat-label">Posts</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">24/7</span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Main Feed -->
             <div class="feed-main">
+                <!-- Create Post Widget -->
+                <div class="create-post-widget">
+                    <div class="create-post-header">
+                        <img src="<%= user.avatarUrl %>" alt="<%= user.username %>" class="create-post-avatar">
+                        <div class="create-post-input" onclick="window.location.href='/posts/create'">
+                            What's on your mind, <%= user.username %>?
+                        </div>
+                    </div>
+                    <div class="create-post-actions">
+                        <div class="post-type-buttons">
+                            <button class="post-type-btn" onclick="window.location.href='/posts/create'">
+                                <i class="fas fa-image"></i> Photo
+                            </button>
+                            <button class="post-type-btn" onclick="window.location.href='/posts/create'">
+                                <i class="fas fa-video"></i> Video
+                            </button>
+                            <button class="post-type-btn" onclick="window.location.href='/posts/create'">
+                                <i class="fas fa-smile"></i> Feeling
+                            </button>
+                        </div>
+                        <button class="post-submit-btn" onclick="window.location.href='/posts/create'">
+                            <i class="fas fa-plus"></i> Create
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Filter Tabs -->
-                <div class="feed-filters">
-                    <a href="/posts?filter=recent" class="filter-tab <%= currentFilter === 'recent' ? 'active' : '' %>">
-                        <i class="fas fa-clock"></i>
-                        Recent
+                <div class="feed-categories">
+                    <a href="/posts?filter=recent" class="category-tab <%= currentFilter === 'recent' ? 'active' : '' %>">
+                        <i class="fas fa-clock"></i> Recent
                     </a>
-                    <a href="/posts?filter=trending" class="filter-tab <%= currentFilter === 'trending' ? 'active' : '' %>">
-                        <i class="fas fa-fire"></i>
-                        Trending
+                    <a href="/posts?filter=trending" class="category-tab <%= currentFilter === 'trending' ? 'active' : '' %>">
+                        <i class="fas fa-fire"></i> Trending
+                    </a>
+                    <a href="/posts?filter=campus" class="category-tab <%= currentFilter === 'campus' ? 'active' : '' %>">
+                        <i class="fas fa-graduation-cap"></i> Campus
                     </a>
                 </div>
 
@@ -58,16 +103,17 @@
                 <div class="posts-list">
                     <% if (posts && posts.length > 0) { %>
                         <% posts.forEach(post => { %>
+                            <% if (post.author) { %>
                             <article class="post-card" data-post-id="<%= post._id %>">
                                 <!-- Post Header -->
                                 <div class="post-header">
                                     <div class="post-author">
-                                        <img src="<%= post.author.avatarUrl %>"
-                                             alt="<%= post.author.displayName %>"
-                                             class="author-avatar">
+                                        <div class="author-avatar">
+                                            <img src="<%= post.author.avatarUrl %>" alt="<%= post.author.username %>">
+                                        </div>
                                         <div class="author-info">
-                                            <a href="/users/<%= post.author._id %>" class="author-name">
-                                                <%= post.author.displayName %>
+                                            <a href="/users/<%= post.author.username ? post.author.username : post.author._id %>" class="author-name">
+                                                <%= post.author.username %>
                                             </a>
                                             <span class="post-time" data-time="<%= post.createdAt %>">
                                                 <%= post.timeAgo %>
@@ -82,97 +128,117 @@
                                         <div class="post-menu-dropdown" id="postMenu<%= post._id %>">
                                             <% if (post.author._id.toString() === user.id) { %>
                                                 <a href="/posts/<%= post._id %>/edit" class="menu-item">
-                                                    <i class="fas fa-edit"></i>
-                                                    Edit Post
+                                                    <i class="fas fa-edit"></i> Edit Post
                                                 </a>
                                                 <button onclick="deletePost('<%= post._id %>')" class="menu-item delete">
-                                                    <i class="fas fa-trash"></i>
-                                                    Delete Post
+                                                    <i class="fas fa-trash"></i> Delete Post
                                                 </button>
                                             <% } else { %>
                                                 <button onclick="reportPost('<%= post._id %>')" class="menu-item">
-                                                    <i class="fas fa-flag"></i>
-                                                    Report Post
+                                                    <i class="fas fa-flag"></i> Report Post
                                                 </button>
                                             <% } %>
                                         </div>
                                     </div>
                                 </div>
 
+                                <!-- Post Media (if exists) -->
+                                <% if (post.media && post.media.length > 0) { %>
+                                    <div class="post-media">
+                                        <% post.media.forEach(media => { %>
+                                            <% if (media.type === 'image') { %>
+                                                <img src="<%= media.url %>" alt="Post image" loading="lazy">
+                                            <% } else if (media.type === 'video') { %>
+                                                <video controls>
+                                                    <source src="<%= media.url %>" type="<%= media.mimeType %>">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            <% } %>
+                                        <% }) %>
+                                    </div>
+                                <% } %>
+
+                                <!-- Post Actions -->
+                                <div class="post-actions">
+                                    <div class="action-buttons-left">
+                                        <button class="action-btn like-btn <%= post.isLikedBy(user.id) ? 'liked' : '' %>"
+                                                onclick="toggleLike('<%= post._id %>')">
+                                            <span class="icon"><%= post.isLikedBy(user.id) ? '❤️' : '🤍' %></span>
+                                        </button>
+
+                                        <a href="/posts/<%= post._id %>" class="action-btn">
+                                            <span class="icon">💬</span>
+                                        </a>
+
+                                        <button class="action-btn share-btn" onclick="sharePost('<%= post._id %>')">
+                                            <span class="icon">↗️</span>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <!-- Post Content -->
                                 <div class="post-content">
-                                    <p class="post-text"><%- post.content.replace(/\n/g, '<br>') %></p>
+                                    <% if (post.likeCount > 0) { %>
+                                        <div style="padding: 0 16px 8px; font-size: 14px; font-weight: 600;">
+                                            <span class="like-count"><%= post.likeCount %></span>
+                                            <%= post.likeCount === 1 ? 'like' : 'likes' %>
+                                        </div>
+                                    <% } %>
 
-                                    <% if (post.media && post.media.length > 0) { %>
-                                        <div class="post-media">
-                                            <% post.media.forEach(media => { %>
-                                                <% if (media.type === 'image') { %>
-                                                    <img src="/uploads/posts/<%= media.filename %>"
-                                                         alt="Post image"
-                                                         class="post-image"
-                                                         onclick="openImageModal(this.src)">
-                                                <% } %>
+                                    <% if (post.content && post.content.trim()) { %>
+                                        <p class="post-text">
+                                            <span style="font-weight: 600;"><%= post.author.username %></span>
+                                            <%- post.content.replace(/\n/g, '<br>') %>
+                                        </p>
+                                    <% } %>
+
+                                    <% if (post.commentCount > 0) { %>
+                                        <div style="padding: 0 16px 8px; font-size: 14px; color: #8e8e8e;">
+                                            <a href="/posts/<%= post._id %>" style="color: #8e8e8e; text-decoration: none;">
+                                                View all <%= post.commentCount %> <%= post.commentCount === 1 ? 'comment' : 'comments' %>
+                                            </a>
+                                        </div>
+                                    <% } %>
+
+                                    <!-- Recent Comments Preview -->
+                                    <% if (post.comments && post.comments.length > 0) { %>
+                                        <div style="padding: 0 16px;">
+                                            <% const recentComments = post.comments.slice(-2); %>
+                                            <% recentComments.forEach(comment => { %>
+                                                <div style="display: flex; align-items: center; margin-bottom: 4px; font-size: 14px; justify-content: space-between;" class="comment-item">
+                                                    <div style="display: flex; flex: 1;">
+                                                        <span style="font-weight: 600; margin-right: 6px; cursor: pointer; position: relative;"
+                                                              class="username-hover"
+                                                              data-user-id="<%= comment.author._id %>"
+                                                              data-username="<%= comment.author.username %>"
+                                                              data-post-id="<%= post._id %>">
+                                                            <%= comment.author.username %>
+                                                            <% if (comment.author._id.toString() !== user._id.toString()) { %>
+                                                                <span class="secret-chat-icon" title="Send secret message">🔐</span>
+                                                            <% } %>
+                                                        </span>
+                                                        <span><%= comment.content %></span>
+                                                    </div>
+                                                </div>
                                             <% }) %>
                                         </div>
                                     <% } %>
                                 </div>
-
-                                <!-- Post Actions -->
-                                <div class="post-actions">
-                                    <button class="action-btn like-btn <%= post.isLikedBy(user.id) ? 'liked' : '' %>"
-                                            onclick="toggleLike('<%= post._id %>')">
-                                        <i class="fas fa-heart"></i>
-                                        <span class="like-count"><%= post.likeCount %></span>
-                                    </button>
-
-                                    <a href="/posts/<%= post._id %>" class="action-btn">
-                                        <i class="fas fa-comment"></i>
-                                        <span><%= post.commentCount %></span>
-                                    </a>
-
-                                    <button class="action-btn" onclick="sharePost('<%= post._id %>')">
-                                        <i class="fas fa-share"></i>
-                                        Share
-                                    </button>
-                                </div>
-
-                                <!-- Recent Comments Preview -->
-                                <% if (post.comments && post.comments.length > 0) { %>
-                                    <div class="comments-preview">
-                                        <% const recentComments = post.comments.slice(-2); %>
-                                        <% recentComments.forEach(comment => { %>
-                                            <div class="comment-preview">
-                                                <img src="<%= comment.author.avatarUrl %>"
-                                                     alt="<%= comment.author.displayName %>"
-                                                     class="comment-avatar">
-                                                <div class="comment-content">
-                                                    <span class="comment-author"><%= comment.author.displayName %></span>
-                                                    <span class="comment-text"><%= comment.content %></span>
-                                                </div>
-                                            </div>
-                                        <% }) %>
-
-                                        <% if (post.comments.length > 2) { %>
-                                            <a href="/posts/<%= post._id %>" class="view-all-comments">
-                                                View all <%= post.commentCount %> comments
-                                            </a>
-                                        <% } %>
-                                    </div>
-                                <% } %>
                             </article>
+                            <% } %>
                         <% }) %>
                     <% } else { %>
-                        <!-- Empty State -->
                         <div class="empty-state">
                             <div class="empty-icon">
-                                <i class="fas fa-comments"></i>
+                                <span style="font-size: 48px;">💬</span>
                             </div>
-                            <h3>No posts yet</h3>
-                            <p>Be the first to share something with your campus community!</p>
-                            <a href="/posts/create" class="btn btn-primary">
-                                <i class="fas fa-plus"></i>
-                                Create Your First Post
-                            </a>
+                            <h3>Welcome to UConnect!</h3>
+                            <p>Be the first to share something with your campus community.</p>
+                            <div style="margin-top: 24px;">
+                                <a href="/posts/create" class="btn" style="background: #0095f6; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                                    <span style="margin-right: 8px;">➕</span> Create Your First Post
+                                </a>
+                            </div>
                         </div>
                     <% } %>
                 </div>
@@ -181,115 +247,69 @@
                 <% if (hasNextPage) { %>
                     <div class="load-more">
                         <a href="/posts?page=<%= currentPage + 1 %>&filter=<%= currentFilter %>"
-                           class="btn btn-outline">
+                           class="btn">
                             Load More Posts
                         </a>
                     </div>
                 <% } %>
             </div>
 
-            <!-- Sidebar -->
-            <div class="feed-sidebar">
-                <!-- Campus Stats -->
-                <div class="sidebar-card">
-                    <h3>Campus Stats</h3>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-number"><%= campusUsers %></span>
-                            <span class="stat-label">Students</span>
+            <!-- Right Sidebar -->
+            <div class="feed-sidebar-right">
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-user-plus"></i> Suggested for you
+                    </div>
+                    <div class="widget-content">
+                        <!-- Add suggested users here in the future -->
+                        <div class="user-suggestion">
+                            <div class="suggestion-info">
+                                <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=campus1" alt="User" class="suggestion-avatar">
+                                <div class="suggestion-details">
+                                    <h4>@campus_explorer</h4>
+                                    <p>Popular in <%= user.campus %></p>
+                                </div>
+                            </div>
+                            <button class="follow-btn">Follow</button>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number"><%= userStats.totalUsers %></span>
-                            <span class="stat-label">Total Users</span>
+                        <div class="user-suggestion">
+                            <div class="suggestion-info">
+                                <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=campus2" alt="User" class="suggestion-avatar">
+                                <div class="suggestion-details">
+                                    <h4>@study_buddy</h4>
+                                    <p>Suggested for you</p>
+                                </div>
+                            </div>
+                            <button class="follow-btn">Follow</button>
+                        </div>
+                        <div class="user-suggestion">
+                            <div class="suggestion-info">
+                                <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=campus3" alt="User" class="suggestion-avatar">
+                                <div class="suggestion-details">
+                                    <h4>@events_hub</h4>
+                                    <p>Campus events</p>
+                                </div>
+                            </div>
+                            <button class="follow-btn">Follow</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="sidebar-card">
-                    <h3>Quick Actions</h3>
-                    <div class="quick-actions">
-                        <a href="/posts/create" class="quick-action">
-                            <i class="fas fa-plus"></i>
-                            Create Post
-                        </a>
-                        <a href="/users/campus" class="quick-action">
-                            <i class="fas fa-users"></i>
-                            Browse Campus
-                        </a>
-                        <a href="/users/profile" class="quick-action">
-                            <i class="fas fa-user"></i>
-                            My Profile
-                        </a>
+                <div class="widget">
+                    <div class="widget-header">
+                        <i class="fas fa-info-circle"></i> About UConnect
                     </div>
-                </div>
-
-                <!-- Campus Info -->
-                <div class="sidebar-card">
-                    <h3>Your Campus</h3>
-                    <div class="campus-info">
-                        <div class="campus-name">
-                            <i class="fas fa-graduation-cap"></i>
-                            <%= user.campus %>
+                    <div class="widget-content">
+                        <p style="font-size: 12px; color: #8e8e8e; line-height: 16px;">
+                            Connect with your campus community. Share moments, discover events, and stay connected with fellow students.
+                        </p>
+                        <div style="margin-top: 16px; font-size: 11px; color: #c7c7c7;">
+                            © 2025 UConnect. Made with ❤️ for students.
                         </div>
-                        <p>Connect with fellow students from your campus</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Report Modal -->
-<div class="modal" id="reportModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Report Post</h3>
-            <button class="modal-close" onclick="closeModal('reportModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <form id="reportForm" method="POST">
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Reason for reporting:</label>
-                    <select name="reason" class="form-select" required>
-                        <option value="">Select a reason</option>
-                        <option value="spam">Spam</option>
-                        <option value="inappropriate">Inappropriate content</option>
-                        <option value="harassment">Harassment</option>
-                        <option value="fake">Fake information</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Additional details (optional):</label>
-                    <textarea name="description" class="form-textarea"
-                              placeholder="Provide more details about why you're reporting this post..."
-                              maxlength="500"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-ghost" onclick="closeModal('reportModal')">
-                    Cancel
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    Submit Report
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Image Modal -->
-<div class="modal" id="imageModal">
-    <div class="modal-content image-modal-content">
-        <button class="modal-close" onclick="closeModal('imageModal')">
-            <i class="fas fa-times"></i>
-        </button>
-        <img id="modalImage" src="" alt="Full size image">
-    </div>
-</div>
     </main>
 
     <!-- Footer -->
@@ -298,5 +318,735 @@
     <!-- JavaScript -->
     <script src="/js/main.js"></script>
     <script src="/js/posts.js"></script>
+
+    <!-- Socket.IO Client for Real-time Features -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        // Instagram-like post menu toggle
+        function togglePostMenu(postId) {
+            const menu = document.getElementById('postMenu' + postId);
+            const allMenus = document.querySelectorAll('.post-menu-dropdown');
+
+            // Close all other menus
+            allMenus.forEach(m => {
+                if (m.id !== 'postMenu' + postId) {
+                    m.classList.remove('show');
+                }
+            });
+
+            // Toggle current menu
+            menu.classList.toggle('show');
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.post-menu')) {
+                document.querySelectorAll('.post-menu-dropdown').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+
+        // Enhanced like animation
+        function toggleLike(postId) {
+            const likeBtn = document.querySelector(`[data-post-id="${postId}"] .like-btn`);
+            const icon = likeBtn.querySelector('i');
+            const isLiked = likeBtn.classList.contains('liked');
+
+            if (isLiked) {
+                likeBtn.classList.remove('liked');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            } else {
+                likeBtn.classList.add('liked');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+
+                // Add animation
+                icon.style.animation = 'heartBeat 0.3s ease';
+                setTimeout(() => {
+                    icon.style.animation = '';
+                }, 300);
+            }
+
+            // Here you would typically send an AJAX request to update the like status
+            // For now, we'll just update the UI
+        }
+
+        function sharePost(postId) {
+            // Copy link to clipboard
+            const url = `${window.location.origin}/posts/${postId}`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Post link copied to clipboard!');
+            }).catch(() => {
+                alert('Share functionality coming soon!');
+            });
+        }
+
+        function deletePost(postId) {
+            if (confirm('Are you sure you want to delete this post?')) {
+                // Implement delete functionality
+                window.location.href = `/posts/${postId}/delete`;
+            }
+        }
+
+        function reportPost(postId) {
+            if (confirm('Are you sure you want to report this post?')) {
+                // Implement report functionality
+                alert('Post reported. Thank you for helping keep our community safe.');
+            }
+        }
+
+        // 🚀 REAL-TIME SOCKET.IO - INSTAGRAM-LIKE FEATURES
+        const socket = io();
+
+        // Join campus room for real-time updates
+        socket.emit('join-campus', '<%= user.campus %>');
+
+        // 📱 Real-time new post updates (like Instagram)
+        socket.on('new-post', (data) => {
+            console.log('⚡ New post received:', data);
+
+            // Create new post element
+            const postElement = createPostElement(data.post);
+
+            // Add with smooth animation (Instagram-style)
+            const postsContainer = document.querySelector('.posts-container');
+            if (postsContainer) {
+                // Add at the top with fade-in animation
+                postElement.style.opacity = '0';
+                postElement.style.transform = 'translateY(-20px)';
+                postsContainer.insertBefore(postElement, postsContainer.firstChild);
+
+                // Animate in
+                setTimeout(() => {
+                    postElement.style.transition = 'all 0.3s ease';
+                    postElement.style.opacity = '1';
+                    postElement.style.transform = 'translateY(0)';
+                }, 100);
+
+                // Show notification badge
+                showNewPostNotification();
+            }
+        });
+
+        // 💙 Real-time like updates
+        socket.on('post-liked', (data) => {
+            console.log('⚡ Post like update:', data);
+            updateLikeCount(data.postId, data.likes, data.isLiked);
+        });
+
+        // 💬 Real-time comment updates
+        socket.on('new-comment', (data) => {
+            console.log('⚡ New comment:', data);
+            addCommentToPost(data.postId, data.comment);
+        });
+
+        // 👀 Real-time typing indicators
+        socket.on('user-typing', (data) => {
+            showTypingIndicator(data.postId, data.username);
+        });
+
+        // 🌟 Helper functions for real-time updates
+        function createPostElement(post) {
+            // Create post HTML structure (simplified for now)
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post';
+            postDiv.innerHTML = `
+                <div class="post-header">
+                    <img src="${post.author.avatarUrl || '/images/default-avatar.png'}" alt="${post.author.username}" class="avatar">
+                    <div class="post-meta">
+                        <span class="username">${post.author.username}</span>
+                        <span class="timestamp">Just now</span>
+                    </div>
+                </div>
+                <div class="post-content">
+                    <p>${post.content}</p>
+                    ${post.images && post.images.length > 0 ?
+                        `<div class="post-images">
+                            ${post.images.map(img => `<img src="${img.url}" alt="Post image">`).join('')}
+                        </div>` : ''}
+                </div>
+                <div class="post-actions">
+                    <button class="action-btn like-btn" onclick="toggleLike('${post._id}')">
+                        <i class="far fa-heart"></i> 0
+                    </button>
+                    <button class="action-btn comment-btn">
+                        <i class="far fa-comment"></i> 0
+                    </button>
+                    <button class="action-btn share-btn" onclick="sharePost('${post._id}')">
+                        <i class="far fa-share"></i>
+                    </button>
+                </div>
+            `;
+            return postDiv;
+        }
+
+        function updateLikeCount(postId, likes, isLiked) {
+            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postElement) {
+                const likeBtn = postElement.querySelector('.like-btn');
+                if (likeBtn) {
+                    likeBtn.innerHTML = `<i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> ${likes}`;
+                    likeBtn.classList.toggle('liked', isLiked);
+                }
+            }
+        }
+
+        function addCommentToPost(postId, comment) {
+            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postElement) {
+                const commentsSection = postElement.querySelector('.comments-section');
+                if (commentsSection) {
+                    const commentElement = document.createElement('div');
+                    commentElement.className = 'comment new-comment';
+                    commentElement.innerHTML = `
+                        <strong>${comment.author.username}:</strong> ${comment.content}
+                    `;
+                    commentsSection.appendChild(commentElement);
+
+                    // Animate in
+                    setTimeout(() => {
+                        commentElement.classList.remove('new-comment');
+                    }, 2000);
+                }
+            }
+        }
+
+        function showNewPostNotification() {
+            // Show Instagram-style notification
+            const notification = document.createElement('div');
+            notification.className = 'new-post-notification';
+            notification.innerHTML = `
+                <i class="fas fa-plus-circle"></i>
+                New post available
+                <button onclick="window.location.reload()">Refresh</button>
+            `;
+            document.body.appendChild(notification);
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        function showTypingIndicator(postId, username) {
+            // Show typing indicator for comments
+            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postElement) {
+                let typingDiv = postElement.querySelector('.typing-indicator');
+                if (!typingDiv) {
+                    typingDiv = document.createElement('div');
+                    typingDiv.className = 'typing-indicator';
+                    postElement.appendChild(typingDiv);
+                }
+                typingDiv.innerHTML = `<i class="fas fa-ellipsis-h"></i> ${username} is typing...`;
+
+                // Clear after 3 seconds
+                setTimeout(() => {
+                    typingDiv.remove();
+                }, 3000);
+            }
+        }
+
+        // 📱 Enhanced like function with real-time broadcast
+        async function toggleLike(postId) {
+            try {
+                const response = await fetch(`/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Broadcast like update to all users
+                    socket.emit('like-post', {
+                        postId: postId,
+                        likes: data.likes,
+                        isLiked: data.isLiked
+                    });
+
+                    // Update local UI immediately
+                    updateLikeCount(postId, data.likes, data.isLiked);
+
+                    // Add heart animation (Instagram-style)
+                    addHeartAnimation(postId);
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+
+        function addHeartAnimation(postId) {
+            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postElement) {
+                const heart = document.createElement('div');
+                heart.className = 'heart-animation';
+                heart.innerHTML = '<i class="fas fa-heart"></i>';
+                postElement.style.position = 'relative';
+                postElement.appendChild(heart);
+
+                // Remove after animation
+                setTimeout(() => {
+                    heart.remove();
+                }, 1000);
+            }
+        }
+
+        // 🔄 Auto-refresh connection handling
+        socket.on('connect', () => {
+            console.log('⚡ Connected to real-time server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('❌ Disconnected from real-time server');
+        });
+
+        console.log('🚀 Real-time features initialized - Instagram-like experience activated!');
+    </script>
+
+    <!-- Real-time CSS for animations -->
+    <style>
+        .new-comment {
+            background: #e3f2fd;
+            animation: slideIn 0.3s ease;
+        }
+
+        .new-post-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .heart-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: #e91e63;
+            pointer-events: none;
+            animation: heartPop 1s ease forwards;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: #666;
+            padding: 5px 10px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes heartPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .liked {
+            color: #e91e63 !important;
+        }
+
+        /* 🔥 HULK-POWERED SECRET CHAT STYLES 🔥 */
+        .username-hover {
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            padding: 2px 4px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .username-hover:hover {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            transform: scale(1.02);
+        }
+
+        .secret-chat-icon {
+            opacity: 0;
+            font-size: 10px;
+            margin-left: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: absolute;
+            top: -2px;
+            right: -15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: scale(0);
+        }
+
+        .username-hover:hover .secret-chat-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .secret-chat-icon:hover {
+            transform: scale(1.2) !important;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .comment-item {
+            border-radius: 8px;
+            padding: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .comment-item:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .chat-request-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .chat-request-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-close:hover {
+            color: #ef4444;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .user-card img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+        }
+
+        .user-card h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .user-card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <!-- Secret Chat Request Modal -->
+    <div id="chatRequestModal" class="chat-request-modal">
+        <div class="chat-request-content">
+            <button class="modal-close" onclick="closeChatRequest()">&times;</button>
+
+            <div class="modal-header">
+                <h3>🔐 Request Secret Chat</h3>
+            </div>
+
+            <div id="modalUserCard" class="user-card">
+                <!-- User info will be populated by JavaScript -->
+            </div>
+
+            <form id="chatRequestForm">
+                <label for="chatMessage" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                    Your message:
+                </label>
+                <textarea
+                    id="chatMessage"
+                    class="message-input"
+                    placeholder="Hi! I'd like to have a private chat with you about this post. What do you think?"
+                    maxlength="200"
+                    required></textarea>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal btn-cancel" onclick="closeChatRequest()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-modal btn-send" id="sendRequestBtn">
+                        🚀 Send Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 🔥 HULK-POWERED SECRET CHAT REQUEST SYSTEM 🔥
+        let currentChatRequest = {
+            userId: null,
+            username: null,
+            postId: null
+        };
+
+        // Handle username hover clicks for secret chat
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('secret-chat-icon')) {
+                const usernameElement = e.target.parentElement;
+                const userId = usernameElement.getAttribute('data-user-id');
+                const username = usernameElement.getAttribute('data-username');
+                const postId = usernameElement.getAttribute('data-post-id');
+
+                openChatRequest(userId, username, postId);
+            }
+        });
+
+        function openChatRequest(userId, username, postId) {
+            currentChatRequest = { userId, username, postId };
+
+            // Populate user card
+            document.getElementById('modalUserCard').innerHTML = `
+                <img src="/uploads/avatars/default-avatar.png" alt="${username}" onerror="this.src='/images/logo.png'">
+                <div>
+                    <h4>${username}</h4>
+                    <p>Request a private chat to connect securely</p>
+                </div>
+            `;
+
+            // Show modal
+            document.getElementById('chatRequestModal').style.display = 'block';
+            document.getElementById('chatMessage').focus();
+        }
+
+        function closeChatRequest() {
+            document.getElementById('chatRequestModal').style.display = 'none';
+            document.getElementById('chatMessage').value = '';
+            currentChatRequest = { userId: null, username: null, postId: null };
+        }
+
+        // Handle form submission
+        document.getElementById('chatRequestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const message = document.getElementById('chatMessage').value.trim();
+            if (!message) return;
+
+            const sendBtn = document.getElementById('sendRequestBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '⏳ Sending...';
+
+            try {
+                const response = await fetch('/chat/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        recipientId: currentChatRequest.userId,
+                        postId: currentChatRequest.postId,
+                        message: message
+                    })
+                });
+
+                console.log('🔥 CHAT REQUEST RESPONSE STATUS:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ HTTP Error:', response.status, errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+
+                console.log('🔥 CHAT REQUEST RESPONSE:', result);
+
+                if (result.success) {
+                    alert('🎉 Secret chat request sent successfully! ' + currentChatRequest.username + ' will be notified.');
+                    closeChatRequest();
+                } else {
+                    console.error('❌ Chat request failed:', result);
+                    alert('❌ Error: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error sending chat request:', error);
+                alert('❌ Something went wrong. Please try again.');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '🚀 Send Request';
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('chatRequestModal');
+            if (event.target === modal) {
+                closeChatRequest();
+            }
+        }
+
+        // Listen for new chat requests
+        socket.on('newChatRequest', function(data) {
+            if (data.recipientId === '<%= user._id %>') {
+                showNotification('💬 New secret chat request from ' + data.requesterName);
+            }
+        });
+
+        function showNotification(message) {
+            // Simple notification (can be enhanced)
+            if (Notification.permission === 'granted') {
+                new Notification('UConnect Secret Chat', {
+                    body: message,
+                    icon: '/images/logo.png'
+                });
+            } else {
+                // Fallback to alert
+                setTimeout(() => alert(message), 1000);
+            }
+        }
+
+        // Request notification permission
+        if (Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        console.log('🔥 HULK CHAT: Secret messaging system loaded on feed!');
+    </script>
+    </script>
 </body>
 </html>
