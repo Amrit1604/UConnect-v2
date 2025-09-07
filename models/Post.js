@@ -267,7 +267,7 @@ postSchema.statics.getTrending = function(campus, limit = 10) {
     isActive: true,
     createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
   })
-  .populate('author', 'displayName avatar')
+  .populate('author', 'displayName username email avatar avatarSeed avatarType')
   .sort({ engagementScore: -1 })
   .limit(limit);
 };
@@ -278,8 +278,8 @@ postSchema.statics.getRecent = function(campus, limit = 20, skip = 0) {
     campus: campus,
     isActive: true
   })
-  .populate('author', 'displayName avatar')
-  .populate('comments.author', 'displayName avatar')
+  .populate('author', 'displayName username email avatar avatarSeed avatarType')
+  .populate('comments.author', 'displayName username email avatar avatarSeed avatarType')
   .sort({ createdAt: -1 })
   .skip(skip)
   .limit(limit);
@@ -291,8 +291,8 @@ postSchema.statics.getByUser = function(userId, limit = 20, skip = 0) {
     author: userId,
     isActive: true
   })
-  .populate('author', 'displayName avatar')
-  .populate('comments.author', 'displayName avatar')
+  .populate('author', 'displayName username email avatar avatarSeed avatarType')
+  .populate('comments.author', 'displayName username email avatar avatarSeed avatarType')
   .sort({ createdAt: -1 })
   .skip(skip)
   .limit(limit);

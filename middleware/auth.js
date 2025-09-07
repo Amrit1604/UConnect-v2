@@ -10,9 +10,24 @@ const User = require('../models/User');
  */
 const requireAuth = async (req, res, next) => {
   try {
+    // Debug logging
+    console.log('🔍 AUTH MIDDLEWARE DEBUG:');
+    console.log('Session exists:', !!req.session);
+    console.log('Session user:', req.session?.user);
+    console.log('Request path:', req.path);
+
+    // Check if session is available
+    if (!req.session) {
+      console.error('Session not available in requireAuth middleware');
+      return res.redirect('/auth/login');
+    }
+
     // Check if user is logged in via session
     if (!req.session.user || !req.session.user.id) {
-      req.flash('error', 'Please log in to access this page');
+      console.log('❌ No user in session');
+      if (req.flash) {
+        req.flash('error', 'Please log in to access this page');
+      }
       return res.redirect('/auth/login');
     }
 
@@ -20,22 +35,29 @@ const requireAuth = async (req, res, next) => {
     const user = await User.findById(req.session.user.id);
     if (!user || !user.isActive) {
       req.session.destroy();
-      req.flash('error', 'Your account is no longer active');
+      if (req.flash) {
+        req.flash('error', 'Your account is no longer active');
+      }
       return res.redirect('/auth/login');
     }
 
     // Check if user is verified
     if (!user.isVerified) {
-      req.flash('error', 'Please verify your email address to continue');
+      if (req.flash) {
+        req.flash('error', 'Please verify your email address to continue');
+      }
       return res.redirect('/auth/verify-email');
     }
 
+    console.log('✅ Auth successful for user:', user.username);
     // Attach user to request object
     req.user = user;
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    req.flash('error', 'Authentication error occurred');
+    if (req.flash) {
+      req.flash('error', 'Authentication error occurred');
+    }
     res.redirect('/auth/login');
   }
 };
@@ -46,13 +68,17 @@ const requireAuth = async (req, res, next) => {
 const requireAdmin = async (req, res, next) => {
   try {
     if (!req.user || req.user.role !== 'admin') {
-      req.flash('error', 'Access denied. Admin privileges required.');
+      if (req.flash) {
+        req.flash('error', 'Access denied. Admin privileges required.');
+      }
       return res.redirect('/posts');
     }
     next();
   } catch (error) {
     console.error('Admin auth middleware error:', error);
-    req.flash('error', 'Authorization error occurred');
+    if (req.flash) {
+      req.flash('error', 'Authorization error occurred');
+    }
     res.redirect('/posts');
   }
 };
@@ -77,13 +103,17 @@ const requireOwnership = (resourceModel) => {
       const resource = await resourceModel.findById(resourceId);
 
       if (!resource) {
-        req.flash('error', 'Resource not found');
+        if (req.flash) {
+          req.flash('error', 'Resource not found');
+        }
         return res.redirect('/posts');
       }
 
       // Check if user owns the resource or is admin
       if (resource.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-        req.flash('error', 'You do not have permission to perform this action');
+        if (req.flash) {
+          req.flash('error', 'You do not have permission to perform this action');
+        }
         return res.redirect('/posts');
       }
 
@@ -91,7 +121,9 @@ const requireOwnership = (resourceModel) => {
       next();
     } catch (error) {
       console.error('Ownership middleware error:', error);
-      req.flash('error', 'Error checking resource ownership');
+      if (req.flash) {
+        req.flash('error', 'Error checking resource ownership');
+      }
       res.redirect('/posts');
     }
   };
@@ -103,8 +135,11 @@ const requireOwnership = (resourceModel) => {
 const validateEduEmail = (req, res, next) => {
   const { email } = req.body;
 
-  if (!email || !email.endsWith('.edu.in')) {
-    req.flash('error', 'Please use a valid .edu.in email address');
+  // Allow both .edu.in and gmail.com for testing purposes
+  if (!email || (!email.endsWith('.edu.in') && !email.endsWith('@gmail.com'))) {
+    if (req.flash) {
+      req.flash('error', 'Please use a valid .edu.in email address or Gmail for testing');
+    }
     return res.redirect('/auth/register');
   }
 
@@ -141,7 +176,9 @@ const sensitiveOperationLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => 
     }
 
     if (userAttempts.count >= maxAttempts) {
-      req.flash('error', 'Too many attempts. Please try again later.');
+      if (req.flash) {
+        req.flash('error', 'Too many attempts. Please try again later.');
+      }
       return res.redirect('back');
     }
 

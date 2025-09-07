@@ -125,8 +125,8 @@ router.post('/create',
 router.get('/:id', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('author', 'displayName avatar')
-      .populate('comments.author', 'displayName avatar');
+      .populate('author', 'displayName username email avatar avatarSeed avatarType')
+      .populate('comments.author', 'displayName username email avatar avatarSeed avatarType');
 
     if (!post || !post.isActive) {
       req.flash('error', 'Post not found');

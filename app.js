@@ -7,7 +7,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const morgan = require('morgan');
-const flash = require('express-flash');
+const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const path = require('path');
 require('dotenv').config();
@@ -17,13 +17,14 @@ const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
+const settingsRoutes = require('./routes/settings');
 
 // Import middleware
 const { requireAuth, requireAdmin } = require('./middleware/auth');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/campus_connect', {
@@ -70,7 +71,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://localhost:4000',
   credentials: true
 }));
 
@@ -109,7 +110,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // Global middleware to pass user data to all views
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
-  res.locals.messages = req.flash();
+  res.locals.messages = {
+    success: req.flash('success'),
+    error: req.flash('error'),
+    warning: req.flash('warning'),
+    info: req.flash('info')
+  };
   res.locals.currentPath = req.path;
   next();
 });

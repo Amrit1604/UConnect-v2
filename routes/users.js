@@ -8,6 +8,7 @@ const { body, validationResult } = require('express-validator');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const User = require('../models/User');
 const Post = require('../models/Post');
 const { sensitiveOperationLimit, logActivity } = require('../middleware/auth');
@@ -48,11 +49,26 @@ const upload = multer({
 
 // Validation rules
 const profileValidation = [
-  body('displayName')
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .matches(/^[a-zA-Z0-9\s\-_.]+$/)
-    .withMessage('Display name can only contain letters, numbers, spaces, hyphens, underscores, and periods')
+  body('username')
+    .isLength({ min: 3, max: 20 })
+    .withMessage('Username must be between 3 and 20 characters')
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage('Username can only contain letters, numbers, and underscores')
+    .custom(async (username, { req }) => {
+      // Check if username is already taken by another user
+      const existingUser = await User.findOne({
+        username: username.toLowerCase(),
+        _id: { $ne: req.user._id }
+      });
+      if (existingUser) {
+        throw new Error('Username is already taken');
+      }
+      return true;
+    }),
+  body('bio')
+    .optional()
+    .isLength({ max: 200 })
+    .withMessage('Bio cannot exceed 200 characters')
 ];
 
 const passwordValidation = [
@@ -149,8 +165,28 @@ router.post('/settings/profile',
   logActivity('update profile'),
   async (req, res) => {
     try {
+      console.log('🔥 PROFILE UPDATE REQUEST RECEIVED (users.js):');
+      console.log('Request body:', req.body);
+      console.log('User ID:', req.user._id);
+      console.log('Current session user before update:', {
+        username: req.session.user.username,
+        displayName: req.session.user.displayName,
+        bio: req.session.user.bio,
+        privacy: req.session.user.privacy
+      });
+
       const errors = validationResult(req);
+      const { username, bio, profilePublic, showEmail, allowMessages } = req.body;
+
+      console.log('📝 Parsed form data:');
+      console.log('Username:', username);
+      console.log('Bio:', bio);
+      console.log('Profile Public:', profilePublic);
+      console.log('Show Email:', showEmail);
+      console.log('Allow Messages:', allowMessages);
+
       if (!errors.isEmpty()) {
+        console.log('❌ Validation errors:', errors.array());
         return res.render('users/settings/profile', {
           title: 'Profile Settings',
           errors: errors.array(),
@@ -159,20 +195,72 @@ router.post('/settings/profile',
         });
       }
 
-      const { displayName } = req.body;
+      const updateData = {
+        username: username.toLowerCase(),
+        bio: bio || '',
+        privacy: {
+          profilePublic: profilePublic === 'on',
+          showEmail: showEmail === 'on',
+          allowMessages: allowMessages === 'on'
+        },
+        updatedAt: new Date()
+      };
 
-      await User.findByIdAndUpdate(req.user._id, {
-        displayName: displayName
+      console.log('🔥 GODLY POWERS: Updating profile with data:', updateData);
+
+      // Update the user in database and get the updated user
+      const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, { new: true }).select('-password');
+
+      console.log('📊 Updated user data from MongoDB:');
+      console.log('Display Name:', updatedUser.displayName);
+      console.log('Username:', updatedUser.username);
+      console.log('Bio:', updatedUser.bio);
+      console.log('Privacy:', updatedUser.privacy);
+
+      // Update session data with new user information
+      console.log('🔄 Updating session data...');
+      console.log('Old session user:', {
+        username: req.session.user.username,
+        displayName: req.session.user.displayName,
+        bio: req.session.user.bio,
+        privacy: req.session.user.privacy
       });
 
-      // Update session data
-      req.session.user.displayName = displayName;
+      req.session.user = {
+        id: updatedUser._id,
+        email: updatedUser.email,
+        displayName: updatedUser.displayName,
+        username: updatedUser.username,
+        avatar: updatedUser.avatar,
+        avatarType: updatedUser.avatarType,
+        avatarUrl: updatedUser.avatarUrl,
+        role: updatedUser.role,
+        campus: updatedUser.campus,
+        bio: updatedUser.bio,
+        privacy: updatedUser.privacy
+      };
 
-      req.flash('success', 'Profile updated successfully!');
-      res.redirect('/users/settings/profile');
+      console.log('✅ GODLY SUCCESS: Profile updated and session synced!');
+      console.log('New session user:', {
+        username: req.session.user.username,
+        displayName: req.session.user.displayName,
+        bio: req.session.user.bio,
+        privacy: req.session.user.privacy
+      });
+
+      // Save session to ensure persistence
+      req.session.save((err) => {
+        if (err) {
+          console.error('❌ Session save error:', err);
+        } else {
+          console.log('✅ Session saved successfully!');
+        }
+        req.flash('success', 'Profile updated successfully! 🎉');
+        res.redirect('/users/settings/profile');
+      });
 
     } catch (error) {
-      console.error('Profile update error:', error);
+      console.error('❌ Profile update error:', error);
       res.render('users/settings/profile', {
         title: 'Profile Settings',
         errors: [{ msg: 'Failed to update profile. Please try again.' }],
@@ -196,8 +284,8 @@ router.post('/settings/avatar',
 
       const user = await User.findById(req.user._id);
 
-      // Delete old avatar if exists
-      if (user.avatar) {
+      // Delete old uploaded avatar if exists
+      if (user.avatar && user.avatarType === 'upload') {
         try {
           const oldAvatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
           await fs.unlink(oldAvatarPath);
@@ -207,15 +295,143 @@ router.post('/settings/avatar',
       }
 
       // Update user with new avatar
-      user.avatar = req.file.filename;
+      const avatarData = fsSync.readFileSync(req.file.path);
+      user.avatar = {
+        data: avatarData,
+        contentType: req.file.mimetype
+      };
+      user.avatarType = 'upload';
+      user.avatarUrl = `data:${req.file.mimetype};base64,${avatarData.toString('base64')}`;
       await user.save();
 
+      // Update session
+      req.session.user.avatar = user.avatar;
+      req.session.user.avatarType = 'upload';
+      req.session.user.avatarUrl = user.avatarUrl;
+
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      // Clean up temporary file
+      fsSync.unlinkSync(req.file.path);
+
+      console.log('📁 Avatar uploaded successfully');
       req.flash('success', 'Avatar updated successfully!');
       res.redirect('/users/settings/profile');
 
     } catch (error) {
       console.error('Avatar update error:', error);
       req.flash('error', 'Failed to update avatar');
+      res.redirect('/users/settings/profile');
+    }
+  }
+);
+
+// POST /users/settings/avatar-api - Set random avatar from API
+router.post('/settings/avatar-api',
+  logActivity('set random avatar'),
+  async (req, res) => {
+    try {
+      const { avatarSeed } = req.body;
+
+      if (!avatarSeed) {
+        req.flash('error', 'Invalid avatar seed');
+        return res.redirect('/users/settings/profile');
+      }
+
+      // Generate API avatar URL
+      const avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${avatarSeed}`;
+
+      // Update user avatar
+      const user = await User.findById(req.user._id);
+
+      // Clear any existing uploaded avatar file
+      if (user.avatar && user.avatarType === 'upload') {
+        try {
+          const oldAvatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
+          await fs.unlink(oldAvatarPath);
+        } catch (error) {
+          console.log('Old avatar deletion failed:', error.message);
+        }
+      }
+
+      // Set API avatar
+      user.avatarUrl = avatarUrl;
+      user.avatarType = 'api';
+      user.avatar = null; // Clear file reference
+      await user.save();
+
+      // Update session
+      req.session.user.avatarUrl = avatarUrl;
+      req.session.user.avatarType = 'api';
+      req.session.user.avatar = null;
+
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      console.log('🎲 Random avatar set successfully:', avatarUrl);
+      req.flash('success', 'Random avatar set successfully!');
+      res.redirect('/users/settings/profile');
+
+    } catch (error) {
+      console.error('Random avatar error:', error);
+      req.flash('error', 'Failed to set random avatar');
+      res.redirect('/users/settings/profile');
+    }
+  }
+);
+
+// POST /users/settings/remove-avatar - Remove current avatar
+router.post('/settings/remove-avatar',
+  logActivity('remove avatar'),
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id);
+
+      // Delete uploaded avatar file if exists
+      if (user.avatar && user.avatarType === 'upload') {
+        try {
+          const avatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
+          await fs.unlink(avatarPath);
+        } catch (error) {
+          console.log('Avatar file deletion failed:', error.message);
+        }
+      }
+
+      // Set default avatar
+      const defaultAvatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=default`;
+      user.avatarUrl = defaultAvatarUrl;
+      user.avatarType = 'api';
+      user.avatar = null;
+      await user.save();
+
+      // Update session
+      req.session.user.avatarUrl = defaultAvatarUrl;
+      req.session.user.avatarType = 'api';
+      req.session.user.avatar = null;
+
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      console.log('🗑️ Avatar removed successfully');
+      req.flash('success', 'Avatar removed successfully!');
+      res.redirect('/users/settings/profile');
+
+    } catch (error) {
+      console.error('Remove avatar error:', error);
+      req.flash('error', 'Failed to remove avatar');
       res.redirect('/users/settings/profile');
     }
   }
@@ -285,29 +501,92 @@ router.get('/settings/account', (req, res) => {
   });
 });
 
-// POST /users/settings/deactivate - Deactivate account
-router.post('/settings/deactivate',
-  sensitiveOperationLimit(1, 24 * 60 * 60 * 1000), // 1 attempt per day
-  body('password').notEmpty().withMessage('Password is required'),
-  body('confirmation').equals('DELETE').withMessage('Please type DELETE to confirm'),
-  logActivity('deactivate account'),
+// POST /users/settings/email - Update email
+router.post('/settings/email',
+  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
+  logActivity('update email'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        req.flash('error', errors.array()[0].msg);
+        req.flash('error', 'Please enter a valid email address');
         return res.redirect('/users/settings/account');
       }
 
-      const { password } = req.body;
+      const { email } = req.body;
       const user = await User.findById(req.user._id);
 
-      // Verify password
-      const isValidPassword = await user.comparePassword(password);
-      if (!isValidPassword) {
-        req.flash('error', 'Incorrect password');
+      // Check if email already exists
+      const existingUser = await User.findOne({ email, _id: { $ne: req.user._id } });
+      if (existingUser) {
+        req.flash('error', 'Email address is already in use');
         return res.redirect('/users/settings/account');
       }
+
+      // Update email
+      user.email = email;
+      user.isEmailVerified = false; // Reset verification status
+      await user.save();
+
+      req.flash('success', 'Email updated! Please check your inbox for verification.');
+      res.redirect('/users/settings/account');
+
+    } catch (error) {
+      console.error('Email update error:', error);
+      req.flash('error', 'Failed to update email');
+      res.redirect('/users/settings/account');
+    }
+  }
+);
+
+// POST /users/settings/notifications - Update notification preferences
+router.post('/settings/notifications',
+  logActivity('update notifications'),
+  async (req, res) => {
+    try {
+      const { emailNotifications, followNotifications, likeNotifications, marketingEmails } = req.body;
+
+      const user = await User.findById(req.user._id);
+      user.notificationPreferences = {
+        email: !!emailNotifications,
+        follows: !!followNotifications,
+        likes: !!likeNotifications,
+        marketing: !!marketingEmails
+      };
+      await user.save();
+
+      req.flash('success', 'Notification preferences updated!');
+      res.redirect('/users/settings/account');
+
+    } catch (error) {
+      console.error('Notification update error:', error);
+      req.flash('error', 'Failed to update notification preferences');
+      res.redirect('/users/settings/account');
+    }
+  }
+);
+
+// POST /users/settings/download-data - Request data download
+router.post('/settings/download-data',
+  logActivity('request data download'),
+  async (req, res) => {
+    try {
+      // In a real app, this would trigger a background job to generate the data
+      // For now, we'll just send a success response
+      res.json({ success: true, message: 'Data download request submitted' });
+    } catch (error) {
+      console.error('Data download error:', error);
+      res.json({ success: false, message: 'Failed to request data download' });
+    }
+  }
+);
+
+// POST /users/settings/deactivate - Deactivate account
+router.post('/settings/deactivate',
+  logActivity('deactivate account'),
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id);
 
       // Deactivate account
       user.isActive = false;
@@ -319,19 +598,68 @@ router.post('/settings/deactivate',
         { isActive: false }
       );
 
+      res.json({ success: true });
+
+    } catch (error) {
+      console.error('Account deactivation error:', error);
+      res.json({ success: false });
+    }
+  }
+);
+
+// POST /users/settings/delete-account - Delete account permanently
+router.post('/settings/delete-account',
+  sensitiveOperationLimit(1, 24 * 60 * 60 * 1000), // 1 attempt per day
+  body('confirmEmail').isEmail().withMessage('Please enter a valid email'),
+  body('confirmDelete').equals('on').withMessage('Please confirm deletion'),
+  body('confirmDataLoss').equals('on').withMessage('Please confirm data loss'),
+  logActivity('delete account'),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        req.flash('error', 'Please complete all confirmation steps');
+        return res.redirect('/users/settings/account');
+      }
+
+      const { confirmEmail } = req.body;
+      const user = await User.findById(req.user._id);
+
+      // Verify email matches
+      if (confirmEmail !== user.email) {
+        req.flash('error', 'Email does not match your account email');
+        return res.redirect('/users/settings/account');
+      }
+
+      // Delete user's posts
+      await Post.deleteMany({ author: req.user._id });
+
+      // Delete user's avatar if exists
+      if (user.avatar) {
+        try {
+          const avatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
+          await fs.unlink(avatarPath);
+        } catch (error) {
+          console.log('Avatar deletion failed:', error.message);
+        }
+      }
+
+      // Delete user account
+      await User.findByIdAndDelete(req.user._id);
+
       // Destroy session
       req.session.destroy((err) => {
         if (err) {
           console.error('Session destruction error:', err);
         }
         res.clearCookie('connect.sid');
-        req.flash('success', 'Your account has been deactivated');
+        req.flash('success', 'Your account has been permanently deleted');
         res.redirect('/');
       });
 
     } catch (error) {
-      console.error('Account deactivation error:', error);
-      req.flash('error', 'Failed to deactivate account');
+      console.error('Account deletion error:', error);
+      req.flash('error', 'Failed to delete account');
       res.redirect('/users/settings/account');
     }
   }

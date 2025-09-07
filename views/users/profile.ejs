@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <style>
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            color: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="white" opacity="0.1"/><circle cx="80" cy="40" r="1.5" fill="white" opacity="0.1"/><circle cx="40" cy="60" r="1" fill="white" opacity="0.1"/><circle cx="90" cy="90" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="80" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.3);
+            object-fit: cover;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .profile-details h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .profile-details .username {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .profile-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-profile {
+            padding: 12px 24px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-profile:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .posts-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .post-item {
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .post-item:last-child {
+            border-bottom: none;
+        }
+
+        .post-item:hover {
+            background: #f8f9fa;
+            margin: 0 -15px;
+            padding: 20px 15px;
+            border-radius: 10px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .post-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .no-posts {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .no-posts-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                padding: 10px;
+            }
+
+            .profile-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-stats {
+                justify-content: center;
+            }
+
+            .profile-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+    <%- include('../partials/flash-messages') %>
+
+    <main class="main-content">
+        <div class="profile-container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-info">
+                    <img src="<%= profileUser.avatarUrl %>" alt="<%= profileUser.displayName %>" class="profile-avatar">
+                    <div class="profile-details">
+                        <h1><%= profileUser.displayName %></h1>
+                        <div class="username">@<%= profileUser.username %></div>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <span class="stat-number"><%= posts.length %></span>
+                                <span class="stat-label">Posts</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number"><%= profileUser.followers?.length || 0 %></span>
+                                <span class="stat-label">Followers</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number"><%= profileUser.following?.length || 0 %></span>
+                                <span class="stat-label">Following</span>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <a href="/users/settings/profile" class="btn-profile">
+                                ⚙️ Edit Profile
+                            </a>
+                            <a href="/posts/create" class="btn-profile">
+                                ✨ Create Post
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Content -->
+            <div class="profile-content">
+                <!-- Posts Section -->
+                <div class="posts-section">
+                    <h2 class="section-title">📝 My Posts</h2>
+                    <% if (posts && posts.length > 0) { %>
+                        <% posts.forEach(post => { %>
+                            <div class="post-item">
+                                <div class="post-header">
+                                    <span class="post-date">🕒 <%= new Date(post.createdAt).toLocaleDateString() %></span>
+                                </div>
+                                <div class="post-content">
+                                    <%= post.content.substring(0, 200) %><% if (post.content.length > 200) { %>...<% } %>
+                                </div>
+                                <div class="post-stats">
+                                    <span>❤️ <%= post.likes?.length || 0 %> likes</span>
+                                    <span>💬 <%= post.comments?.length || 0 %> comments</span>
+                                    <a href="/posts/<%= post._id %>">📖 Read more</a>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="no-posts">
+                            <div class="no-posts-icon">📝</div>
+                            <h3>No posts yet</h3>
+                            <p>Share your first thought with the campus community!</p>
+                            <a href="/posts/create" class="btn btn-primary" style="margin-top: 15px;">✨ Create Your First Post</a>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Profile Info Card -->
+                    <div class="info-card">
+                        <h3 class="section-title">📊 Profile Info</h3>
+                        <div class="info-item">
+                            <div class="info-icon">📧</div>
+                            <div class="info-content">
+                                <div class="info-label">Email</div>
+                                <div class="info-value"><%= profileUser.email %></div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📅</div>
+                            <div class="info-content">
+                                <div class="info-label">Joined</div>
+                                <div class="info-value"><%= new Date(profileUser.createdAt).toLocaleDateString() %></div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">🏫</div>
+                            <div class="info-content">
+                                <div class="info-label">University</div>
+                                <div class="info-value"><%= profileUser.email.split('@')[1] %></div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">✅</div>
+                            <div class="info-content">
+                                <div class="info-label">Status</div>
+                                <div class="info-value">Verified Student</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Card -->
+                    <div class="info-card">
+                        <h3 class="section-title">⚡ Quick Actions</h3>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <a href="/users/settings/profile" class="btn btn-outline">⚙️ Edit Profile</a>
+                            <a href="/users/settings/password" class="btn btn-outline">🔒 Change Password</a>
+                            <a href="/users/settings/account" class="btn btn-outline">🛡️ Account Settings</a>
+                            <a href="/users/campus" class="btn btn-outline">👥 Find Campus Friends</a>
+                        </div>
+                    </div>
+
+                    <!-- Achievement Card -->
+                    <div class="info-card">
+                        <h3 class="section-title">🏆 Achievements</h3>
+                        <div class="info-item">
+                            <div class="info-icon">🌟</div>
+                            <div class="info-content">
+                                <div class="info-label">Campus Explorer</div>
+                                <div class="info-value">Joined UConnect</div>
+                            </div>
+                        </div>
+                        <% if (posts.length >= 1) { %>
+                        <div class="info-item">
+                            <div class="info-icon">✍️</div>
+                            <div class="info-content">
+                                <div class="info-label">First Post</div>
+                                <div class="info-value">Shared your voice</div>
+                            </div>
+                        </div>
+                        <% } %>
+                        <% if (posts.length >= 5) { %>
+                        <div class="info-item">
+                            <div class="info-icon">🔥</div>
+                            <div class="info-content">
+                                <div class="info-label">Active Member</div>
+                                <div class="info-value">5+ posts shared</div>
+                            </div>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+    <script src="/js/main.js"></script>
+</body>
+</html>

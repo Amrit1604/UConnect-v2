@@ -15,10 +15,10 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: {
       validator: function(email) {
-        // Only allow .edu.in emails for students
-        return /^[^\s@]+@[^\s@]+\.edu\.in$/.test(email);
+        // Allow both .edu.in emails for students and Gmail for testing
+        return /^[^\s@]+@[^\s@]+\.edu\.in$/.test(email) || /^[^\s@]+@gmail\.com$/.test(email);
       },
-      message: 'Please use a valid .edu.in email address'
+      message: 'Please use a valid .edu.in email address or Gmail for testing'
     }
   },
 
@@ -68,14 +68,27 @@ const userSchema = new mongoose.Schema({
   },
 
   avatar: {
+    data: Buffer, // For uploaded images
+    contentType: String
+  },
+
+  avatarSeed: {
     type: String,
-    default: null // Will store filename of uploaded avatar or API avatar URL
+    default: function() {
+      return crypto.randomBytes(8).toString('hex');
+    }
   },
 
   avatarType: {
     type: String,
     enum: ['upload', 'api', 'default'],
-    default: 'default'
+    default: 'api'
+  },
+
+  bio: {
+    type: String,
+    maxlength: [200, 'Bio cannot exceed 200 characters'],
+    default: ''
   },
 
   isVerified: {
@@ -135,8 +148,27 @@ const userSchema = new mongoose.Schema({
   // User statistics
   stats: {
     postsCount: { type: Number, default: 0 },
-    likesReceived: { type: Number, default: 0 },
+    followersCount: { type: Number, default: 0 },
+    followingCount: { type: Number, default: 0 },
+    totalLikesReceived: { type: Number, default: 0 },
     commentsCount: { type: Number, default: 0 }
+  },
+
+  // Privacy settings
+  privacy: {
+    profilePublic: { type: Boolean, default: true },
+    showEmail: { type: Boolean, default: false },
+    allowMessages: { type: Boolean, default: true },
+    showOnlineStatus: { type: Boolean, default: true }
+  },
+
+  // Notification preferences
+  notifications: {
+    email: { type: Boolean, default: true },
+    newPosts: { type: Boolean, default: true },
+    likes: { type: Boolean, default: true },
+    comments: { type: Boolean, default: true },
+    weeklyDigest: { type: Boolean, default: true }
   },
 
   // Account creation and updates
@@ -254,21 +286,16 @@ userSchema.statics.getStats = async function() {
 
 // Virtual for avatar URL
 userSchema.virtual('avatarUrl').get(function() {
-  if (this.avatar) {
-    if (this.avatarType === 'api') {
-      // If avatar is already a full URL, return it; otherwise, generate URL
-      if (this.avatar.startsWith('http')) {
-        return this.avatar;
-      } else {
-        return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatar}`;
-      }
-    } else if (this.avatarType === 'upload') {
-      // Return the uploaded file path
-      return `/uploads/avatars/${this.avatar}`;
-    }
+  if (this.avatar && this.avatar.data && this.avatarType === 'upload') {
+    // Return base64 data URL for uploaded images
+    return `data:${this.avatar.contentType};base64,${this.avatar.data.toString('base64')}`;
+  } else if (this.avatarSeed && this.avatarType === 'api') {
+    // Return API-generated avatar
+    return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;
   }
-  // Generate a default API avatar based on username
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.username || this.email}`;
+  // Generate a default API avatar based on username or email
+  const seed = this.username || this.email.split('@')[0] || 'default';
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
 });
 
 module.exports = mongoose.model('User', userSchema);

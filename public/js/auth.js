@@ -7,25 +7,15 @@
  * Toggle password visibility
  */
 function togglePassword(fieldId) {
-  const passwordField = document.getElementById(fieldId);
-  if (!passwordField) return;
+  const field = document.getElementById(fieldId);
+  const icon = field.nextElementSibling.querySelector('span');
 
-  const toggleButton = passwordField.parentElement.querySelector('.password-toggle');
-  if (!toggleButton) return;
-
-  const icon = toggleButton.querySelector('i');
-  if (!icon) return;
-
-  if (passwordField.type === 'password') {
-    passwordField.type = 'text';
-    icon.classList.remove('fa-eye');
-    icon.classList.add('fa-eye-slash');
-    toggleButton.setAttribute('aria-label', 'Hide password');
+  if (field.type === 'password') {
+    field.type = 'text';
+    icon.textContent = '🙈';
   } else {
-    passwordField.type = 'password';
-    icon.classList.remove('fa-eye-slash');
-    icon.classList.add('fa-eye');
-    toggleButton.setAttribute('aria-label', 'Show password');
+    field.type = 'password';
+    icon.textContent = '👁️';
   }
 }
 
@@ -68,11 +58,11 @@ function checkPasswordMatch() {
     return;
   }
 
-  if (password.value === confirmPassword.value) {
-    matchIndicator.innerHTML = '<span class="match-success"><i class="fas fa-check"></i> Passwords match</span>';
-  } else {
-    matchIndicator.innerHTML = '<span class="match-error"><i class="fas fa-times"></i> Passwords do not match</span>';
-  }
+  if (password === confirmPassword && password.length > 0) {
+        matchIndicator.innerHTML = '<span class="match-success"><span style="margin-right: 5px;">✅</span> Passwords match</span>';
+    } else if (confirmPassword.length > 0) {
+        matchIndicator.innerHTML = '<span class="match-error"><span style="margin-right: 5px;">❌</span> Passwords do not match</span>';
+    }
 }
 
 /**

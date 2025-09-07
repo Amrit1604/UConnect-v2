@@ -62,7 +62,7 @@
                                 <!-- Post Header -->
                                 <div class="post-header">
                                     <div class="post-author">
-                                        <img src="<%= post.author.avatar ? '/uploads/avatars/' + post.author.avatar : '/images/default-avatar.png' %>"
+                                        <img src="<%= post.author.avatarUrl %>"
                                              alt="<%= post.author.displayName %>"
                                              class="author-avatar">
                                         <div class="author-info">
@@ -142,7 +142,7 @@
                                         <% const recentComments = post.comments.slice(-2); %>
                                         <% recentComments.forEach(comment => { %>
                                             <div class="comment-preview">
-                                                <img src="<%= comment.author.avatar ? '/uploads/avatars/' + comment.author.avatar : '/images/default-avatar.png' %>"
+                                                <img src="<%= comment.author.avatarUrl %>"
                                                      alt="<%= comment.author.displayName %>"
                                                      class="comment-avatar">
                                                 <div class="comment-content">
