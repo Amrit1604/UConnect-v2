@@ -6,7 +6,14 @@ const User = require('../models/User');
 const { redirectIfAuthenticated, validateEduEmail, sensitiveOperationLimit } = require('../middleware/auth');
 const { uploadAvatarTemp, saveTempAvatarToDisk } = require('../middleware/upload');
 const emailService = require('../services/emailService');
-const { getSmartBaseUrl } = require('../utils/smartUrl');
+// const { getSmartBaseUrl } = require('../utils/smartUrl');
+
+// Simple function to get base URL
+const getSmartBaseUrl = (req) => {
+  const protocol = req.protocol;
+  const host = req.get('host');
+  return `${protocol}://${host}`;
+};
 
 const router = express.Router();
 

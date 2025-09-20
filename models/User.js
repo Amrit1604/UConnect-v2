@@ -184,16 +184,12 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   toJSON: {
-    virtuals: true,
     transform: function(doc, ret) {
       delete ret.password;
       delete ret.verificationToken;
       delete ret.resetPasswordToken;
       return ret;
     }
-  },
-  toObject: {
-    virtuals: true
   }
 });
 

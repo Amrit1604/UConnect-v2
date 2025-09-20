@@ -338,13 +338,7 @@
                             <div class="info-icon">📧</div>
                             <div class="info-content">
                                 <div class="info-label">Email</div>
-                                <div class="info-value">
-                                    <% if (isOwnProfile || (profileUser.privacy && profileUser.privacy.showEmail)) { %>
-                                        <%= profileUser.email %>
-                                    <% } else { %>
-                                        <span style="color: #999; font-style: italic;">🔒 Hidden for privacy</span>
-                                    <% } %>
-                                </div>
+                                <div class="info-value"><%= profileUser.email %></div>
                             </div>
                         </div>
                         <div class="info-item">
@@ -358,13 +352,7 @@
                             <div class="info-icon">🏫</div>
                             <div class="info-content">
                                 <div class="info-label">University</div>
-                                <div class="info-value">
-                                    <% if (isOwnProfile || (profileUser.privacy && profileUser.privacy.showEmail)) { %>
-                                        <%= profileUser.email.split('@')[1] %>
-                                    <% } else { %>
-                                        <span style="color: #999; font-style: italic;">🔒 Hidden for privacy</span>
-                                    <% } %>
-                                </div>
+                                <div class="info-value"><%= profileUser.email.split('@')[1] %></div>
                             </div>
                         </div>
                         <div class="info-item">
