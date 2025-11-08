@@ -268,19 +268,7 @@ router.post('/settings/profile',
         privacy: req.session.user.privacy
       });
 
-      req.session.user = {
-        id: updatedUser._id,
-        email: updatedUser.email,
-        displayName: updatedUser.displayName,
-        username: updatedUser.username,
-        avatar: updatedUser.avatar,
-        avatarType: updatedUser.avatarType,
-        avatarUrl: updatedUser.avatarUrl,
-        role: updatedUser.role,
-        campus: updatedUser.campus,
-        bio: updatedUser.bio,
-        privacy: updatedUser.privacy
-      };
+      req.session.user = updatedUser.toObject({ virtuals: true });
 
       console.log('✅ GODLY SUCCESS: Profile updated and session synced!');
       console.log('New session user:', {
@@ -362,9 +350,7 @@ router.post('/settings/avatar',
       console.log('📂 Avatar URL will be:', user.avatarUrl);
 
       // Update session with new avatar info
-      req.session.user.avatar = user.avatar;
-      req.session.user.avatarType = user.avatarType;
-      req.session.user.avatarUrl = user.avatarUrl;
+      req.session.user = user.toObject({ virtuals: true });
 
       await new Promise((resolve, reject) => {
         req.session.save((err) => {
@@ -420,9 +406,7 @@ router.post('/settings/avatar-api',
       await user.save();
 
       // Update session
-      req.session.user.avatarUrl = avatarUrl;
-      req.session.user.avatarType = 'api';
-      req.session.user.avatar = null;
+      req.session.user = user.toObject({ virtuals: true });
 
       await new Promise((resolve, reject) => {
         req.session.save((err) => {
@@ -468,9 +452,7 @@ router.post('/settings/remove-avatar',
       await user.save();
 
       // Update session
-      req.session.user.avatarUrl = defaultAvatarUrl;
-      req.session.user.avatarType = 'api';
-      req.session.user.avatar = null;
+      req.session.user = user.toObject({ virtuals: true });
 
       await new Promise((resolve, reject) => {
         req.session.save((err) => {

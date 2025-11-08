@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+  "smoke:test": "node scripts/smokePostsTest.js",
     "test": "jest --coverage",
     "lint": "eslint .",
     "seed": "node scripts/seedDatabase.js"

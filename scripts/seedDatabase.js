@@ -14,7 +14,8 @@ const Post = require('../models/Post');
 const sampleUsers = [
   {
     email: 'admin@iitdelhi.edu.in',
-    displayName: 'Admin User',
+    name: 'Admin User',
+    username: 'admin',
     password: 'AdminPass123!',
     role: 'admin',
     isVerified: true,
@@ -22,7 +23,8 @@ const sampleUsers = [
   },
   {
     email: 'priya.sharma@iitdelhi.edu.in',
-    displayName: 'Priya Sharma',
+    name: 'Priya Sharma',
+    username: 'priya_sharma',
     password: 'StudentPass123!',
     role: 'student',
     isVerified: true,
@@ -30,7 +32,8 @@ const sampleUsers = [
   },
   {
     email: 'rahul.kumar@iitdelhi.edu.in',
-    displayName: 'Rahul Kumar',
+    name: 'Rahul Kumar',
+    username: 'rahul_kumar',
     password: 'StudentPass123!',
     role: 'student',
     isVerified: true,
@@ -38,7 +41,8 @@ const sampleUsers = [
   },
   {
     email: 'ananya.patel@iitdelhi.edu.in',
-    displayName: 'Ananya Patel',
+    name: 'Ananya Patel',
+    username: 'ananya_patel',
     password: 'StudentPass123!',
     role: 'student',
     isVerified: true,
@@ -46,7 +50,8 @@ const sampleUsers = [
   },
   {
     email: 'arjun.singh@iitdelhi.edu.in',
-    displayName: 'Arjun Singh',
+    name: 'Arjun Singh',
+    username: 'arjun_singh',
     password: 'StudentPass123!',
     role: 'student',
     isVerified: true,

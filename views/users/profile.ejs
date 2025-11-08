@@ -268,7 +268,7 @@
             <!-- Profile Header -->
             <div class="profile-header">
                 <div class="profile-info">
-                    <img src="<%= profileUser.avatarUrl %>" alt="<%= profileUser.displayName %>" class="profile-avatar">
+                    <img src="<%= profileUser.avatarUrl %>?t=<%= Date.now() %>" alt="<%= profileUser.displayName %>" class="profile-avatar">
                     <div class="profile-details">
                         <h1><%= profileUser.displayName %></h1>
                         <div class="username">@<%= profileUser.username %></div>

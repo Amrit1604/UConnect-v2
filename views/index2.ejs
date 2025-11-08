@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect - Next Gen Campus Community</title>
+
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Connect with your campus community in a bold new way. UConnect reimagined.' %>">
+    <meta name="keywords" content="campus, students, social media, university, college, community, brutalist, modern">
+    <meta name="author" content="UConnect">
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="<%= title %> | UConnect">
+    <meta property="og:description" content="<%= typeof description !== 'undefined' ? description : 'Connect with your campus community' %>">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+    <!-- CSS -->
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/landing-neo.css" rel="stylesheet">
+</head>
+<body class="landing-neo" data-scroll-container>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar-neo">
+        <div class="nav-container-neo">
+            <!-- Left: Logo -->
+            <div class="nav-brand-neo">
+                <a href="/" class="brand-link-neo">
+                    <div class="logo-brutalist">U</div>
+                    <span class="brand-text">CONNECT</span>
+                </a>
+            </div>
+
+            <!-- Center: Navigation Links -->
+            <div class="nav-center-neo">
+                <% if (user) { %>
+                    <a href="/posts" class="nav-link-neo">FEED</a>
+                    <a href="/posts/create" class="nav-link-neo">CREATE</a>
+                    <a href="/users/campus" class="nav-link-neo">CAMPUS</a>
+                    <a href="/users/profile" class="nav-link-neo">PROFILE</a>
+                <% } else { %>
+                    <a href="#features" class="nav-link-neo">FEATURES</a>
+                    <a href="#about" class="nav-link-neo">ABOUT</a>
+                    <a href="#community" class="nav-link-neo">COMMUNITY</a>
+                <% } %>
+            </div>
+
+            <!-- Right: Action Buttons -->
+            <div class="nav-actions-neo">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon moon">🌙</span>
+                    <span class="theme-icon sun">☀️</span>
+                </button>
+
+                <% if (user) { %>
+                    <a href="/users/profile" class="nav-avatar-link">
+                        <img src="<%= user.avatar ? '/uploads/avatars/' + user.avatar : '/images/default-avatar.png' %>" alt="<%= user.displayName %>" class="nav-avatar">
+                    </a>
+                <% } else { %>
+                    <a href="/auth/login" class="nav-btn-ghost">SIGN IN</a>
+                    <a href="/auth/register" class="nav-btn-primary magnetic-btn">
+                        JOIN NOW
+                    </a>
+                <% } %>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu-btn-neo" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <% if (messages && (messages.success || messages.error || messages.warning || messages.info)) { %>
+        <div class="flash-messages-neo">
+            <% if (messages.success) { %>
+                <% messages.success.forEach(message => { %>
+                    <div class="flash-neo flash-success-neo">
+                        <div class="flash-icon">✓</div>
+                        <span><%= message %></span>
+                        <button class="flash-close-neo" aria-label="Dismiss">×</button>
+                    </div>
+                <% }) %>
+            <% } %>
+            <% if (messages.error) { %>
+                <% messages.error.forEach(message => { %>
+                    <div class="flash-neo flash-error-neo">
+                        <div class="flash-icon">!</div>
+                        <span><%= message %></span>
+                        <button class="flash-close-neo" aria-label="Dismiss">×</button>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+    <% } %>
+
+    <!-- Main Content -->
+    <main class="main-neo">
+
+        <!-- Hero Section with Parallax -->
+        <section class="hero-neo" data-scroll-section>
+            <!-- Background Layers -->
+            <div class="parallax-bg">
+                <div class="parallax-layer layer-1" data-scroll data-scroll-speed="-2"></div>
+                <div class="parallax-layer layer-2" data-scroll data-scroll-speed="-1"></div>
+                <div class="blob-container">
+                    <div class="blob blob-1"></div>
+                    <div class="blob blob-2"></div>
+                    <div class="blob blob-3"></div>
+                </div>
+            </div>
+
+            <!-- Floating Emoji Reactions (Over Background) -->
+            <div class="emoji-reactions">
+                <div class="emoji-float emoji-1" data-scroll data-scroll-speed="1">😂</div>
+                <div class="emoji-float emoji-2" data-scroll data-scroll-speed="-1">❤️</div>
+                <div class="emoji-float emoji-3" data-scroll data-scroll-speed="0.5">🔥</div>
+                <div class="emoji-float emoji-4" data-scroll data-scroll-speed="-0.8">😢</div>
+                <div class="emoji-float emoji-5" data-scroll data-scroll-speed="1.2">😡</div>
+                <div class="emoji-float emoji-6" data-scroll data-scroll-speed="-1.5">👍</div>
+                <div class="emoji-float emoji-7" data-scroll data-scroll-speed="0.8">🎉</div>
+            </div>
+
+            <!-- Geometric Accents -->
+            <div class="geometric-accent accent-1" data-scroll data-scroll-speed="1"></div>
+            <div class="geometric-accent accent-2" data-scroll data-scroll-speed="2"></div>
+
+            <div class="hero-container-neo">
+                <!-- Campus Image Blob -->
+                <div class="blob-container-hero">
+                    <div class="blob-shape" data-scroll data-scroll-speed="0.4">
+                        <div class="blob-image-wrapper">
+                            <img src="/images/campus_background.jpg" alt="Our Campus" class="campus-blob-image">
+                            <div class="blob-overlay"></div>
+                        </div>
+                        <div class="blob-caption">
+                            <span class="blob-label">OUR CAMPUS</span>
+                            <h3>WHERE MEMORIES<br><span class="blob-accent">ARE MADE</span></h3>
+                        </div>
+                    </div>
+                    <!-- Decorative blob shapes -->
+                    <div class="blob-decoration blob-dec-1"></div>
+                    <div class="blob-decoration blob-dec-2"></div>
+                </div>
+
+                <div class="hero-content-neo">
+                    <!-- Main Headline with Text Scramble -->
+                    <div class="headline-wrapper">
+                        <h1 class="hero-title-neo" data-scramble>
+                            CONNECT
+                            <span class="title-accent">YOUR</span>
+                            <span class="title-break">CAMPUS</span>
+                        </h1>
+                        <div class="title-underline"></div>
+                    </div>
+
+                    <!-- Subheadline -->
+                    <p class="hero-subtitle-neo" data-scroll data-scroll-speed="-0.5">
+                        The next evolution of university social networking.
+                        <span class="subtitle-highlight">Bold. Fast. Unapologetic.</span>
+                    </p>
+
+                    <!-- CTA Buttons with Glassmorphism -->
+                    <div class="hero-actions-neo" data-scroll data-scroll-speed="-0.3">
+                        <a href="/auth/register" class="btn-brutalist btn-primary-neo btn-large magnetic-btn">
+                            <span class="btn-text">JOIN NOW</span>
+                            <span class="btn-accent"></span>
+                        </a>
+                        <a href="/auth/login" class="btn-brutalist btn-glass btn-large">
+                            <span class="btn-text">SIGN IN</span>
+                            <div class="glass-shine"></div>
+                        </a>
+                    </div>
+
+                    <!-- Trust Badge -->
+                    <div class="trust-badge" data-scroll data-scroll-speed="-0.2">
+                        <div class="badge-icon">🔒</div>
+                        <span>VERIFIED .EDU.IN STUDENTS ONLY</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EPIC CAMPUS IMAGE REVEAL SECTION -->
+        <section class="campus-reveal-section" data-scroll-section id="campus-reveal">
+            <div class="reveal-container">
+                <!-- Logo Video starts constrained, expands on scroll -->
+                <div class="reveal-image-wrapper" data-scroll data-scroll-speed="-1">
+                    <div class="reveal-frame">
+                        <video autoplay muted loop playsinline class="reveal-campus-video" poster="/images/campus_background.jpg">
+                            <source src="/videos/Logo_vid.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="reveal-overlay"></div>
+
+                        <!-- Caption overlay -->
+                        <div class="reveal-caption">
+                            <span class="caption-label">UCONNECT</span>
+                            <h2>CONNECT<br><span class="caption-accent">YOUR CAMPUS</span></h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decorative elements -->
+                <div class="reveal-border-top"></div>
+                <div class="reveal-border-bottom"></div>
+            </div>
+        </section>
+
+        <!-- Floating Cards Section -->
+        <section class="cards-section-neo" data-scroll-section>
+            <div class="section-header-neo">
+                <span class="section-label">COMMUNITY</span>
+                <h2 class="section-title-neo">
+                    REAL POSTS.
+                    <span class="title-accent">REAL CONNECTIONS.</span>
+                </h2>
+            </div>
+
+            <div class="cards-grid-neo">
+                <!-- Card 1 -->
+                <div class="card-neo card-tilt" data-scroll data-scroll-speed="0.5">
+                    <div class="card-border"></div>
+                    <div class="card-glass-layer"></div>
+                    <div class="card-content-neo">
+                        <div class="card-header-neo">
+                            <div class="avatar-neo">
+                                <img src="/images/demo-avatar-1.png" alt="Student" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                <div class="avatar-fallback" style="display:none;">AJ</div>
+                            </div>
+                            <div class="card-user-info">
+                                <h4 class="user-name-neo">AMRIT JOSHI</h4>
+                                <span class="user-campus">Chitkara University</span>
+                            </div>
+                        </div>
+                        <p class="card-text-neo">
+                            Just finished my Machine Learning project! Anyone interested in collaborating on AI research? 🤖
+                        </p>
+                        <div class="card-stats-neo">
+                            <span class="stat-item"><i class="fas fa-heart"></i> 234</span>
+                            <span class="stat-item"><i class="fas fa-comment"></i> 45</span>
+                            <span class="stat-item"><i class="fas fa-share"></i> 12</span>
+                        </div>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card-neo card-tilt" data-scroll data-scroll-speed="0.7">
+                    <div class="card-border"></div>
+                    <div class="card-glass-layer"></div>
+                    <div class="card-content-neo">
+                        <div class="card-header-neo">
+                            <div class="avatar-neo">
+                                <img src="/images/demo-avatar-2.png" alt="Student" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                <div class="avatar-fallback" style="display:none;">ED</div>
+                            </div>
+                            <div class="card-user-info">
+                                <h4 class="user-name-neo">EKANSH DHIMAN</h4>
+                                <span class="user-campus">Tech Lead</span>
+                            </div>
+                        </div>
+                        <p class="card-text-neo">
+                            Organizing a coding bootcamp this weekend. Free for all CS students! Register now 💻
+                        </p>
+                        <div class="card-stats-neo">
+                            <span class="stat-item"><i class="fas fa-heart"></i> 456</span>
+                            <span class="stat-item"><i class="fas fa-comment"></i> 89</span>
+                            <span class="stat-item"><i class="fas fa-share"></i> 34</span>
+                        </div>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card-neo card-tilt" data-scroll data-scroll-speed="0.6">
+                    <div class="card-border"></div>
+                    <div class="card-glass-layer"></div>
+                    <div class="card-content-neo">
+                        <div class="card-header-neo">
+                            <div class="avatar-neo">
+                                <img src="/images/demo-avatar-3.png" alt="Student" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                <div class="avatar-fallback" style="display:none;">GS</div>
+                            </div>
+                            <div class="card-user-info">
+                                <h4 class="user-name-neo">GURMANPREET SINGH</h4>
+                                <span class="user-campus">Student Council</span>
+                            </div>
+                        </div>
+                        <p class="card-text-neo">
+                            Study group for Data Structures - Library 3rd floor, everyday at 5 PM 📚
+                        </p>
+                        <div class="card-stats-neo">
+                            <span class="stat-item"><i class="fas fa-heart"></i> 178</span>
+                            <span class="stat-item"><i class="fas fa-comment"></i> 56</span>
+                            <span class="stat-item"><i class="fas fa-share"></i> 23</span>
+                        </div>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="card-neo card-tilt" data-scroll data-scroll-speed="0.8">
+                    <div class="card-border"></div>
+                    <div class="card-glass-layer"></div>
+                    <div class="card-content-neo">
+                        <div class="card-header-neo">
+                            <div class="avatar-neo">
+                                <img src="/images/demo-avatar-4.png" alt="Student" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                <div class="avatar-fallback" style="display:none;">PS</div>
+                            </div>
+                            <div class="card-user-info">
+                                <h4 class="user-name-neo">PRABHJOT SINGH</h4>
+                                <span class="user-campus">Drama Club</span>
+                            </div>
+                        </div>
+                        <p class="card-text-neo">
+                            Auditions for our new play next week! All aspiring actors welcome. Let's make stage magic! 🎭
+                        </p>
+                        <div class="card-stats-neo">
+                            <span class="stat-item"><i class="fas fa-heart"></i> 152</span>
+                            <span class="stat-item"><i class="fas fa-comment"></i> 28</span>
+                            <span class="stat-item"><i class="fas fa-share"></i> 11</span>
+                        </div>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section - Asymmetric Grid -->
+        <section class="features-section-neo" data-scroll-section>
+            <div class="section-header-neo">
+                <span class="section-label">FEATURES</span>
+                <h2 class="section-title-neo">
+                    BUILT FOR
+                    <span class="title-accent">STUDENTS.</span>
+                </h2>
+            </div>
+
+            <div class="features-grid-neo">
+                <!-- Campus Life Video Feature -->
+                <div class="feature-card-neo feature-video" data-scroll data-scroll-speed="0.3">
+                    <div class="feature-video-wrapper">
+                        <video autoplay muted loop playsinline class="feature-campus-video">
+                            <source src="/videos/campus-life.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="feature-video-overlay"></div>
+                    </div>
+                    <div class="feature-video-caption">
+                        <h3>CAMPUS LIFE</h3>
+                        <p>Experience the vibrant energy</p>
+                    </div>
+                    <div class="feature-accent"></div>
+                </div>
+
+                <div class="feature-card-neo feature-large" data-scroll data-scroll-speed="0.3">
+                    <div class="feature-icon-neo">⚡</div>
+                    <h3>LIGHTNING FAST</h3>
+                    <p>Instant posts. Real-time updates. Zero lag.</p>
+                    <div class="feature-accent"></div>
+                </div>
+
+                <div class="feature-card-neo" data-scroll data-scroll-speed="0.5">
+                    <div class="feature-icon-neo">🔒</div>
+                    <h3>SECURE</h3>
+                    <p>End-to-end encryption. Your data is yours.</p>
+                    <div class="feature-accent"></div>
+                </div>
+
+                <div class="feature-card-neo" data-scroll data-scroll-speed="0.4">
+                    <div class="feature-icon-neo">👥</div>
+                    <h3>CAMPUS VERIFIED</h3>
+                    <p>.edu.in only. Authentic community.</p>
+                    <div class="feature-accent"></div>
+                </div>
+
+                <div class="feature-card-neo feature-accent-bg" data-scroll data-scroll-speed="0.6">
+                    <div class="feature-icon-neo icon-white">📱</div>
+                    <h3 class="text-white">MOBILE FIRST</h3>
+                    <p class="text-white">Optimized for on-the-go students.</p>
+                    <div class="feature-accent"></div>
+                </div>
+
+                <div class="feature-card-neo feature-large" data-scroll data-scroll-speed="0.7">
+                    <div class="feature-icon-neo">❤️</div>
+                    <h3>COMMUNITY DRIVEN</h3>
+                    <p>Built by students, for students. Your voice matters.</p>
+                    <div class="feature-accent"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Video Section with Ambient Lighting -->
+        <section class="video-section-neo" data-scroll-section>
+            <div class="video-container-neo" data-scroll data-scroll-speed="0.5">
+                <div class="video-frame">
+                    <video autoplay muted loop playsinline class="campus-video">
+                        <source src="/videos/loader1.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-overlay-gradient"></div>
+                    <div class="video-ambient-glow"></div>
+                </div>
+                <div class="video-caption">
+                    <span class="caption-label">EXPERIENCE</span>
+                    <h3>CAMPUS LIFE REIMAGINED</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section with Counter Animation -->
+        <section class="stats-section-neo" data-scroll-section>
+            <div class="stats-grid-neo">
+                <div class="stat-box-neo" data-scroll data-scroll-speed="0.3">
+                    <div class="stat-number" data-count="10000">0</div>
+                    <div class="stat-label">STUDENTS</div>
+                    <div class="stat-accent"></div>
+                </div>
+                <div class="stat-box-neo" data-scroll data-scroll-speed="0.5">
+                    <div class="stat-number" data-count="50000">0</div>
+                    <div class="stat-label">POSTS</div>
+                    <div class="stat-accent"></div>
+                </div>
+                <div class="stat-box-neo" data-scroll data-scroll-speed="0.4">
+                    <div class="stat-number" data-count="25">0</div>
+                    <div class="stat-label">CAMPUSES</div>
+                    <div class="stat-accent"></div>
+                </div>
+                <div class="stat-box-neo" data-scroll data-scroll-speed="0.6">
+                    <div class="stat-number" data-count="100">0</div>
+                    <div class="stat-label">COMMUNITIES</div>
+                    <div class="stat-accent"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section - Bold Finale -->
+        <section class="cta-section-neo" data-scroll-section>
+            <div class="cta-container-neo">
+                <div class="cta-geometric-bg">
+                    <div class="geo-shape shape-1"></div>
+                    <div class="geo-shape shape-2"></div>
+                    <div class="geo-shape shape-3"></div>
+                </div>
+
+                <div class="cta-content-neo" data-scroll data-scroll-speed="0.3">
+                    <h2 class="cta-title-neo">
+                        READY TO
+                        <span class="cta-highlight">JOIN?</span>
+                    </h2>
+                    <p class="cta-subtitle">Be part of the next generation campus community.</p>
+
+                    <div class="cta-form-wrapper">
+                        <a href="/auth/register" class="btn-brutalist btn-cta magnetic-btn">
+                            <span class="btn-text">GET STARTED NOW</span>
+                            <span class="btn-icon">→</span>
+                            <span class="btn-accent"></span>
+                        </a>
+                    </div>
+
+                    <div class="cta-note">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Free forever. No credit card required.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-neo" data-scroll-section>
+        <div class="footer-container-neo">
+            <div class="footer-content-neo">
+                <div class="footer-brand">
+                    <div class="logo-brutalist">U</div>
+                    <span class="brand-text">CONNECT</span>
+                </div>
+                <div class="footer-links-neo">
+                    <div class="footer-column">
+                        <h4>PLATFORM</h4>
+                        <a href="/auth/register">Join Now</a>
+                        <a href="/auth/login">Sign In</a>
+                        <a href="/about">About</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>SUPPORT</h4>
+                        <a href="/help">Help Center</a>
+                        <a href="/privacy">Privacy</a>
+                        <a href="/terms">Terms</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>CONNECT</h4>
+                        <a href="#">Twitter</a>
+                        <a href="#">Instagram</a>
+                        <a href="#">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom-neo">
+                <p>&copy; <%= new Date().getFullYear() %> UCONNECT. ALL RIGHTS RESERVED.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/ScrollTrigger.min.js"></script>
+    <script src="/js/landing-neo.js"></script>
+</body>
+</html>

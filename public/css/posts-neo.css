@@ -1,0 +1,723 @@
+/**
+ * Posts Neo Styles - UConnect
+ * Brutalist + Apple Hybrid Design for Posts Feed
+ */
+
+/* ========================================
+   OVERRIDE BASE STYLES
+   ======================================== */
+
+.posts-page {
+    background: var(--black) !important;
+    color: var(--white);
+    min-height: 100vh;
+}
+
+/* ========================================
+   FEED CONTAINER
+   ======================================== */
+
+.feed-container,
+.instagram-feed-container {
+    background: transparent !important;
+    max-width: 1400px !important;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* ========================================
+   STORIES SECTION
+   ======================================== */
+
+.stories-container {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    margin-bottom: 32px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.story-item {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease;
+}
+
+.story-item:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--red) !important;
+    transform: translateY(-4px);
+}
+
+.story-avatar {
+    border: 3px solid var(--red) !important;
+}
+
+.story-username {
+    color: var(--white) !important;
+    font-weight: 700 !important;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ========================================
+   POST CARDS
+   ======================================== */
+
+.post-card,
+.instagram-post {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    margin-bottom: 32px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.post-card:hover,
+.instagram-post:hover {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4) !important;
+    transform: translateY(-2px);
+}
+
+/* Post Header */
+.post-header {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 20px !important;
+}
+
+.post-author-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.post-author-avatar {
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 12px !important;
+    width: 48px !important;
+    height: 48px !important;
+}
+
+.post-author-name,
+.post-author-username {
+    color: var(--white) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.post-author-campus,
+.post-time {
+    color: rgba(255, 255, 255, 0.5) !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Post Category Badge */
+.post-category,
+.category-badge {
+    background: var(--red) !important;
+    color: var(--white) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Post Content */
+.post-content {
+    padding: 24px !important;
+}
+
+.post-title {
+    color: var(--white) !important;
+    font-weight: 900 !important;
+    font-size: 24px !important;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+}
+
+.post-text,
+.post-description {
+    color: rgba(255, 255, 255, 0.8) !important;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+/* Post Media */
+.post-media,
+.post-image-container {
+    border-radius: 12px !important;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    margin: 20px 0;
+}
+
+.post-image,
+.post-video {
+    border-radius: 12px !important;
+}
+
+/* Post Tags */
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.post-tag,
+.tag-badge {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--white) !important;
+    border: 2px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+}
+
+.post-tag:hover,
+.tag-badge:hover {
+    background: rgba(255, 0, 0, 0.15) !important;
+    border-color: var(--red) !important;
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   POST ACTIONS
+   ======================================== */
+
+.post-actions,
+.post-stats {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 16px 24px !important;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.action-btn,
+.post-action-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    padding: 10px 20px !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-btn:hover,
+.post-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--red) !important;
+    color: var(--white) !important;
+    transform: translateY(-2px);
+}
+
+.action-btn.liked,
+.post-action-btn.liked {
+    background: rgba(255, 0, 0, 0.15) !important;
+    border-color: var(--red) !important;
+    color: var(--red) !important;
+}
+
+.action-count {
+    font-weight: 700;
+    color: var(--white);
+}
+
+/* ========================================
+   COMMENTS SECTION
+   ======================================== */
+
+.comments-section {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 24px !important;
+}
+
+.comments-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.comment-item {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 2px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.comment-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.comment-author-avatar {
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 10px !important;
+    width: 40px !important;
+    height: 40px !important;
+}
+
+.comment-author {
+    color: var(--white) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+}
+
+.comment-text {
+    color: rgba(255, 255, 255, 0.8) !important;
+    line-height: 1.5;
+    margin-top: 8px;
+}
+
+.comment-time {
+    color: rgba(255, 255, 255, 0.4) !important;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Comment Form */
+.comment-form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.comment-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    color: var(--white) !important;
+    padding: 16px 20px !important;
+    font-size: 15px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.comment-input::placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.comment-input:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--red) !important;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.1);
+}
+
+.comment-submit-btn {
+    background: var(--red) !important;
+    border: 2px solid var(--red) !important;
+    color: var(--white) !important;
+    border-radius: 10px !important;
+    padding: 12px 24px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s ease;
+    margin-top: 12px;
+}
+
+.comment-submit-btn:hover {
+    background: var(--white) !important;
+    color: var(--red) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(255, 0, 0, 0.3);
+}
+
+/* ========================================
+   SIDEBAR
+   ======================================== */
+
+.feed-sidebar,
+.sidebar {
+    padding: 24px;
+}
+
+.sidebar-card,
+.stats-card,
+.suggestions-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-card h3,
+.stats-card h3,
+.suggestions-card h3 {
+    color: var(--white) !important;
+    font-weight: 900 !important;
+    font-size: 18px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 2px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--red) !important;
+    transform: translateX(4px);
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    color: var(--red) !important;
+    font-weight: 900 !important;
+    font-size: 24px !important;
+}
+
+/* ========================================
+   CATEGORY FILTERS
+   ======================================== */
+
+.categories-container,
+.filter-buttons {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.category-btn,
+.filter-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    padding: 12px 20px !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+}
+
+.category-btn:hover,
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--red) !important;
+    color: var(--white) !important;
+    transform: translateY(-2px);
+}
+
+.category-btn.active,
+.filter-btn.active {
+    background: var(--red) !important;
+    border-color: var(--red) !important;
+    color: var(--white) !important;
+}
+
+/* ========================================
+   SEARCH BAR
+   ======================================== */
+
+.search-container {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    margin-bottom: 32px;
+}
+
+.search-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    color: var(--white) !important;
+    padding: 16px 20px !important;
+    font-size: 16px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.search-input:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--red) !important;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.1);
+}
+
+.search-btn {
+    background: var(--red) !important;
+    border: 2px solid var(--red) !important;
+    color: var(--white) !important;
+    border-radius: 10px !important;
+    padding: 14px 28px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s ease;
+    margin-top: 12px;
+}
+
+.search-btn:hover {
+    background: var(--white) !important;
+    color: var(--red) !important;
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   FLOATING ACTION BUTTON
+   ======================================== */
+
+.create-post-fab,
+.fab-button {
+    background: var(--red) !important;
+    border: 3px solid var(--white) !important;
+    box-shadow: 0 8px 24px rgba(255, 0, 0, 0.4) !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50% !important;
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: all 0.3s ease;
+}
+
+.create-post-fab:hover,
+.fab-button:hover {
+    background: var(--white) !important;
+    border-color: var(--red) !important;
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 12px 32px rgba(255, 0, 0, 0.5) !important;
+}
+
+/* ========================================
+   PAGINATION
+   ======================================== */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 32px 0;
+}
+
+.pagination-btn,
+.page-link {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    padding: 12px 20px !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover,
+.page-link:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--red) !important;
+    color: var(--white) !important;
+}
+
+.pagination-btn.active,
+.page-link.active {
+    background: var(--red) !important;
+    border-color: var(--red) !important;
+    color: var(--white) !important;
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+
+.empty-state {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 64px 32px !important;
+    text-align: center;
+    margin: 32px 0;
+}
+
+.empty-state h3 {
+    color: var(--white) !important;
+    font-weight: 900 !important;
+    font-size: 24px !important;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 16px;
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+
+.comments-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.comments-list::-webkit-scrollbar-thumb:hover {
+    background: var(--red);
+}
+
+/* ========================================
+   LIGHT THEME
+   ======================================== */
+
+body.light-theme .posts-page {
+    background: #FAFAFA !important;
+    color: var(--black);
+}
+
+body.light-theme .post-card,
+body.light-theme .instagram-post,
+body.light-theme .stories-container,
+body.light-theme .sidebar-card,
+body.light-theme .categories-container,
+body.light-theme .search-container {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-theme .post-author-name,
+body.light-theme .post-title,
+body.light-theme .comment-author,
+body.light-theme .story-username,
+body.light-theme .sidebar-card h3 {
+    color: var(--black) !important;
+}
+
+body.light-theme .post-text,
+body.light-theme .comment-text,
+body.light-theme .post-author-campus {
+    color: rgba(0, 0, 0, 0.7) !important;
+}
+
+body.light-theme .action-btn,
+body.light-theme .category-btn,
+body.light-theme .comment-input,
+body.light-theme .search-input {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    color: var(--black) !important;
+}
+
+body.light-theme .comment-input::placeholder,
+body.light-theme .search-input::placeholder {
+    color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .feed-container {
+        padding: 16px;
+    }
+
+    .post-card,
+    .instagram-post {
+        border-radius: 12px !important;
+        margin-bottom: 24px;
+    }
+
+    .create-post-fab,
+    .fab-button {
+        width: 56px !important;
+        height: 56px !important;
+        bottom: 24px;
+        right: 24px;
+    }
+
+    .categories-container {
+        gap: 8px;
+    }
+
+    .category-btn,
+    .filter-btn {
+        padding: 10px 16px !important;
+        font-size: 12px !important;
+    }
+}

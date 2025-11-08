@@ -8,7 +8,7 @@ const { body, validationResult } = require('express-validator');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const { requireAuth, requireOwnership, logActivity } = require('../middleware/auth');
-const { uploadPostImage, optimizeImage } = require('../middleware/uploadImages');
+const { uploadPostImage, uploadPostMedia, optimizeImage } = require('../middleware/uploadImages');
 
 const router = express.Router();
 
@@ -21,10 +21,15 @@ const postValidation = [
   body('category').isIn([
     'lost-found', 'hostels', 'canteen', 'pgs', 'general',
     'study', 'staff', 'events', 'sports', 'academics'
-  ]),
-  body('tags').optional().isArray().withMessage('Tags must be an array'),
+  ]).withMessage('Invalid category selected'),
+  body('tags').optional().custom((value) => {
+    if (!value) return true; // Allow empty
+    if (typeof value === 'string') return true; // Allow string
+    if (Array.isArray(value)) return true; // Allow array
+    throw new Error('Tags must be a string or array');
+  }),
   body('location').optional().isLength({ max: 100 }).withMessage('Location cannot exceed 100 characters'),
-  body('priority').optional().isIn(['low', 'normal', 'high', 'urgent'])
+  body('priority').optional().isIn(['low', 'normal', 'high', 'urgent']).withMessage('Invalid priority level')
 ];
 
 const commentValidation = [
@@ -91,6 +96,17 @@ router.get('/', requireAuth, async (req, res) => {
     // 🔥 Get trending posts for sidebar
     const trendingPosts = await Post.getTrending(req.user.campus, 10);
 
+    // Build a simple stories list from recent posts' authors to feed the UI (safe fallback)
+    const stories = posts.slice(0, 8).map(p => {
+      const author = p.author || {};
+      const avatarUrl = author.avatarUrl || (author.avatarSeed ? `https://api.dicebear.com/9.x/adventurer/svg?seed=${author.avatarSeed}` : '/images/default-avatar.png');
+      return {
+        username: author.username || (author._id ? author._id.toString() : 'unknown'),
+        avatarUrl,
+        displayName: author.name || author.username || ''
+      };
+    });
+
     // 📈 Get user statistics for sidebar
     const userStats = await User.getStats();
     const campusUsers = await User.countDocuments({
@@ -126,23 +142,36 @@ router.get('/', requireAuth, async (req, res) => {
       'academics': '🎓 Academics'
     };
 
-    res.render('posts/feed-instagram', {
+    // Render using layout and include the feed-neo as the body template
+    res.render('layout', {
       title: `${currentCategory === 'all' ? 'Campus Feed' : categoryDisplayNames[currentCategory] || 'Posts'}`,
+      bodyTemplate: 'posts/feed-neo',
+      additionalJS: ['/socket.io/socket.io.js', '/js/posts.js'],
+      additionalCSS: ['/css/feed-neo.css'],
       posts,
+      stories,
       trendingPosts,
       currentFilter: filter,
+      category: currentCategory,
       currentCategory,
       currentPage: page,
+      page,
       hasNextPage: posts.length === limit,
       userStats,
       campusUsers,
       categoryStats: categoryStatsObj,
       categoryDisplayNames,
       totalPosts: posts.length,
-      totalLikes: totalLikes[0]?.total || 0,
-      totalComments: totalComments[0]?.total || 0,
+      totalLikes,
+      totalComments,
       searchQuery: search,
       selectedTag: tag,
+      trendingTags: [], // Add trending tags if available
+      stats: {
+        totalPosts: posts.length,
+        totalLikes: totalLikes[0]?.total || 0,
+        totalComments: totalComments[0]?.total || 0
+      },
       user: req.user
     });
 
@@ -176,9 +205,14 @@ router.get('/category/:category', requireAuth, async (req, res) => {
       isActive: true
     });
 
-    res.render('posts/feed', {
+    // Use main layout to wrap the feed so global assets and scripts are included
+    res.render('layout', {
       title: `${category} Posts`,
+      bodyTemplate: 'posts/feed-instagram',
+  additionalJS: ['/socket.io/socket.io.js', '/js/posts.js', '/js/feed-instagram.js'],
+      additionalCSS: ['/css/posts.css'],
       posts,
+      stories: posts.slice(0,8).map(p => ({ username: p.author && p.author.username ? p.author.username : (p.author && p.author._id ? p.author._id.toString() : 'unknown'), avatarUrl: (p.author && (p.author.avatarUrl || (p.author.avatarSeed ? `https://api.dicebear.com/9.x/adventurer/svg?seed=${p.author.avatarSeed}` : '')) ) || '/images/default-avatar.png', displayName: p.author && p.author.name ? p.author.name : (p.author && p.author.username ? p.author.username : '') })),
       currentFilter: 'recent',
       currentPage: page,
       hasNextPage: posts.length === limit,
@@ -196,111 +230,160 @@ router.get('/category/:category', requireAuth, async (req, res) => {
 
 // GET /posts/create - Show post creation form
 router.get('/create', requireAuth, (req, res) => {
-  res.render('posts/create-ultimate', {
+  res.render('layout', {
     title: 'Create Post',
+    bodyTemplate: 'posts/create-ultimate',
+    additionalCSS: ['/css/feed-neo.css', '/css/posts.css'],
+    additionalJS: [],
     errors: [],
-    formData: {}
+    formData: {},
+    user: req.user
   });
 });
 
-// POST /posts/create - 🎯 ULTIMATE CREATE POST WITH IMAGES & REAL-TIME
-router.post('/create', requireAuth, uploadPostImage.array('images', 5), postValidation, logActivity('create post'), async (req, res) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.render('posts/create-ultimate', {
-          title: 'Create Post',
-          errors: errors.array(),
-          formData: req.body
-        });
-      }
+// POST /posts/create - 🎯 ULTIMATE CREATE POST WITH IMAGES, VIDEO & REAL-TIME
+router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity('create post'), async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.render('layout', {
+        title: 'Create Post',
+        bodyTemplate: 'posts/create-ultimate',
+        additionalCSS: ['/css/feed-neo.css', '/css/posts.css'],
+        additionalJS: [],
+        errors: errors.array(),
+        formData: req.body,
+        user: req.user
+      });
+    }
 
-      const { content, category, tags, location, priority } = req.body;
+    const { content, category, tags, location, priority } = req.body;
 
-      // Process uploaded images
-      const images = [];
-      if (req.files && req.files.length > 0) {
-        for (const file of req.files) {
-          // Optimize image
-          await optimizeImage(file.path);
+    // Prepare arrays
+    const images = [];
+    const media = [];
 
-          images.push({
-            filename: file.filename,
-            originalName: file.originalname,
-            size: file.size,
-            mimetype: file.mimetype,
-            url: `/uploads/posts/${file.filename}`
-          });
+    console.log('📁 Received files:', req.files ? Object.keys(req.files) : 'none');
 
+    // req.files is an object with possible keys 'images' and 'videos'
+    if (req.files) {
+      if (Array.isArray(req.files.images)) {
+        console.log(`🖼️ Processing ${req.files.images.length} images`);
+        for (const file of req.files.images) {
+          try { await optimizeImage(file.path); } catch (e) { console.error('Image optimization error', e.message); }
+          images.push({ filename: file.filename, originalName: file.originalname, size: file.size, mimetype: file.mimetype, url: `/uploads/posts/${file.filename}` });
           console.log(`📸 Image uploaded: ${file.filename}`);
         }
       }
 
-      // 🏷️ Process tags - split by comma and clean
-      let processedTags = [];
-      if (tags) {
-        if (Array.isArray(tags)) {
-          processedTags = tags.filter(tag => tag.trim()).map(tag => tag.trim().toLowerCase());
-        } else if (typeof tags === 'string') {
-          processedTags = tags.split(',').filter(tag => tag.trim()).map(tag => tag.trim().toLowerCase());
+      if (Array.isArray(req.files.videos)) {
+        console.log(`🎥 Processing ${req.files.videos.length} videos`);
+        for (const file of req.files.videos) {
+          // basic server-side size check (50MB)
+          if (file.size > 50 * 1024 * 1024) {
+            try { require('fs').unlinkSync(file.path); } catch (e) {}
+            console.warn('⛔ Skipped oversized video:', file.originalname);
+            continue;
+          }
+
+          media.push({ type: 'video', filename: file.filename, originalName: file.originalname, size: file.size, mimetype: file.mimetype, url: `/uploads/posts/${file.filename}` });
+          console.log(`🎥 Video uploaded: ${file.filename}`);
         }
       }
+    }
 
-      const post = new Post({
-        author: req.user._id,
-        content,
-        category: category || 'general',
-        tags: processedTags,
-        location: location?.trim(),
-        priority: priority || 'normal',
-        images: images, // Add images to post
-        campus: req.user.campus || 'Main Campus' // Fallback for users without campus
-      });
-
-      // 🚨 If user has no campus, update them with default campus
-      if (!req.user.campus) {
-        console.log(`⚠️ User ${req.user.username} has no campus, setting to 'Main Campus'`);
-        await User.findByIdAndUpdate(req.user._id, { campus: 'Main Campus' });
-        req.user.campus = 'Main Campus';
+    // 🏷️ Process tags - split by comma and clean
+    let processedTags = [];
+    if (tags) {
+      if (Array.isArray(tags)) {
+        processedTags = tags.filter(tag => tag.trim()).map(tag => tag.trim().toLowerCase());
+      } else if (typeof tags === 'string') {
+        processedTags = tags.split(',').filter(tag => tag.trim()).map(tag => tag.trim().toLowerCase());
       }
+    }
 
-      await post.save();
-      console.log(`📝 Post created with ${images.length} images by:`, req.user.username);
+    const post = new Post({
+      author: req.user._id,
+      content,
+      category: category || 'general',
+      tags: processedTags,
+      location: location?.trim(),
+      priority: priority || 'normal',
+      images: images,
+      media: media,
+      campus: req.user.campus || 'Main Campus'
+    });
 
-      // 🚀 REAL-TIME SOCKET.IO BROADCAST
-      const io = req.app.get('io');
-      if (io) {
-        const populatedPost = await Post.findById(post._id)
-          .populate('author', 'username name avatar avatarType avatarSeed');
+    if (!req.user.campus) {
+      console.log(`⚠️ User ${req.user.username} has no campus, setting to 'Main Campus'`);
+      await User.findByIdAndUpdate(req.user._id, { campus: 'Main Campus' });
+      req.user.campus = 'Main Campus';
+    }
 
-        io.to(post.campus).emit('new-post', {
-          post: populatedPost,
-          campus: post.campus
-        });
-        console.log(`⚡ Real-time broadcast: New post to ${post.campus}`);
-      }
+    await post.save();
+    console.log(`📝 Post created with ${images.length} images and ${media.length} media items by:`, req.user.username);
 
-      // 📊 Update user stats
+    // 🚀 REAL-TIME SOCKET.IO BROADCAST
+    const io = req.app.get('io');
+    if (io) {
+      const populatedPost = await Post.findById(post._id).populate('author', 'username name avatar avatarType avatarSeed');
+      io.to(post.campus).emit('new-post', { post: populatedPost, campus: post.campus });
+      console.log(`⚡ Real-time broadcast: New post to ${post.campus}`);
+    }
+
+    // 📊 Update user stats
+    await User.findByIdAndUpdate(req.user._id, { $inc: { 'stats.postsCount': 1 } });
+
+    req.flash('success', `✅ ${category === 'lost-found' ? 'Lost item reported' : 'Post created'} successfully!`);
+
+    if (category && category !== 'general') {
+      res.redirect(`/posts?category=${category}`);
+    } else {
+      res.redirect('/posts');
+    }
+
+  } catch (error) {
+    console.error('🚨 Post creation error:', error);
+    res.render('posts/create-advanced', {
+      title: 'Create Post',
+      errors: [{ msg: 'Failed to create post. Please try again.' }],
+      formData: req.body
+    });
+  }
+});
+
+// DELETE /posts/:id - Delete post
+router.delete('/:id',
+  requireOwnership(Post),
+  logActivity('delete post'),
+  async (req, res) => {
+    try {
+      // Soft delete - mark as inactive
+      req.resource.isActive = false;
+      await req.resource.save();
+
+      // Update user stats
       await User.findByIdAndUpdate(req.user._id, {
-        $inc: { 'stats.postsCount': 1 }
+        $inc: { 'stats.postsCount': -1 }
       });
 
-      req.flash('success', `✅ ${category === 'lost-found' ? 'Lost item reported' : 'Post created'} successfully!`);
+      req.flash('success', 'Post deleted successfully!');
 
-      // 🎯 Smart redirect based on category
-      if (category && category !== 'general') {
-        res.redirect(`/posts?category=${category}`);
-      } else {
-        res.redirect('/posts');
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.json({ success: true });
       }
+
+      res.redirect('/posts');
 
     } catch (error) {
-      console.error('🚨 Post creation error:', error);
-      res.render('posts/create-advanced', {
-        title: 'Create Post',
-        errors: [{ msg: 'Failed to create post. Please try again.' }],
-        formData: req.body
-      });
+      console.error('Post deletion error:', error);
+
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(500).json({ success: false, message: 'Failed to delete post' });
+      }
+
+      req.flash('error', 'Failed to delete post');
+      res.redirect('back');
     }
   }
 );
@@ -424,21 +507,22 @@ router.post('/:id/comment',
   logActivity('add comment'),
   async (req, res) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        req.flash('error', errors.array()[0].msg);
-        return res.redirect('back');
-      }
 
       const post = await Post.findById(req.params.id);
 
       if (!post || !post.isActive) {
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(404).json({ success: false, message: 'Post not found' });
+        }
         req.flash('error', 'Post not found');
         return res.redirect('/posts');
       }
 
       // Check campus access
       if (post.campus !== req.user.campus) {
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(403).json({ success: false, message: 'Access denied' });
+        }
         req.flash('error', 'Access denied');
         return res.redirect('/posts');
       }
@@ -452,29 +536,47 @@ router.post('/:id/comment',
         $inc: { 'stats.commentsCount': 1 }
       });
 
+      // Get the newly added comment with populated author
+      const populatedPost = await Post.findById(post._id)
+        .populate('comments.author', 'username avatar avatarType avatarSeed');
+
+      const newComment = populatedPost.comments[populatedPost.comments.length - 1];
+
       // 🚀 REAL-TIME SOCKET.IO BROADCAST FOR NEW COMMENT
       const io = req.app.get('io');
       if (io) {
-        // Get the latest comment with author info
-        const populatedPost = await Post.findById(post._id)
-          .populate('comments.author', 'username avatar avatarType avatarSeed');
-
-        const latestComment = populatedPost.comments[populatedPost.comments.length - 1];
-
         io.to(post.campus).emit('new-comment', {
           postId: post._id,
           comment: {
-            _id: latestComment._id,
-            content: latestComment.content,
-            createdAt: latestComment.createdAt,
+            _id: newComment._id,
+            content: newComment.content,
+            createdAt: newComment.createdAt,
             author: {
-              _id: latestComment.author._id,
-              username: latestComment.author.username,
-              avatarUrl: latestComment.author.avatarUrl
+              _id: newComment.author._id,
+              username: newComment.author.username,
+              avatarUrl: newComment.author.avatarUrl
             }
           }
         });
         console.log(`⚡ Real-time broadcast: New comment on post by ${req.user.username}`);
+      }
+
+      // Return JSON for AJAX requests
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.json({
+          success: true,
+          message: 'Comment added successfully!',
+          comment: {
+            _id: newComment._id,
+            content: newComment.content,
+            createdAt: newComment.createdAt,
+            author: {
+              _id: newComment.author._id,
+              username: newComment.author.username,
+              avatarUrl: newComment.author.avatarUrl
+            }
+          }
+        });
       }
 
       req.flash('success', 'Comment added successfully!');
@@ -482,6 +584,9 @@ router.post('/:id/comment',
 
     } catch (error) {
       console.error('Comment error:', error);
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(500).json({ success: false, message: 'Failed to add comment' });
+      }
       req.flash('error', 'Failed to add comment');
       res.redirect('back');
     }
@@ -575,42 +680,6 @@ router.put('/:id',
         errors: [{ msg: 'Failed to update post. Please try again.' }],
         formData: req.body
       });
-    }
-  }
-);
-
-// DELETE /posts/:id - Delete post
-router.delete('/:id',
-  requireOwnership(Post),
-  logActivity('delete post'),
-  async (req, res) => {
-    try {
-      // Soft delete - mark as inactive
-      req.resource.isActive = false;
-      await req.resource.save();
-
-      // Update user stats
-      await User.findByIdAndUpdate(req.user._id, {
-        $inc: { 'stats.postsCount': -1 }
-      });
-
-      req.flash('success', 'Post deleted successfully!');
-
-      if (req.xhr || req.headers.accept?.includes('application/json')) {
-        return res.json({ success: true });
-      }
-
-      res.redirect('/posts');
-
-    } catch (error) {
-      console.error('Post deletion error:', error);
-
-      if (req.xhr || req.headers.accept?.includes('application/json')) {
-        return res.status(500).json({ success: false, message: 'Failed to delete post' });
-      }
-
-      req.flash('error', 'Failed to delete post');
-      res.redirect('back');
     }
   }
 );

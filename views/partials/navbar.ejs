@@ -19,10 +19,6 @@
                         <span>➕</span>
                         <span>Create</span>
                     </a>
-                    <a href="/chat/requests" class="nav-link <%= currentPath === '/chat/requests' ? 'active' : '' %>">
-                        <span>🔐</span>
-                        <span>Secret Chat</span>
-                    </a>
                     <a href="/users/campus" class="nav-link <%= currentPath === '/users/campus' ? 'active' : '' %>">
                         <span>👥</span>
                         <span>Campus</span>
@@ -36,14 +32,14 @@
                 </div>
 
                 <!-- Theme Toggle -->
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-                    <span>☀️</span>
+                <button class="theme-toggle" type="button" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false" title="Toggle theme">
+                    <span aria-hidden="true" data-theme-icon>🌙</span>
                 </button>
 
                 <!-- User Menu -->
                 <div class="user-menu">
                     <div class="user-dropdown">
-                        <button class="user-btn" onclick="toggleUserMenu()">
+                        <button class="user-btn" type="button" aria-haspopup="true" aria-expanded="false">
                             <img src="<%= user.avatarUrl %>"
                                  alt="@<%= user.username %>" class="user-avatar">
                             <span class="user-name">@<%= user.username %></span>
@@ -69,15 +65,15 @@
             </div>
 
             <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                <span>☰</span>
+            <button class="mobile-menu-btn" type="button" aria-controls="mobileMenu" aria-expanded="false" data-menu-open-icon="✖" data-menu-closed-icon="☰">
+                <span aria-hidden="true" data-menu-icon>☰</span>
             </button>
         <% } else { %>
             <!-- Guest Navigation -->
             <div class="nav-menu">
                 <div class="nav-links">
-                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-                        <span>☀️</span>
+                    <button class="theme-toggle" type="button" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false" title="Toggle theme">
+                        <span aria-hidden="true" data-theme-icon>🌙</span>
                     </button>
                     <a href="/auth/login" class="nav-link">Login</a>
                     <a href="/auth/register" class="btn btn-primary">Join Now</a>
@@ -97,10 +93,6 @@
                 <span>➕</span>
                 Create Post
             </a>
-            <a href="/chat/requests" class="mobile-menu-item">
-                <span>🔐</span>
-                Secret Chat
-            </a>
             <a href="/users/campus" class="mobile-menu-item">
                 <span>👥</span>
                 Campus Users
@@ -113,10 +105,10 @@
                 <span>⚙️</span>
                 Settings
             </a>
-            <div class="mobile-menu-item theme-toggle-mobile" onclick="toggleTheme()">
-                <span>☀️</span>
+            <button class="mobile-menu-item theme-toggle-mobile" type="button" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false">
+                <span aria-hidden="true" data-theme-icon>🌙</span>
                 Toggle Theme
-            </div>
+            </button>
             <% if (user.role === 'admin') { %>
                 <a href="/admin" class="mobile-menu-item">
                     <span>🛡️</span>

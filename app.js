@@ -32,7 +32,6 @@ const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
-// const chatRoutes = require('./routes/chat');
 
 // ==========================================
 // MIDDLEWARE
@@ -53,11 +52,11 @@ connectDB();
 // Security middleware
 configureHelmet(app);
 
-// Session configuration (MUST be before appMiddleware)
+// Session configuration (MUST be first after basic setup)
 configureSession(app);
 
 // Flash messages (needs session)
-app.use(require('connect-flash')());
+app.use(flash());
 
 // Application middleware
 configureAppMiddleware(app);
@@ -76,7 +75,6 @@ app.use('/posts', postRoutes);
 app.use('/users', userRoutes);
 app.use('/admin', adminRoutes);
 app.use('/settings', settingsRoutes);
-// app.use('/chat', chatRoutes);
 
 // URL test route for debugging 🔧
 // app.use('/debug', createUrlTestRoute());
@@ -85,8 +83,22 @@ app.use('/settings', settingsRoutes);
 // BASIC ROUTES
 // ==========================================
 
-// Home route
+// Home route - Neo Landing Page (Brutalist + Apple Hybrid)
 app.get('/', (req, res) => {
+  if (req.session.user) {
+    res.redirect('/posts');
+  } else {
+    res.render('index2', {
+      title: 'UConnect - Connect Your Campus',
+      description: 'The next evolution of university social networking. Bold. Fast. Unapologetic.',
+      user: req.session.user || null,
+      messages: req.flash()
+    });
+  }
+});
+
+// Old Landing Page (Legacy - accessible at /legacy)
+app.get('/legacy', (req, res) => {
   if (req.session.user) {
     res.redirect('/posts');
   } else {

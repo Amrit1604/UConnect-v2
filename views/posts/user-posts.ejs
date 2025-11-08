@@ -100,7 +100,7 @@
                                             <i class="fas fa-ellipsis-h"></i>
                                         </button>
                                         <div class="post-menu-dropdown" id="postMenu<%= post._id %>">
-                                            <% if (post.author._id.toString() === user.id) { %>
+                                            <% if (post.author._id.toString() === user._id.toString()) { %>
                                                 <a href="/posts/<%= post._id %>/edit" class="menu-item">
                                                     <i class="fas fa-edit"></i> Edit Post
                                                 </a>
@@ -135,9 +135,9 @@
                                 <!-- Post Actions -->
                                 <div class="post-actions">
                                     <div class="action-buttons-left">
-                                        <button class="action-btn like-btn <%= post.isLikedBy(user.id) ? 'liked' : '' %>"
+                                        <button class="action-btn like-btn <%= post.isLikedBy(user._id) ? 'liked' : '' %>"
                                                 onclick="toggleLike('<%= post._id %>')">
-                                            <i class="<%= post.isLikedBy(user.id) ? 'fas' : 'far' %> fa-heart"></i>
+                                            <i class="<%= post.isLikedBy(user._id) ? 'fas' : 'far' %> fa-heart"></i>
                                         </button>
 
                                         <a href="/posts/<%= post._id %>" class="action-btn">
@@ -147,6 +147,12 @@
                                         <button class="action-btn share-btn" onclick="sharePost('<%= post._id %>')">
                                             <i class="far fa-paper-plane"></i>
                                         </button>
+
+                                        <% if (post.author && post.author._id.toString() === user._id.toString()) { %>
+                                        <button class="action-btn delete-btn" onclick="deletePost('<%= post._id %>')" title="Delete Post">
+                                            <i class="far fa-trash-alt"></i>
+                                        </button>
+                                        <% } %>
                                     </div>
                                 </div>
 
@@ -154,11 +160,11 @@
                                 <div class="post-content">
                                     <% if (post.likeCount > 0) { %>
                                         <div style="padding: 0 16px 8px; font-size: 14px; font-weight: 600;">
-                                            <span class="like-count"><%= post.likeCount %></span> 
+                                            <span class="like-count"><%= post.likeCount %></span>
                                             <%= post.likeCount === 1 ? 'like' : 'likes' %>
                                         </div>
                                     <% } %>
-                                    
+
                                     <% if (post.content && post.content.trim()) { %>
                                         <p class="post-text">
                                             <span style="font-weight: 600;"><%= post.author.username %></span>
@@ -183,7 +189,7 @@
                             </div>
                             <h3>No posts yet</h3>
                             <p><%= profileUser.username %> hasn't shared any posts yet.</p>
-                            <% if (profileUser._id.toString() === user.id) { %>
+                            <% if (profileUser._id.toString() === user._id.toString()) { %>
                                 <div style="margin-top: 24px;">
                                     <a href="/posts/create" class="btn" style="background: #0095f6; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
                                         Create Your First Post
@@ -259,20 +265,20 @@
     <!-- JavaScript -->
     <script src="/js/main.js"></script>
     <script src="/js/posts.js"></script>
-    
+
     <script>
         // Instagram-like post menu toggle
         function togglePostMenu(postId) {
             const menu = document.getElementById('postMenu' + postId);
             const allMenus = document.querySelectorAll('.post-menu-dropdown');
-            
+
             // Close all other menus
             allMenus.forEach(m => {
                 if (m.id !== 'postMenu' + postId) {
                     m.classList.remove('show');
                 }
             });
-            
+
             // Toggle current menu
             menu.classList.toggle('show');
         }
@@ -300,7 +306,7 @@
                 likeBtn.classList.add('liked');
                 icon.classList.remove('far');
                 icon.classList.add('fas');
-                
+
                 // Add animation
                 icon.style.animation = 'heartBeat 0.3s ease';
                 setTimeout(() => {
@@ -318,10 +324,45 @@
         }
 
         function deletePost(postId) {
-            if (confirm('Are you sure you want to delete this post?')) {
-                // Implement delete functionality
-                window.location.href = `/posts/${postId}/delete`;
+            if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+                // Send DELETE request to the API
+                fetch(`/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Remove the post from the DOM
+                        const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+                        if (postEl) {
+                            postEl.remove();
+                            showToast('Post deleted successfully');
+                        }
+                        // Reload the page to update the post count
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        throw new Error('Failed to delete post');
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete error:', error);
+                    alert('Failed to delete post. Please try again.');
+                });
             }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 16px;border-radius:4px;z-index:1000;';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         function reportPost(postId) {

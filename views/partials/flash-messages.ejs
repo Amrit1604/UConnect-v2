@@ -5,8 +5,8 @@
                 <div class="flash-message flash-success">
                     <span>✅</span>
                     <span><%= message %></span>
-                    <button onclick="this.parentElement.remove()" class="flash-close">
-                        <span>×</span>
+                    <button class="flash-close" type="button" aria-label="Dismiss message">
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
             <% }) %>
@@ -17,8 +17,8 @@
                 <div class="flash-message flash-error">
                     <span>❌</span>
                     <span><%= message %></span>
-                    <button onclick="this.parentElement.remove()" class="flash-close">
-                        <span>×</span>
+                    <button class="flash-close" type="button" aria-label="Dismiss message">
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
             <% }) %>
@@ -29,8 +29,8 @@
                 <div class="flash-message flash-warning">
                     <span>⚠️</span>
                     <span><%= message %></span>
-                    <button onclick="this.parentElement.remove()" class="flash-close">
-                        <span>×</span>
+                    <button class="flash-close" type="button" aria-label="Dismiss message">
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
             <% }) %>
@@ -41,8 +41,8 @@
                 <div class="flash-message flash-info">
                     <span>ℹ️</span>
                     <span><%= message %></span>
-                    <button onclick="this.parentElement.remove()" class="flash-close">
-                        <span>×</span>
+                    <button class="flash-close" type="button" aria-label="Dismiss message">
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
             <% }) %>

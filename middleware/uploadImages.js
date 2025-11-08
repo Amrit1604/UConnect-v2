@@ -52,7 +52,17 @@ const imageFilter = (req, file, cb) => {
   }
 };
 
-// Post image upload middleware
+// Post media upload middleware (images + videos)
+// Accepts up to 5 images (5MB each) and up to 1 video (50MB)
+const videoFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('video/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only video files are allowed for video uploads!'), false);
+  }
+};
+
+// Post image upload middleware (single-field helper, kept for backwards compatibility)
 const uploadPostImage = multer({
   storage: postStorage,
   limits: {
@@ -61,6 +71,17 @@ const uploadPostImage = multer({
   },
   fileFilter: imageFilter
 });
+
+// Combined upload handler for posts: fields 'images' and 'videos'
+const uploadPostMedia = multer({
+  storage: postStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024 // Max single file size handled per-field by checks below
+  }
+}).fields([
+  { name: 'images', maxCount: 5 },
+  { name: 'videos', maxCount: 1 }
+]);
 
 // Avatar upload middleware
 const uploadAvatar = multer({
@@ -94,7 +115,8 @@ const optimizeImage = async (filePath, width = 800, quality = 80) => {
 };
 
 module.exports = {
-  uploadPostImage,
+  uploadPostImage, // kept for backwards-compat; single-field image uploads
+  uploadPostMedia, // new combined handler: accepts images[] and videos[]
   uploadAvatar,
   optimizeImage
 };

@@ -44,8 +44,7 @@ const registerValidation = [
     .withMessage('Username can only contain letters, numbers, and underscores'),
   body('password')
     .isLength({ min: 8 })
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
+    .withMessage('Password must be at least 8 characters'),
   body('confirmPassword')
     .custom((value, { req }) => {
       if (value !== req.body.password) {
@@ -56,13 +55,13 @@ const registerValidation = [
 ];
 
 const loginValidation = [
-  body('email').isEmail().normalizeEmail(),
+  body('email').notEmpty().withMessage('Email or username is required'),
   body('password').notEmpty().withMessage('Password is required')
 ];
 
-// GET /auth/register - Show registration form
+// GET /auth/register - Show registration form (Neo Design)
 router.get('/register', redirectIfAuthenticated, (req, res) => {
-  res.render('auth/register', {
+  res.render('auth/register-neo', {
     title: 'Join UConnect',
     errors: [],
     formData: {}
@@ -81,7 +80,7 @@ router.post('/register',
       console.log('Request File:', req.file);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.render('auth/register', {
+        return res.render('auth/register-neo', {
           title: 'Join UConnect',
           errors: errors.array(),
           formData: req.body
@@ -98,7 +97,7 @@ router.post('/register',
         const message = existingUser.email === email ?
           'An account with this email already exists and is verified' :
           'This username is already taken';
-        return res.render('auth/register', {
+        return res.render('auth/register-neo', {
           title: 'Join UConnect',
           errors: [{ msg: message }],
           formData: req.body
@@ -126,13 +125,14 @@ router.post('/register',
         tempUserData.avatarType = 'upload';
         console.log(`📁 Avatar file stored temporarily: ${req.file.originalname} (${req.file.size} bytes)`);
       } else if (avatarType === 'api' && req.body.avatarSeed) {
-        tempUserData.avatar = req.body.avatarSeed;
+        tempUserData.avatarSeed = req.body.avatarSeed;
         tempUserData.avatarType = 'api';
-        console.log(`🎲 API avatar seed: ${req.body.avatarSeed}`);
+        console.log(`🎲 API avatar seed stored: ${req.body.avatarSeed}`);
       } else {
-        tempUserData.avatar = 'default';
+        // Generate random seed for default avatar
+        tempUserData.avatarSeed = crypto.randomBytes(8).toString('hex');
         tempUserData.avatarType = 'api';
-        console.log(`🔄 Using default avatar`);
+        console.log(`🔄 Using default avatar with generated seed: ${tempUserData.avatarSeed}`);
       }
 
       // Generate simple verification token (just random string, not JWT)
@@ -189,7 +189,7 @@ router.post('/register',
 
     } catch (error) {
       console.error('Registration error:', error);
-      res.render('auth/register', {
+      res.render('auth/register-neo', {
         title: 'Join UConnect',
         errors: [{ msg: 'Registration failed. Please try again.' }],
         formData: req.body
@@ -198,9 +198,9 @@ router.post('/register',
   }
 );
 
-// GET /auth/login - Show login form
+// GET /auth/login - Show login form (Neo Design)
 router.get('/login', redirectIfAuthenticated, (req, res) => {
-  res.render('auth/login', {
+  res.render('auth/login-neo', {
     title: 'Login to UConnect',
     errors: [],
     formData: {}
@@ -216,7 +216,7 @@ router.post('/login',
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.render('auth/login', {
+        return res.render('auth/login-neo', {
           title: 'Login to UConnect',
           errors: errors.array(),
           formData: req.body
@@ -225,19 +225,28 @@ router.post('/login',
 
       const { email, password } = req.body;
 
-      // Find user
-      const user = await User.findOne({ email });
+      // Find user by email OR username
+      let user = null;
+
+      // Check if input looks like an email
+      if (email.includes('@')) {
+        user = await User.findOne({ email: email.toLowerCase() });
+      } else {
+        // Otherwise treat it as username
+        user = await User.findOne({ username: email.toLowerCase() });
+      }
+
       if (!user) {
-        return res.render('auth/login', {
+        return res.render('auth/login-neo', {
           title: 'Login to UConnect',
-          errors: [{ msg: 'Invalid email or password' }],
+          errors: [{ msg: 'Invalid email/username or password' }],
           formData: req.body
         });
       }
 
       // Check if account is active
       if (!user.isActive) {
-        return res.render('auth/login', {
+        return res.render('auth/login-neo', {
           title: 'Login to UConnect',
           errors: [{ msg: 'Your account has been deactivated. Please contact support.' }],
           formData: req.body
@@ -247,16 +256,16 @@ router.post('/login',
       // Verify password
       const isValidPassword = await user.comparePassword(password);
       if (!isValidPassword) {
-        return res.render('auth/login', {
+        return res.render('auth/login-neo', {
           title: 'Login to UConnect',
-          errors: [{ msg: 'Invalid email or password' }],
+          errors: [{ msg: 'Invalid email/username or password' }],
           formData: req.body
         });
       }
 
       // Check if email is verified (admin accounts bypass verification)
       if (!user.isVerified && user.role !== 'admin') {
-        return res.render('auth/login', {
+        return res.render('auth/login-neo', {
           title: 'Login to UConnect',
           errors: [{ msg: 'Please verify your email address before logging in.' }],
           formData: req.body,
@@ -277,6 +286,7 @@ router.post('/login',
         name: user.name,
         username: user.username,
         avatar: user.avatar,
+        avatarSeed: user.avatarSeed,
         avatarType: user.avatarType,
         avatarUrl: user.avatarUrl,
         role: user.role,
@@ -285,12 +295,18 @@ router.post('/login',
 
       console.log('💾 LOGIN DEBUG - Session data created:');
       console.log('Session user:', req.session.user);
+      console.log('Avatar details:', {
+        avatar: user.avatar,
+        avatarSeed: user.avatarSeed,
+        avatarType: user.avatarType,
+        avatarUrl: user.avatarUrl
+      });
 
       // Explicitly save session before redirect
       req.session.save((err) => {
         if (err) {
           console.error('❌ Session save error:', err);
-          return res.render('auth/login', {
+          return res.render('auth/login-neo', {
             title: 'Login to UConnect',
             errors: [{ msg: 'Login failed. Please try again.' }],
             formData: req.body
@@ -304,7 +320,7 @@ router.post('/login',
 
     } catch (error) {
       console.error('Login error:', error);
-      res.render('auth/login', {
+      res.render('auth/login-neo', {
         title: 'Login to UConnect',
         errors: [{ msg: 'Login failed. Please try again.' }],
         formData: req.body
@@ -388,12 +404,15 @@ router.get('/verify-email', async (req, res) => {
           avatarType = 'api';
           avatarSeed = crypto.randomBytes(8).toString('hex');
         }
-      } else if (tempUserData.avatarType === 'api') {
-        avatarSeed = tempUserData.avatarSeed || crypto.randomBytes(8).toString('hex');
+      } else if (tempUserData.avatarType === 'api' && tempUserData.avatarSeed) {
+        // Use the seed that was selected during registration
+        avatarSeed = tempUserData.avatarSeed;
+        console.log(`🎲 Using selected avatar seed: ${avatarSeed}`);
       } else {
         // Default fallback
         avatarType = 'api';
         avatarSeed = crypto.randomBytes(8).toString('hex');
+        console.log(`🔄 Generated fallback avatar seed: ${avatarSeed}`);
       }
 
       // NOW CREATE THE USER IN MONGODB! 🚀
@@ -549,6 +568,28 @@ router.get('/logout', (req, res) => {
     }
     res.clearCookie('connect.sid');
     res.redirect('/');
+  });
+});
+
+// ========================================
+// LEGACY ROUTES (Old Design)
+// ========================================
+
+// GET /auth/login-legacy - Show old login form
+router.get('/login-legacy', redirectIfAuthenticated, (req, res) => {
+  res.render('auth/login', {
+    title: 'Login to UConnect',
+    errors: [],
+    formData: {}
+  });
+});
+
+// GET /auth/register-legacy - Show old registration form
+router.get('/register-legacy', redirectIfAuthenticated, (req, res) => {
+  res.render('auth/register', {
+    title: 'Join UConnect',
+    errors: [],
+    formData: {}
   });
 });
 

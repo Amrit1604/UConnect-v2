@@ -1,497 +1,636 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | UConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="/css/main.css" rel="stylesheet">
-</head>
-<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Inter', sans-serif; margin: 0; padding: 0; min-height: 100vh;">
-
-    <%- include('../partials/navbar') %>
-    <%- include('../partials/flash-messages') %>
-
-    <!-- 🔥 CRAZY INSTAGRAM-LIKE CREATE INTERFACE 🔥 -->
-    <div style="min-height: 100vh; padding-top: 5rem; display: flex; align-items: center; justify-content: center; padding: 5rem 1rem 2rem 1rem;">
-        <div style="background: white; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.15); max-width: 650px; width: 100%; overflow: hidden; position: relative;">
-
-            <!-- EPIC HEADER WITH GRADIENT -->
-            <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #fd79a8 100%); padding: 2.5rem 2rem; text-align: center; position: relative; overflow: hidden;">
-                <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"50\" cy=\"50\" r=\"0.5\" fill=\"white\" opacity=\"0.1\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>'); animation: float 20s ease-in-out infinite;"></div>
-                <h1 style="font-size: 2.5rem; font-weight: 900; color: white; margin: 0 0 0.5rem 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); position: relative; z-index: 1;">
-                    ✨ Create Epic Post ✨
-                </h1>
-                <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 1.1rem; font-weight: 500; position: relative; z-index: 1;">Share something amazing with your campus!</p>
-                <div style="position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 15px solid #fd79a8;"></div>
-            </div>
-
-            <!-- FORM WITH CRAZY ANIMATIONS -->
-            <form action="/posts/create" method="POST" enctype="multipart/form-data" style="padding: 2.5rem;" onsubmit="return handleSubmit(event)">
-
-                <!-- CONTENT SECTION WITH GLOW EFFECT -->
-                <div style="margin-bottom: 2rem; position: relative;">
-                    <label style="display: block; font-weight: 700; color: #2d3748; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.5rem;">📝</span> What's on your mind? *
-                    </label>
-                    <div style="position: relative;">
-                        <textarea
-                            name="content"
-                            id="contentInput"
-                            required
-                            maxlength="2000"
-                            placeholder="Share your thoughts, start a discussion, ask questions..."
-                            style="width: 100%; min-height: 120px; padding: 1.25rem; border: 3px solid #e2e8f0; border-radius: 16px; font-family: inherit; font-size: 1rem; resize: vertical; transition: all 0.3s ease; box-sizing: border-box; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);"
-                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102, 126, 234, 0.15), inset 0 2px 4px rgba(0,0,0,0.05)'; this.style.transform='scale(1.02)'"
-                            onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='inset 0 2px 4px rgba(0,0,0,0.05)'; this.style.transform='scale(1)'"
-                            oninput="updateCounter(this); this.style.height='auto'; this.style.height=this.scrollHeight+'px'"
-                        ><%= formData && formData.content ? formData.content : '' %></textarea>
-                        <div id="charCounter" style="position: absolute; bottom: 0.75rem; right: 1rem; font-size: 0.75rem; color: #9ca3af; background: rgba(255,255,255,0.9); padding: 0.25rem 0.5rem; border-radius: 8px; font-weight: 600;">0 / 2000</div>
-                    </div>
-                </div>
-
-                <!-- CRAZY CATEGORY SELECTION -->
-                <div style="margin-bottom: 2rem;">
-                    <label style="display: block; font-weight: 700; color: #2d3748; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.5rem;">🎯</span> Choose Your Vibe
-                    </label>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-
-                        <div class="category-card" data-category="lost-found" onclick="selectCategory(this, 'lost-found')"
-                             style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border: 3px solid transparent; border-radius: 16px; padding: 1.25rem; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateY(0);"
-                             onmouseover="this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 35px rgba(252, 182, 159, 0.4)'"
-                             onmouseout="if(!this.classList.contains('selected')) { this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none' }">
-                            <input type="radio" name="category" value="lost-found" style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span style="font-size: 2rem;">🔍</span>
-                                <div>
-                                    <h4 style="margin: 0 0 0.25rem 0; font-weight: 700; color: #2d3748;">Lost & Found</h4>
-                                    <p style="margin: 0; font-size: 0.875rem; color: #4a5568; opacity: 0.8;">Find your stuff!</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="category-card" data-category="hostels" onclick="selectCategory(this, 'hostels')"
-                             style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border: 3px solid transparent; border-radius: 16px; padding: 1.25rem; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateY(0);"
-                             onmouseover="this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 35px rgba(168, 237, 234, 0.4)'"
-                             onmouseout="if(!this.classList.contains('selected')) { this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none' }">
-                            <input type="radio" name="category" value="hostels" style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span style="font-size: 2rem;">🏠</span>
-                                <div>
-                                    <h4 style="margin: 0 0 0.25rem 0; font-weight: 700; color: #2d3748;">Hostels</h4>
-                                    <p style="margin: 0; font-size: 0.875rem; color: #4a5568; opacity: 0.8;">Dorm life vibes</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="category-card" data-category="canteen" onclick="selectCategory(this, 'canteen')"
-                             style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border: 3px solid transparent; border-radius: 16px; padding: 1.25rem; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateY(0);"
-                             onmouseover="this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 35px rgba(252, 182, 159, 0.4)'"
-                             onmouseout="if(!this.classList.contains('selected')) { this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none' }">
-                            <input type="radio" name="category" value="canteen" style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span style="font-size: 2rem;">🍕</span>
-                                <div>
-                                    <h4 style="margin: 0 0 0.25rem 0; font-weight: 700; color: #2d3748;">Canteen</h4>
-                                    <p style="margin: 0; font-size: 0.875rem; color: #4a5568; opacity: 0.8;">Food talk!</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="category-card" data-category="study" onclick="selectCategory(this, 'study')"
-                             style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); border: 3px solid transparent; border-radius: 16px; padding: 1.25rem; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateY(0);"
-                             onmouseover="this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 35px rgba(210, 153, 194, 0.4)'"
-                             onmouseout="if(!this.classList.contains('selected')) { this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none' }">
-                            <input type="radio" name="category" value="study" style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span style="font-size: 2rem;">📚</span>
-                                <div>
-                                    <h4 style="margin: 0 0 0.25rem 0; font-weight: 700; color: #2d3748;">Study Groups</h4>
-                                    <p style="margin: 0; font-size: 0.875rem; color: #4a5568; opacity: 0.8;">Learn together</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="category-card" data-category="events" onclick="selectCategory(this, 'events')"
-                             style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); border: 3px solid transparent; border-radius: 16px; padding: 1.25rem; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateY(0);"
-                             onmouseover="this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 35px rgba(137, 247, 254, 0.4)'"
-                             onmouseout="if(!this.classList.contains('selected')) { this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none' }">
-                            <input type="radio" name="category" value="events" style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span style="font-size: 2rem;">🎉</span>
-                                <div>
-                                    <h4 style="margin: 0 0 0.25rem 0; font-weight: 700; color: #2d3748;">Events</h4>
-                                    <p style="margin: 0; font-size: 0.875rem; color: #4a5568; opacity: 0.8;">Party time!</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="category-card selected" data-category="general" onclick="selectCategory(this, 'general')"
-                             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 3px solid #4c1d95; border-radius: 16px; padding: 1.25rem; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateY(-5px) scale(1.05); box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4); color: white;"
-                             onmouseover="this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 35px rgba(102, 126, 234, 0.6)'"
-                             onmouseout="if(this.classList.contains('selected')) { this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 35px rgba(102, 126, 234, 0.4)' } else { this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none' }">
-                            <input type="radio" name="category" value="general" checked style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span style="font-size: 2rem;">💬</span>
-                                <div>
-                                    <h4 style="margin: 0 0 0.25rem 0; font-weight: 700;">General</h4>
-                                    <p style="margin: 0; font-size: 0.875rem; opacity: 0.9;">Anything goes!</p>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- 🖼️ IMAGE UPLOAD SECTION ⚡ -->
-                <div style="margin-bottom: 2rem;">
-                    <label style="display: block; font-weight: 700; color: #2d3748; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.5rem;">📸</span> Add Photos (Optional)
-                    </label>
-
-                    <div style="border: 3px dashed #e2e8f0; border-radius: 16px; padding: 2rem; text-align: center; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); transition: all 0.3s ease; position: relative; cursor: pointer;"
-                         id="imageDropZone"
-                         ondragover="handleDragOver(event)"
-                         ondragleave="handleDragLeave(event)"
-                         ondrop="handleDrop(event)"
-                         onclick="console.log('🔥 ODIN: Drop zone clicked!'); document.getElementById('imageInput').click()">
-
-                        <input type="file" id="imageInput" name="images" multiple accept="image/*"
-                               style="display: none;" onchange="handleImageSelect(event)">
-
-                        <div id="dropZoneContent">
-                            <span style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem; display: block;">📷</span>
-                            <h3 style="margin: 0 0 0.5rem 0; color: #4a5568; font-weight: 600;">Drop photos here or click to browse</h3>
-                            <p style="margin: 0; color: #9ca3af; font-size: 0.875rem;">PNG, JPG up to 5MB each (max 5 photos)</p>
-                        </div>
-
-                        <div id="imagePreview" style="display: none; margin-top: 1rem;">
-                            <h4 style="margin: 0 0 1rem 0; color: #4a5568;">Selected Images:</h4>
-                            <div id="previewContainer" style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- LOCATION & PRIORITY WITH STYLE -->
-                <div style="margin-bottom: 2rem;">
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
-                        <div>
-                            <label style="display: block; font-weight: 600; color: #2d3748; margin-bottom: 0.75rem; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="font-size: 1.25rem;">📍</span> Location (optional)
-                            </label>
-                            <input
-                                type="text"
-                                name="location"
-                                placeholder="Where's the action? 📍"
-                                maxlength="100"
-                                style="width: 100%; padding: 1rem; border: 3px solid #e2e8f0; border-radius: 12px; font-family: inherit; transition: all 0.3s ease; box-sizing: border-box; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); font-size: 1rem;"
-                                onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102, 126, 234, 0.15)'; this.style.transform='scale(1.02)'"
-                                onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.transform='scale(1)'"
-                            >
-                        </div>
-                        <div>
-                            <label style="display: block; font-weight: 600; color: #2d3748; margin-bottom: 0.75rem; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="font-size: 1.25rem;">⚡</span> Priority
-                            </label>
-                            <select name="priority"
-                                    style="width: 100%; padding: 1rem; border: 3px solid #e2e8f0; border-radius: 12px; font-family: inherit; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); font-size: 1rem; cursor: pointer; font-weight: 500;"
-                                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 4px rgba(102, 126, 234, 0.15)'"
-                                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                                <option value="normal">😌 Chill</option>
-                                <option value="high">🔥 Important</option>
-                                <option value="urgent">🚨 URGENT</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EPIC SUBMIT BUTTONS -->
-                <div style="display: flex; gap: 1rem; margin-top: 2.5rem; padding-top: 2rem; border-top: 2px solid #f1f5f9;">
-                    <a href="/posts" style="flex: 1; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); color: #64748b; border: none; padding: 1rem; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem;"
-                       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(100, 116, 139, 0.2)'"
-                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                        <span>❌</span> Cancel
-                    </a>
-                    <button type="submit" id="submitBtn" style="flex: 2; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); color: white; border: none; padding: 1rem; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;"
-                            onmouseover="this.style.transform='translateY(-3px) scale(1.02)'; this.style.boxShadow='0 15px 35px rgba(102, 126, 234, 0.4)'"
-                            onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none'">
-                        <span style="font-size: 1.25rem;">🚀</span> Create Epic Post
-                    </button>
-                </div>
-            </form>
+<!-- Create Post - Neo Design -->
+<div class="create-post-page">
+    <!-- Background Effects -->
+    <div class="parallax-bg">
+        <div class="parallax-layer layer-1"></div>
+        <div class="parallax-layer layer-2"></div>
+        <div class="blob-container">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
         </div>
     </div>
 
+    <div class="container" style="max-width: 900px; margin: 0 auto; padding: 120px 24px 60px; position: relative; z-index: 2;">
+        <div class="form-container" style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 40px;">
+            <div class="form-header" style="text-align: center; margin-bottom: 32px;">
+                <h1 style="color: var(--white); font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">✨ <%= title %></h1>
+                <p style="color: rgba(255, 255, 255, 0.6); font-size: 14px;">Share your thoughts with the campus community</p>
+            </div>
+
+            <% if (errors && errors.length > 0) { %>
+                <div class="alert alert-danger" style="background: rgba(255, 0, 0, 0.1); border: 2px solid var(--red); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <ul style="margin: 0; padding-left: 20px; color: var(--red);">
+                        <% errors.forEach(error => { %>
+                            <li><%= error.msg %></li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } %>
+
+                <form action="/posts/create" method="POST" enctype="multipart/form-data" id="createPostForm">
+                    <div class="form-group">
+                        <label for="content" class="form-label">Your Post *</label>
+                        <textarea name="content" id="content" class="form-textarea" rows="6" required maxlength="2000"
+                            placeholder="Share your thoughts, start a discussion, ask questions..."><%= formData && formData.content ? formData.content : '' %></textarea>
+                        <div class="char-counter">
+                            <span id="charCount">0</span> / 2000
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category" class="form-label">Category *</label>
+                        <select name="category" id="category" class="form-select" required>
+                            <option value="">Select a category</option>
+                            <option value="general" <%= formData && formData.category === 'general' ? 'selected' : '' %>>💬 General</option>
+                            <option value="academics" <%= formData && formData.category === 'academics' ? 'selected' : '' %>>🎓 Academics</option>
+                            <option value="events" <%= formData && formData.category === 'events' ? 'selected' : '' %>>🎉 Events</option>
+                            <option value="sports" <%= formData && formData.category === 'sports' ? 'selected' : '' %>>⚽ Sports</option>
+                            <option value="lost-found" <%= formData && formData.category === 'lost-found' ? 'selected' : '' %>>🔍 Lost & Found</option>
+                            <option value="hostels" <%= formData && formData.category === 'hostels' ? 'selected' : '' %>>🏠 Hostels</option>
+                            <option value="canteen" <%= formData && formData.category === 'canteen' ? 'selected' : '' %>>🍕 Canteen</option>
+                            <option value="pgs" <%= formData && formData.category === 'pgs' ? 'selected' : '' %>>🏡 PGs</option>
+                            <option value="study" <%= formData && formData.category === 'study' ? 'selected' : '' %>>📚 Study Groups</option>
+                            <option value="staff" <%= formData && formData.category === 'staff' ? 'selected' : '' %>>👨‍🏫 Staff</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Media (Optional)</label>
+                        <div class="media-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+                            <select id="mediaType" class="form-select">
+                                <option value="none">None</option>
+                                <option value="images" selected>Images</option>
+                                <option value="video">Video</option>
+                            </select>
+
+                            <select id="mediaSource" class="form-select">
+                                <option value="gallery">Gallery</option>
+                                <option value="camera">Camera</option>
+                            </select>
+
+                            <button type="button" id="mediaBtn" class="btn btn-secondary" style="display:none;">
+                                <i class="fas fa-camera"></i> Choose Media
+                            </button>
+                        </div>
+
+                        <input type="file" name="images" id="images" class="form-input media-input" multiple accept="image/*" style="display:none;">
+                        <input type="file" name="videos" id="videos" class="form-input media-input" style="display:none;" accept="video/*">
+                        <small class="form-help">Images: up to 5 files (max 5MB each). Video: single file (max 50MB).</small>
+                        <div id="selectedFiles" class="selected-files" style="margin-top:8px;"></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location" class="form-label">Location (Optional)</label>
+                            <input type="text" name="location" id="location" class="form-input"
+                                placeholder="Where is this happening?"
+                                value="<%= formData && formData.location ? formData.location : '' %>">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="priority" class="form-label">Priority</label>
+                            <select name="priority" id="priority" class="form-select">
+                                <option value="normal" <%= formData && formData.priority === 'normal' ? 'selected' : '' %>>Normal</option>
+                                <option value="high" <%= formData && formData.priority === 'high' ? 'selected' : '' %>>High</option>
+                                <option value="urgent" <%= formData && formData.priority === 'urgent' ? 'selected' : '' %>>Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tags" class="form-label">Tags (Optional)</label>
+                        <input type="text" name="tags" id="tags" class="form-input"
+                            placeholder="Add tags separated by commas (e.g., urgent, help, study)"
+                            value="<%= formData && formData.tags ? formData.tags : '' %>">
+                        <small class="form-help">Separate multiple tags with commas</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Create Post
+                        </button>
+                        <a href="/posts" class="btn btn-ghost">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <%- include('../partials/footer') %>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
     <script>
-        // 🔥 ODIN'S ULTIMATE JAVASCRIPT POWER 🔥
-        let selectedCategory = 'general';
-        let selectedImages = [];
+        // Character counter
+        const contentTextarea = document.getElementById('content');
+        const charCount = document.getElementById('charCount');
 
-        // 📸 IMAGE UPLOAD HANDLING
-        function handleDragOver(e) {
-            e.preventDefault();
-            const dropZone = document.getElementById('imageDropZone');
-            dropZone.style.borderColor = '#667eea';
-            dropZone.style.backgroundColor = 'rgba(102, 126, 234, 0.05)';
-            dropZone.style.transform = 'scale(1.02)';
+        function updateCharCount() {
+            const length = contentTextarea.value.length;
+            charCount.textContent = length;
+
+            if (length > 1800) {
+                charCount.style.color = '#dc3545';
+            } else if (length > 1500) {
+                charCount.style.color = '#fd7e14';
+            } else {
+                charCount.style.color = '#6c757d';
+            }
         }
 
-        function handleDragLeave(e) {
-            e.preventDefault();
-            const dropZone = document.getElementById('imageDropZone');
-            dropZone.style.borderColor = '#e2e8f0';
-            dropZone.style.backgroundColor = '';
-            dropZone.style.transform = 'scale(1)';
-        }
+        contentTextarea.addEventListener('input', updateCharCount);
+        updateCharCount(); // Initialize
 
-        function handleDrop(e) {
-            e.preventDefault();
-            handleDragLeave(e);
-            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-            handleFiles(files);
-        }
+        // Form validation
+        const form = document.getElementById('createPostForm');
+        const submitBtn = document.getElementById('submitBtn');
 
-        function handleImageSelect(e) {
-            console.log('📸 ODIN ULTIMATE: Image input changed!');
-            console.log('📸 ODIN ULTIMATE: Files selected:', e.target.files.length);
-            const files = Array.from(e.target.files);
-            files.forEach(file => console.log('📸 ODIN ULTIMATE: File:', file.name, file.size, file.type));
-            handleFiles(files);
-        }
+        form.addEventListener('submit', function(e) {
+            const content = contentTextarea.value.trim();
+            const category = document.getElementById('category').value;
 
-        function handleFiles(files) {
-            console.log('📸 ODIN ULTIMATE: Processing', files.length, 'files');
-            console.log('📸 ODIN ULTIMATE: Current selected images:', selectedImages.length);
-
-            // Limit to 5 images
-            if (selectedImages.length + files.length > 5) {
-                alert('🚨 Maximum 5 images allowed!');
-                console.log('❌ ODIN ULTIMATE: Too many images selected');
+            if (!content) {
+                e.preventDefault();
+                alert('Please write something in your post.');
+                contentTextarea.focus();
                 return;
             }
 
-            files.forEach(file => {
-                console.log('📸 ODIN ULTIMATE: Processing file:', file.name, 'Size:', file.size);
+            if (!category) {
+                e.preventDefault();
+                alert('Please select a category.');
+                document.getElementById('category').focus();
+                return;
+            }
 
-                if (file.size > 5 * 1024 * 1024) {
-                    alert(`🚨 ${file.name} is too large! Maximum 5MB per image.`);
-                    console.log('❌ ODIN ULTIMATE: File too large:', file.name);
+            // Handle file submission with fallback support
+            if (selectedFiles.length > 0) {
+                console.log('Form submission: Processing', selectedFiles.length, 'selected files');
+
+                // Try to update file input with current selectedFiles
+                updateFileInput();
+
+                // Double-check if the file input was updated correctly
+                const type = mediaTypeSelect.value;
+                const input = type === 'images' ? imagesInput : videosInput;
+
+                if (input.files.length !== selectedFiles.length) {
+                    console.warn('File input mismatch, using FormData approach');
+
+                    // Create a new FormData and append files manually
+                    const formData = new FormData();
+
+                    // Append all form fields
+                    const formElements = form.querySelectorAll('input, select, textarea');
+                    formElements.forEach(element => {
+                        if (element.type !== 'file' && element.name) {
+                            formData.append(element.name, element.value);
+                        }
+                    });
+
+                    // Append selected files
+                    selectedFiles.forEach(file => {
+                        if (type === 'images') {
+                            formData.append('images', file);
+                        } else {
+                            formData.append('videos', file);
+                        }
+                    });
+
+                    // Submit using fetch instead of form submission
+                    e.preventDefault();
+
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+                    fetch('/posts/create', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.href = '/posts';
+                        } else {
+                            throw new Error('Network response was not ok');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error creating post. Please try again.');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Create Post';
+                    });
+
                     return;
                 }
-
-                selectedImages.push(file);
-                console.log('✅ ODIN ULTIMATE: File added to selection:', file.name);
-
-                // Create preview
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    console.log('🖼️ ODIN ULTIMATE: File read successfully:', file.name);
-                    addImagePreview(file, e.target.result);
-                };
-                reader.readAsDataURL(file);
-            });
-
-            updateImageInput();
-            console.log('📸 ODIN ULTIMATE: Total selected images now:', selectedImages.length);
-        }
-
-        function addImagePreview(file, src) {
-            const previewDiv = document.getElementById('imagePreview');
-            const container = document.getElementById('previewContainer');
-
-            const imageDiv = document.createElement('div');
-            imageDiv.style.cssText = 'position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-
-            imageDiv.innerHTML = `
-                <img src="${src}" alt="${file.name}"
-                     style="width: 120px; height: 120px; object-fit: cover; display: block;">
-                <div style="position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.9); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: #dc2626;"
-                     onclick="removeImage('${file.name}', this.parentElement)">×</div>
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 0.5rem; font-size: 0.75rem; text-align: center;">
-                    ${file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name}
-                </div>
-            `;
-
-            container.appendChild(imageDiv);
-            previewDiv.style.display = 'block';
-        }
-
-        function removeImage(fileName, element) {
-            selectedImages = selectedImages.filter(file => file.name !== fileName);
-            element.remove();
-
-            if (selectedImages.length === 0) {
-                document.getElementById('imagePreview').style.display = 'none';
             }
 
-            updateImageInput();
-        }
-
-        function updateImageInput() {
-            const input = document.getElementById('imageInput');
-            const dt = new DataTransfer();
-            selectedImages.forEach(file => dt.items.add(file));
-            input.files = dt.files;
-        }
-
-        // CHARACTER COUNTER WITH STYLE
-        function updateCounter(textarea) {
-            const counter = document.getElementById('charCounter');
-            const length = textarea.value.length;
-            counter.textContent = length + ' / 2000';
-
-            if (length > 1800) {
-                counter.style.color = '#dc2626';
-                counter.style.background = 'rgba(239, 68, 68, 0.1)';
-            } else if (length > 1500) {
-                counter.style.color = '#d97706';
-                counter.style.background = 'rgba(217, 119, 6, 0.1)';
-            } else {
-                counter.style.color = '#059669';
-                counter.style.background = 'rgba(255,255,255,0.9)';
-            }
-        }
-
-        // EPIC CATEGORY SELECTION WITH ANIMATIONS
-        function selectCategory(element, value) {
-            console.log('🔥 ODIN ULTIMATE: Selecting category:', value);
-            console.log('📍 ODIN ULTIMATE: Element clicked:', element);
-            console.log('🎯 ODIN ULTIMATE: Element classes:', element.className);
-
-            // Reset all categories
-            const allCards = document.querySelectorAll('.category-card');
-            console.log('🔍 ODIN ULTIMATE: Found', allCards.length, 'category cards');
-
-            allCards.forEach(card => {
-                card.classList.remove('selected');
-                card.style.transform = 'translateY(0) scale(1)';
-                card.style.boxShadow = 'none';
-                card.style.border = '3px solid transparent';
-                card.style.color = '#2d3748';
-
-                const input = card.querySelector('input');
-                if (input) input.checked = false;
-            });
-
-            // Select this category with EPIC animation
-            element.classList.add('selected');
-            element.style.transform = 'translateY(-5px) scale(1.05)';
-            element.style.border = '3px solid #4c1d95';
-            element.style.color = 'white';
-
-            // Set gradient based on category
-            if (value === 'lost-found') {
-                element.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
-                element.style.boxShadow = '0 15px 35px rgba(255, 107, 107, 0.4)';
-            } else if (value === 'hostels') {
-                element.style.background = 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)';
-                element.style.boxShadow = '0 15px 35px rgba(116, 185, 255, 0.4)';
-            } else if (value === 'canteen') {
-                element.style.background = 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)';
-                element.style.boxShadow = '0 15px 35px rgba(253, 121, 168, 0.4)';
-            } else if (value === 'study') {
-                element.style.background = 'linear-gradient(135deg, #00b894 0%, #00a085 100%)';
-                element.style.boxShadow = '0 15px 35px rgba(0, 184, 148, 0.4)';
-            } else if (value === 'events') {
-                element.style.background = 'linear-gradient(135deg, #fdcb6e 0%, #e17055 100%)';
-                element.style.boxShadow = '0 15px 35px rgba(253, 203, 110, 0.4)';
-            } else {
-                element.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                element.style.boxShadow = '0 15px 35px rgba(102, 126, 234, 0.4)';
-            }
-
-            const input = element.querySelector('input');
-            if (input) {
-                input.checked = true;
-                selectedCategory = value;
-                console.log('✅ ODIN ULTIMATE: Category locked and loaded:', value);
-                console.log('🎯 ODIN ULTIMATE: Input checked:', input.checked);
-
-                // Visual feedback for selection
-                element.style.animation = 'pulse 0.6s ease-in-out';
-                setTimeout(() => {
-                    element.style.animation = '';
-                }, 600);
-            } else {
-                console.error('❌ ODIN ULTIMATE: No input found in category card!');
-                console.log('🔍 ODIN ULTIMATE: Element innerHTML:', element.innerHTML);
-            }
-        }
-
-        // EPIC FORM SUBMISSION
-        function handleSubmit(event) {
-            console.log('🚀 ODIN ULTIMATE: Epic form launching...');
-
-            const content = document.getElementById('contentInput').value.trim();
-            if (!content) {
-                alert('🤨 Hey! Write something epic first!');
-                event.preventDefault();
-                return false;
-            }
-
-            // Double-check category selection
-            const categoryInput = document.querySelector('input[name="category"]:checked');
-            console.log('🎯 ODIN ULTIMATE: Final category check:', categoryInput ? categoryInput.value : 'NONE');
-
-            if (!categoryInput) {
-                console.log('⚠️ ODIN ULTIMATE: No category, forcing general');
-                document.querySelector('input[value="general"]').checked = true;
-            }
-
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.innerHTML = '<span style="font-size: 1.25rem;">⏳</span> Creating Magic...';
+            // Show loading state for normal form submission
             submitBtn.disabled = true;
-            submitBtn.style.background = 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        });
 
-            console.log('🏆 ODIN ULTIMATE: VICTORY ACHIEVED!');
-            return true;
+        // Image validation
+        const imagesInput = document.getElementById('images');
+        const videosInput = document.getElementById('videos');
+        const mediaTypeSelect = document.getElementById('mediaType');
+        const mediaSourceSelect = document.getElementById('mediaSource');
+        const mediaBtn = document.getElementById('mediaBtn');
+        const selectedFilesDiv = document.getElementById('selectedFiles');
+
+        function renderNoFilesState() {
+            selectedFilesDiv.innerHTML = '';
+            const emptyState = document.createElement('div');
+            emptyState.className = 'selected-files-empty';
+
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-paperclip';
+            emptyState.appendChild(icon);
+
+            const text = document.createElement('span');
+            text.textContent = 'No media selected yet.';
+            emptyState.appendChild(text);
+
+            selectedFilesDiv.appendChild(emptyState);
         }
 
-        // FLOATING ANIMATION
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes float {
-                0%, 100% { transform: rotate(0deg) translateX(0px) rotate(0deg); }
-                50% { transform: rotate(180deg) translateX(10px) rotate(-180deg); }
-            }
+        function resetMediaInputs() {
+            console.log('🔄 Resetting all media inputs');
+            imagesInput.value = '';
+            videosInput.value = '';
+            selectedFiles = [];
+            previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+            previewObjectUrls = [];
+            renderNoFilesState();
+            console.log('✅ Media inputs reset completed');
+        }
 
-            @keyframes pulse {
-                0% { transform: translateY(-5px) scale(1.05); }
-                50% { transform: translateY(-8px) scale(1.08); }
-                100% { transform: translateY(-5px) scale(1.05); }
-            }
+        function updateMediaButton() {
+            const type = mediaTypeSelect.value;
+            const source = mediaSourceSelect.value;
 
-            .category-card {
-                user-select: none;
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                pointer-events: auto !important;
-                z-index: 10;
-            }
-
-            .category-card:active {
-                transform: translateY(-3px) scale(1.03) !important;
-            }
-        `;
-        document.head.appendChild(style);
-
-        // INITIALIZE EVERYTHING
-        updateCounter(document.getElementById('contentInput'));
-        console.log('⚡ ODIN ULTIMATE: All systems online and ready for epic posting!');
-
-        // PRE-FILL FROM URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const categoryParam = urlParams.get('category');
-        if (categoryParam) {
-            const categoryCard = document.querySelector(`[data-category="${categoryParam}"]`);
-            if (categoryCard) {
-                selectCategory(categoryCard, categoryParam);
+            if (type === 'none') {
+                mediaBtn.style.display = 'none';
+                imagesInput.style.display = 'none';
+                videosInput.style.display = 'none';
+            } else {
+                mediaBtn.style.display = 'inline-block';
+                const icon = source === 'camera' ? 'fa-camera' : 'fa-images';
+                const text = source === 'camera' ? 'Take Photo/Video' : 'Choose from Gallery';
+                mediaBtn.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
             }
         }
+
+        mediaTypeSelect.addEventListener('change', function() {
+            const type = mediaTypeSelect.value;
+            console.log('📋 Media type changed to:', type);
+
+            // Reset everything when media type changes
+            resetMediaInputs();
+
+            if (type === 'images') {
+                imagesInput.name = 'images';
+                imagesInput.multiple = true;
+                videosInput.name = 'videos';
+                videosInput.multiple = false;
+            } else if (type === 'video') {
+                imagesInput.name = 'images';
+                imagesInput.multiple = false;
+                videosInput.name = 'videos';
+                videosInput.multiple = false;
+            }
+
+            updateMediaButton();
+        });
+
+        // Show camera hint when camera is selected and trigger click after delay
+        mediaSourceSelect.addEventListener('change', function() {
+            const source = mediaSourceSelect.value;
+            resetMediaInputs();
+
+            if (source === 'camera') {
+                // Set capture attribute for camera
+                imagesInput.setAttribute('capture', 'environment');
+                videosInput.setAttribute('capture', 'camcorder');
+                showCameraHint();
+                // Trigger camera after hint is shown
+                setTimeout(() => {
+                    const type = mediaTypeSelect.value;
+                    if (type === 'images') {
+                        imagesInput.click();
+                    } else if (type === 'video') {
+                        videosInput.click();
+                    }
+                }, 1000); // 1 second delay to let hint show
+            } else {
+                // Remove capture attribute for gallery
+                imagesInput.removeAttribute('capture');
+                videosInput.removeAttribute('capture');
+            }
+
+            updateMediaButton();
+        });
+
+        // Handle media button click (only for manual selection)
+        mediaBtn.addEventListener('click', function() {
+            const type = mediaTypeSelect.value;
+            const source = mediaSourceSelect.value;
+
+            if (source === 'camera') {
+                showCameraHint();
+                setTimeout(() => {
+                    if (type === 'images') {
+                        imagesInput.click();
+                    } else if (type === 'video') {
+                        videosInput.click();
+                    }
+                }, 500);
+            } else {
+                if (type === 'images') {
+                    imagesInput.click();
+                } else if (type === 'video') {
+                    videosInput.click();
+                }
+            }
+        });
+
+        function showCameraHint() {
+            const hint = document.createElement('div');
+            hint.id = 'camera-hint';
+
+            const container = document.createElement('div');
+            container.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #007bff; color: white; padding: 10px 15px; border-radius: 8px; z-index: 1000; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; max-width: 320px;';
+            container.textContent = '📷 Camera mode activated! Your camera will open in a moment. On mobile devices, this will access your camera directly. On desktop, use a mobile device for camera capture.';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.textContent = '✕';
+            closeBtn.setAttribute('aria-label', 'Close camera hint');
+            closeBtn.style.cssText = 'margin-left: auto; background: none; border: none; color: white; cursor: pointer; font-size: 16px; line-height: 1;';
+            closeBtn.addEventListener('click', () => {
+                if (hint.parentNode) {
+                    hint.parentNode.removeChild(hint);
+                }
+            });
+
+            container.appendChild(closeBtn);
+            hint.appendChild(container);
+            document.body.appendChild(hint);
+            setTimeout(() => {
+                if (hint.parentNode) {
+                    hint.parentNode.removeChild(hint);
+                }
+            }, 8000); // Auto-remove after 8 seconds
+        }
+
+        // Initialize
+        updateMediaButton();
+
+        // Add some debugging
+        console.log('Create post form JavaScript loaded successfully');
+        console.log('Elements found:', {
+            form: !!form,
+            imagesInput: !!imagesInput,
+            videosInput: !!videosInput,
+            selectedFilesDiv: !!selectedFilesDiv,
+            mediaTypeSelect: !!mediaTypeSelect
+        });
+
+        renderNoFilesState();
+
+        function displaySelectedFiles(files, type) {
+            previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+            previewObjectUrls = [];
+            selectedFilesDiv.innerHTML = '';
+
+            if (!files || files.length === 0) {
+                console.log('No files to display');
+                renderNoFilesState();
+                return;
+            }
+
+            console.log('Displaying', files.length, 'files of type', type);
+
+            const list = document.createElement('div');
+            list.className = 'selected-files-list';
+
+            files.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'selected-file-item';
+
+                const preview = document.createElement('div');
+                preview.className = 'selected-file-preview';
+
+                const info = document.createElement('div');
+                info.className = 'selected-file-info';
+
+                const name = document.createElement('div');
+                name.className = 'selected-file-name';
+                name.textContent = file.name;
+                name.title = file.name;
+
+                const sizeInMb = (file.size / (1024 * 1024)).toFixed(1);
+                let extension = 'FILE';
+                if (file.name && file.name.includes('.')) {
+                    extension = file.name.split('.').pop().toUpperCase();
+                } else if (file.type) {
+                    extension = file.type.split('/').pop().toUpperCase();
+                }
+                const meta = document.createElement('div');
+                meta.className = 'selected-file-meta';
+                meta.textContent = `${sizeInMb} MB • ${extension}`;
+
+                info.appendChild(name);
+                info.appendChild(meta);
+
+                if (type === 'images' && file.type && file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    const objectUrl = URL.createObjectURL(file);
+                    previewObjectUrls.push(objectUrl);
+                    img.src = objectUrl;
+                    img.alt = file.name;
+                    preview.appendChild(img);
+                } else if (type === 'video' && file.type && file.type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.muted = true;
+                    video.loop = true;
+                    video.playsInline = true;
+                    video.autoplay = true;
+                    video.setAttribute('aria-label', file.name);
+                    const objectUrl = URL.createObjectURL(file);
+                    previewObjectUrls.push(objectUrl);
+                    video.src = objectUrl;
+                    preview.appendChild(video);
+
+                    const badge = document.createElement('span');
+                    badge.className = 'selected-file-badge';
+                    badge.textContent = 'Video';
+                    preview.appendChild(badge);
+                } else {
+                    const fallbackIcon = document.createElement('i');
+                    fallbackIcon.className = 'fas fa-file';
+                    preview.appendChild(fallbackIcon);
+                }
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-file-btn';
+                removeBtn.setAttribute('data-index', index);
+                removeBtn.setAttribute('aria-label', `Remove ${file.name}`);
+                removeBtn.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i><span>Remove</span>';
+
+                removeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔥 REMOVE BUTTON CLICKED for index:', index);
+                    removeFile(index);
+                });
+
+                item.appendChild(preview);
+                item.appendChild(info);
+                item.appendChild(removeBtn);
+                list.appendChild(item);
+            });
+
+            selectedFilesDiv.appendChild(list);
+            console.log('✅ Files displayed successfully with remove buttons');
+        }
+
+        // Store selected files separately for better control
+        let selectedFiles = [];
+        let previewObjectUrls = [];
+
+        function removeFile(index) {
+            console.log('🗑️ removeFile called with index:', index);
+            console.log('📋 Before removal - selectedFiles count:', selectedFiles.length);
+            console.log('📋 Before removal - selectedFiles names:', selectedFiles.map(f => f.name));
+
+            // Validate index
+            if (typeof index !== 'number' || index < 0 || index >= selectedFiles.length) {
+                console.error('❌ Invalid index for file removal:', index, 'Available indices: 0 to', selectedFiles.length - 1);
+                return;
+            }
+
+            // Remove the file from our array
+            const removedFile = selectedFiles.splice(index, 1)[0];
+            console.log('✅ Successfully removed file:', removedFile.name);
+            console.log('📋 After removal - selectedFiles count:', selectedFiles.length);
+            console.log('📋 After removal - selectedFiles names:', selectedFiles.map(f => f.name));
+
+            // Clear the file inputs completely if no files remain
+            if (selectedFiles.length === 0) {
+                console.log('🧹 Clearing all file inputs since no files remain');
+                imagesInput.value = '';
+                videosInput.value = '';
+                selectedFilesDiv.innerHTML = '<div style="color: #28a745; font-size: 14px; margin: 12px 0; padding: 8px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; text-align: center;"><i class="fas fa-check-circle"></i> All files removed successfully!</div>';
+            } else {
+                // Update the display with remaining files
+                displaySelectedFiles(selectedFiles, mediaTypeSelect.value);
+                // Update the actual file input with remaining files
+                updateFileInput();
+            }
+
+            console.log('🎉 File removal completed successfully!');
+        }
+
+        function updateFileInput() {
+            const type = mediaTypeSelect.value;
+            const input = type === 'images' ? imagesInput : videosInput;
+
+            console.log('🔄 Updating file input for type:', type, 'with', selectedFiles.length, 'files');
+
+            // If no files remain, clear both inputs completely
+            if (selectedFiles.length === 0) {
+                console.log('🧹 No files remaining - clearing both inputs');
+                imagesInput.value = '';
+                videosInput.value = '';
+                return;
+            }
+
+            // Try DataTransfer first for browsers that support it
+            if (window.DataTransfer && typeof DataTransfer === 'function') {
+                try {
+                    const dt = new DataTransfer();
+                    selectedFiles.forEach(file => {
+                        dt.items.add(file);
+                    });
+                    input.files = dt.files;
+                    console.log('✅ File input updated successfully via DataTransfer');
+                    console.log('📋 Input now has', input.files.length, 'files');
+                    return;
+                } catch (error) {
+                    console.warn('⚠️ DataTransfer failed:', error);
+                }
+            }
+
+            // Fallback: Clear the input - files will be handled via selectedFiles array in form submission
+            console.log('⚠️ Using fallback method - clearing input, will use selectedFiles array for form submission');
+            input.value = '';
+        }
+
+        imagesInput.addEventListener('change', function(e) {
+            console.log('📸 Images input changed, files selected:', e.target.files.length);
+            const files = Array.from(e.target.files);
+
+            if (files.length > 5) {
+                alert('Maximum 5 images allowed.');
+                e.target.value = '';
+                selectedFiles = [];
+                previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                previewObjectUrls = [];
+                renderNoFilesState();
+                return;
+            }
+
+            for (let file of files) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    alert(`File "${file.name}" is too large. Maximum size is 5MB.`);
+                    e.target.value = '';
+                    selectedFiles = [];
+                    previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                    previewObjectUrls = [];
+                    renderNoFilesState();
+                    return;
+                }
+            }
+
+            selectedFiles = [...files]; // Create a new array
+            console.log('📸 Selected images:', selectedFiles.map(f => f.name));
+            displaySelectedFiles(selectedFiles, 'images');
+        });
+
+        videosInput.addEventListener('change', function(e) {
+            console.log('🎥 Videos input changed, files selected:', e.target.files.length);
+            const files = Array.from(e.target.files);
+
+            if (files.length > 1) {
+                alert('Only one video allowed.');
+                e.target.value = '';
+                selectedFiles = [];
+                previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                previewObjectUrls = [];
+                renderNoFilesState();
+                return;
+            }
+
+            for (let file of files) {
+                if (file.size > 50 * 1024 * 1024) { // 50MB
+                    alert(`Video "${file.name}" is too large. Maximum size is 50MB.`);
+                    e.target.value = '';
+                    selectedFiles = [];
+                    previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                    previewObjectUrls = [];
+                    renderNoFilesState();
+                    return;
+                }
+            }
+
+            selectedFiles = [...files]; // Create a new array
+            console.log('🎥 Selected videos:', selectedFiles.map(f => f.name));
+            displaySelectedFiles(selectedFiles, 'video');
+        });
     </script>
-
-    <%- include('../partials/footer') %>
-</body>
-</html>
+</div>

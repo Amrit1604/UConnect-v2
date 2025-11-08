@@ -347,7 +347,7 @@
                     <form method="POST" action="/users/settings/profile" id="profileForm">
                         <!-- Avatar Section -->
                         <div class="avatar-section">
-                            <img src="<%= user.avatarUrl %>" alt="Current Avatar" class="current-avatar" id="avatarPreview">
+                            <img src="<%= user.avatarUrl %>?t=<%= Date.now() %>" alt="Current Avatar" class="current-avatar" id="avatarPreview">
                             <h3>Profile Picture</h3>
                             <p>Your profile picture helps others recognize you on campus</p>
                             <div class="avatar-buttons">
@@ -500,9 +500,11 @@
 
                     if (avatarPreview) {
                         avatarPreview.src = e.target.result;
+                        console.log('✅ Avatar preview updated');
                     }
                     if (removeBtn) {
                         removeBtn.style.display = 'inline-flex';
+                        console.log('✅ Remove button shown');
                     }
                 };
                 reader.readAsDataURL(file);
@@ -511,6 +513,7 @@
                 // Submit the upload form
                 const uploadForm = document.getElementById('avatarUploadForm');
                 if (uploadForm) {
+                    console.log('✅ Upload form found, submitting...');
                     uploadForm.submit();
                 } else {
                     console.error('❌ Upload form not found!');

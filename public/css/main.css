@@ -254,7 +254,8 @@ a:hover {
 
 .main-content {
   min-height: calc(100vh - var(--navbar-height));
-  padding-top: var(--navbar-height);
+  padding-top: 0;
+  background: transparent;
 }
 
 /* Navigation */

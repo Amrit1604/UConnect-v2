@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link href="/css/landing-neo.css" rel="stylesheet">
+    <link href="/css/auth-neo.css" rel="stylesheet">
+</head>
+<body class="auth-page-neo">
+    <!-- Animated Background Shapes -->
+    <div class="auth-bg-shapes">
+        <div class="auth-bg-shape"></div>
+        <div class="auth-bg-shape"></div>
+        <div class="auth-bg-shape"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar-neo">
+        <div class="nav-container-neo">
+            <!-- Left: Logo -->
+            <div class="nav-brand-neo">
+                <a href="/" class="brand-link-neo">
+                    <div class="logo-brutalist">U</div>
+                    <span class="brand-text">CONNECT</span>
+                </a>
+            </div>
+
+            <!-- Center: Navigation Links -->
+            <div class="nav-center-neo">
+                <a href="/" class="nav-link-neo">HOME</a>
+                <a href="#features" class="nav-link-neo">FEATURES</a>
+                <a href="#about" class="nav-link-neo">ABOUT</a>
+            </div>
+
+            <!-- Right: Action Buttons -->
+            <div class="nav-actions-neo">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon moon">🌙</span>
+                    <span class="theme-icon sun">☀️</span>
+                </button>
+
+                <a href="/auth/login" class="nav-btn-ghost">SIGN IN</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu-btn-neo" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="auth-container-neo">
+            <!-- Auth Card -->
+            <div class="auth-card-neo">
+                <div class="auth-header-neo">
+                    <div class="auth-logo-neo">
+                        <span class="logo-icon-neo">🎓</span>
+                        <h1 class="logo-text-neo">UCONNECT</h1>
+                    </div>
+                    <h2 class="auth-title-neo">JOIN YOUR CAMPUS</h2>
+                    <p class="auth-subtitle-neo">Connect with fellow students from your university</p>
+                </div>
+
+                <form class="auth-form-neo" method="POST" action="/auth/register" enctype="multipart/form-data" novalidate>
+                    <!-- Display Errors -->
+                    <% if (errors && errors.length > 0) { %>
+                        <div class="form-errors-neo">
+                            <% errors.forEach(error => { %>
+                                <div class="error-message-neo">
+                                    <span>⚠️</span>
+                                    <%= error.msg %>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+
+                    <!-- Email Field -->
+                    <div class="form-group-neo">
+                        <label for="email" class="form-label-neo">
+                            <span>📧</span>
+                            UNIVERSITY EMAIL
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            class="form-input-neo"
+                            placeholder="your.name@university.edu.in"
+                            value="<%= formData.email || '' %>"
+                            required
+                            autocomplete="email"
+                        >
+                        <div class="form-help-neo">
+                            <span>💡</span>
+                            Only .edu.in email addresses are accepted
+                        </div>
+                    </div>
+
+                    <!-- Name Field -->
+                    <div class="form-group-neo">
+                        <label for="name" class="form-label-neo">
+                            <span>👤</span>
+                            NAME
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            class="form-input-neo"
+                            placeholder="Your full name"
+                            value="<%= formData.name || '' %>"
+                            required
+                            autocomplete="name"
+                            maxlength="50"
+                        >
+                        <div class="form-help-neo">
+                            <span>💡</span>
+                            Your real name (kept private for security)
+                        </div>
+                    </div>
+
+                    <!-- Username Field -->
+                    <div class="form-group-neo">
+                        <label for="username" class="form-label-neo">
+                            <span>@</span>
+                            USERNAME
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            class="form-input-neo"
+                            placeholder="unique_username"
+                            value="<%= formData.username || '' %>"
+                            required
+                            autocomplete="username"
+                            maxlength="20"
+                            pattern="[a-zA-Z0-9_]+"
+                        >
+                        <div class="form-help-neo">
+                            <span>💡</span>
+                            Unique username for privacy (letters, numbers, underscores only)
+                        </div>
+                    </div>
+
+                    <!-- Avatar Selection -->
+                    <div class="form-group-neo">
+                        <label class="form-label-neo">
+                            <span>🖼️</span>
+                            CHOOSE YOUR AVATAR
+                        </label>
+                        <div class="avatar-selection-neo">
+                            <div class="avatar-preview-neo">
+                                <img id="avatarPreview" src="https://api.dicebear.com/9.x/adventurer/svg?seed=default" alt="Avatar Preview" class="avatar-preview-img-neo">
+                            </div>
+                            <div class="avatar-options-neo">
+                                <button type="button" class="btn-neo btn-secondary-neo" id="randomAvatarBtn">
+                                    <span id="diceIcon">🎲</span>
+                                    Random Avatar
+                                </button>
+                                <input type="file" id="avatarFile" name="avatarFile" accept="image/*" style="display: none;">
+                                <button type="button" class="btn-neo btn-outline-neo" id="uploadAvatarBtn">
+                                    <span>📤</span>
+                                    Upload Image
+                                </button>
+                            </div>
+                            <input type="hidden" id="avatarSeed" name="avatarSeed" value="">
+                            <input type="hidden" id="avatarType" name="avatarType" value="api">
+                        </div>
+                        <div class="form-help-neo">
+                            <span>💡</span>
+                            Choose a fun random avatar or upload your own picture (max 5MB)
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group-neo">
+                        <label for="password" class="form-label-neo">
+                            <span>🔒</span>
+                            PASSWORD
+                        </label>
+                        <div class="password-input-neo">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-input-neo"
+                                placeholder="Create a strong password"
+                                required
+                                autocomplete="new-password"
+                                minlength="8"
+                            >
+                            <button type="button" class="password-toggle-neo" onclick="togglePassword('password')">
+                                <span>👁️</span>
+                            </button>
+                        </div>
+                        <div class="password-strength-neo" id="passwordStrength"></div>
+                        <div class="form-help-neo">
+                            <span>💡</span>
+                            Must contain uppercase, lowercase, number, and special character
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="form-group-neo">
+                        <label for="confirmPassword" class="form-label-neo">
+                            <span>🔒</span>
+                            CONFIRM PASSWORD
+                        </label>
+                        <div class="password-input-neo">
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                class="form-input-neo"
+                                placeholder="Confirm your password"
+                                required
+                                autocomplete="new-password"
+                            >
+                            <button type="button" class="password-toggle-neo" onclick="togglePassword('confirmPassword')">
+                                <span>👁️</span>
+                            </button>
+                        </div>
+                        <div class="password-match-neo" id="passwordMatch"></div>
+                    </div>
+
+                    <!-- Terms and Privacy -->
+                    <div class="form-group-neo">
+                        <label class="checkbox-label-neo">
+                            <input type="checkbox" name="terms" required>
+                            <span class="checkbox-custom-neo"></span>
+                            <span class="checkbox-text-neo">
+                                I agree to the <a href="/terms" target="_blank">Terms of Service</a>
+                                and <a href="/privacy" target="_blank">Privacy Policy</a>
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-neo btn-primary-neo">
+                        <span>🚀</span>
+                        CREATE ACCOUNT
+                    </button>
+                </form>
+
+                <div class="auth-footer-neo">
+                    <p>Already have an account? <a href="/auth/login">Sign in here</a></p>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="security-notice-neo">
+                <div class="security-content-neo">
+                    <span>🛡️</span>
+                    <div>
+                        <h4>YOUR SECURITY MATTERS</h4>
+                        <p>We use industry-standard encryption to protect your data and ensure only verified students can join.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="/js/landing-neo.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

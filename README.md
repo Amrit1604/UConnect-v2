@@ -8,9 +8,7 @@ A modern, real-time social media platform exclusively for Indian university stud
 - **🔐 Secure Authentication**: .edu.in email verification with session management
 - **👤 Advanced User Profiles**: Custom avatars, bio, privacy settings, campus affiliation
 - **📝 Rich Posts System**: Create, like, comment, and interact with posts in real-time
-- **💬 Real-Time Chat**: Live messaging with campus room broadcasts and typing indicators
-- **🔒 Private Messaging**: One-on-one secure chat functionality with message history
-- **🛡️ Content Moderation**: Report system, admin controls, and user management
+- **️ Content Moderation**: Report system, admin controls, and user management
 - **📱 Responsive Design**: Mobile-first modern UI with professional styling
 - **🔔 Flash Notifications**: Success/error messaging throughout the app
 - **📊 Admin Dashboard**: User management, content moderation, and analytics
@@ -133,15 +131,12 @@ BackendPro/
 ├── models/                  # Database models
 │   ├── User.js             # User model with authentication
 │   ├── Post.js             # Post model with interactions
-│   ├── ChatRequest.js      # Chat request model
-│   └── PrivateChat.js      # Private messaging model
 ├── routes/                  # Express route handlers
 │   ├── auth.js             # Authentication routes
 │   ├── posts.js            # Posts CRUD operations
 │   ├── users.js            # User profile management
 │   ├── admin.js            # Admin panel routes
-│   ├── settings.js         # User settings routes
-│   └── chat.js             # Chat functionality routes
+│   └── settings.js         # User settings routes
 ├── middleware/              # Custom middleware
 │   ├── auth.js             # Authentication middleware
 │   ├── errorHandler.js     # Error handling
@@ -172,9 +167,6 @@ BackendPro/
 │   │       ├── profile.ejs
 │   │       ├── account.ejs
 │   │       └── password.ejs
-│   ├── chat/               # Chat pages
-│   │   ├── private-room.ejs
-│   │   └── requests.ejs
 │   ├── admin/              # Admin pages
 │   └── partials/           # Reusable components
 │       ├── navbar.ejs
@@ -207,12 +199,7 @@ BackendPro/
    - Like and comment on posts in real-time
    - Use rich text formatting
 
-3. **Real-Time Communication**:
-   - Join campus-wide chat rooms
-   - Send private messages to other students
-   - See typing indicators and online status
-
-4. **Profile Management**:
+3. **Profile Management**:
    - Customize your avatar (upload or generate)
    - Manage privacy settings
    - Update personal information
@@ -298,8 +285,6 @@ EMAIL_FROM_NAME=UConnect Campus
 ## 🛣️ Roadmap
 
 ### Phase 2: Enhanced Engagement (In Progress)
-- [x] Real-time chat system
-- [x] Private messaging
 - [x] Advanced user profiles
 - [ ] Post categories and filtering
 - [ ] Push notifications

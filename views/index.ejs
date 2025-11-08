@@ -48,18 +48,20 @@
         /* Video section (below hero) */
         .video-section {
             background: var(--surface-color);
-            padding: var(--spacing-xl) 0;
+            padding: 0;
         }
         .video-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 var(--spacing-md);
+            padding: 0;
+            max-width: none;
+            margin: 0;
         }
         .video-wrapper {
             position: relative;
-            width: 100%;
+            width: 90vw;
+            max-width: 1200px;
+            left: 50%;
+            transform: translateX(-50%);
             aspect-ratio: 16 / 9;
-            border-radius: 16px;
             overflow: hidden;
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--border-light);
@@ -279,7 +281,7 @@
         <div class="nav-container">
 <div class="nav-brand">
     <a href="/" class="brand-link">
-        <img src="/images/logo.png" alt="UConnect Logo" style="width: 80px; height: 80px;" />
+        <img src="/images/logo.png" alt="UConnect Logo" style="width: 70px; height: 60px;" />
         <span>UConnect</span>
     </a>
 </div>
@@ -310,14 +312,14 @@
                     </div>
 
                     <!-- Theme Toggle (Desktop) -->
-                    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Switch between light and dark themes">
-                        <span id="themeIcon">🌙</span>
+                    <button class="theme-toggle" type="button" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false" title="Switch between light and dark themes">
+                        <span aria-hidden="true" data-theme-icon>🌙</span>
                     </button>
 
                     <!-- User Menu -->
                     <div class="user-menu">
                         <div class="user-dropdown">
-                            <button class="user-btn" onclick="toggleUserMenu()">
+                            <button class="user-btn" type="button" aria-haspopup="true" aria-expanded="false">
                                 <img src="<%= user.avatar ? '/uploads/avatars/' + user.avatar : '/images/default-avatar.png' %>"
                                      alt="<%= user.displayName %>" class="user-avatar">
                                 <span class="user-name"><%= user.displayName %></span>
@@ -343,8 +345,8 @@
                 </div>
 
                 <!-- Mobile Menu Toggle -->
-                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                    ☰
+                <button class="mobile-menu-btn" type="button" aria-controls="mobileMenu" aria-expanded="false" data-menu-open-icon="✖" data-menu-closed-icon="☰">
+                    <span aria-hidden="true" data-menu-icon>☰</span>
                 </button>
             <% } else { %>
                 <!-- Guest Navigation -->
@@ -354,8 +356,8 @@
                         <a href="/auth/register" class="btn btn-primary">Join Now</a>
                     </div>
                     <!-- Theme Toggle (Desktop) -->
-                    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-                        <i id="themeIcon">🌙</i>
+                    <button class="theme-toggle" type="button" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false">
+                        <span aria-hidden="true" data-theme-icon>🌙</span>
                     </button>
                 </div>
             <% } %>
@@ -407,7 +409,7 @@
                     <div class="flash-message flash-success">
                         ✅
                         <span><%= message %></span>
-                        <button onclick="this.parentElement.remove()" class="flash-close">
+                        <button class="flash-close" type="button" aria-label="Dismiss message">
                             ❌
                         </button>
                     </div>
@@ -419,7 +421,7 @@
                     <div class="flash-message flash-error">
                         ⚠️
                         <span><%= message %></span>
-                        <button onclick="this.parentElement.remove()" class="flash-close">
+                        <button class="flash-close" type="button" aria-label="Dismiss message">
                             ❌
                         </button>
                     </div>
@@ -431,7 +433,7 @@
                     <div class="flash-message flash-warning">
                         ⚠️
                         <span><%= message %></span>
-                        <button onclick="this.parentElement.remove()" class="flash-close">
+                        <button class="flash-close" type="button" aria-label="Dismiss message">
                             ❌
                         </button>
                     </div>
@@ -443,7 +445,7 @@
                     <div class="flash-message flash-info">
                         ℹ️
                         <span><%= message %></span>
-                        <button onclick="this.parentElement.remove()" class="flash-close">
+                        <button class="flash-close" type="button" aria-label="Dismiss message">
                             ❌
                         </button>
                     </div>
@@ -571,105 +573,15 @@
             </div>
         </section>
 
-        <!-- Features Section -->
-        <section class="features">
-            <div class="features-container">
-                <div class="section-header">
-                    <h2>Why Choose UConnect?</h2>
-                    <p>Built specifically for the Indian student community with features that matter</p>
-                </div>
-
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            🔐
-                        </div>
-                        <h3>Secure & Verified</h3>
-                        <p>Only students with valid .edu.in email addresses can join, ensuring a safe and authentic community.</p>
+        <!-- Combined Features and How It Works Section -->
+        <section class="combined-section">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <img src="/images/features-ai.png" alt="Features Illustration">
                     </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            🎯
-                        </div>
-                        <h3>Campus-Focused</h3>
-                        <p>Connect with students from your own campus. Share experiences, collaborate, and build lasting friendships.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            💬
-                        </div>
-                        <h3>Meaningful Conversations</h3>
-                        <p>Engage in discussions about academics, events, placements, and campus life with like-minded peers.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            📅
-                        </div>
-                        <h3>Stay Updated</h3>
-                        <p>Never miss important campus events, announcements, or opportunities shared by your fellow students.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            🌟
-                        </div>
-                        <h3>Positive Environment</h3>
-                        <p>Our moderation system ensures a respectful and supportive community for all students.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            📱
-                        </div>
-                        <h3>Mobile Friendly</h3>
-                        <p>Access UConnect on any device, anytime, anywhere. Stay connected on the go.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- How It Works Section -->
-        <section class="how-it-works">
-            <div class="how-it-works-container">
-                <div class="section-header">
-                    <h2>Get Started in 3 Simple Steps</h2>
-                    <p>Join your campus community in minutes</p>
-                </div>
-
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h3>Sign Up</h3>
-                            <p>Register with your .edu.in email address and verify your account</p>
-                        </div>
-                    </div>
-
-                    <div class="step-arrow">
-                        ➡️
-                    </div>
-
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h3>Create Profile</h3>
-                            <p>Set up your profile with a display name and avatar</p>
-                        </div>
-                    </div>
-
-                    <div class="step-arrow">
-                        ➡️
-                    </div>
-
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h3>Start Connecting</h3>
-                            <p>Share posts, like content, and engage with your campus community</p>
-                        </div>
+                    <div class="flip-card-back">
+                        <img src="/images/how-it-works-ai.png" alt="How It Works Illustration">
                     </div>
                 </div>
             </div>
@@ -680,6 +592,10 @@
             <div class="cta-container">
                 <div class="cta-content">
                     <h2>Ready to Connect with Your Campus?</h2>
+                    <video class="cta-video" autoplay muted loop playsinline>
+                        <source src="/videos/campus-life.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
                     <p>Join thousands of students already using UConnect to stay connected and engaged.</p>
                     <div class="cta-actions">
                         <a href="/auth/register" class="btn btn-primary btn-large">
@@ -732,133 +648,5 @@
     <!-- JavaScript -->
     <script src="/js/main.js"></script>
     <script src="/js/landing.js"></script>
-
-    <!-- Theme initialization and toggling -->
-    <script>
-        const themeToggle = document.querySelector('.theme-toggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const currentTheme = localStorage.getItem('theme');
-
-        function setDarkTheme() {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            if (themeIcon) themeIcon.textContent = '☀️';
-            localStorage.setItem('theme', 'dark');
-        }
-
-        function setLightTheme() {
-            document.documentElement.setAttribute('data-theme', 'light');
-            if (themeIcon) themeIcon.textContent = '🌙';
-            localStorage.setItem('theme', 'light');
-        }
-
-        function toggleTheme() {
-            if (document.documentElement.getAttribute('data-theme') === 'dark') {
-                setLightTheme();
-            } else {
-                setDarkTheme();
-            }
-        }
-
-        if (currentTheme === 'dark') {
-            setDarkTheme();
-        } else {
-            setLightTheme();
-        }
-
-        if (themeToggle) {
-            themeToggle.addEventListener('click', toggleTheme);
-        }
-
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (e.matches) {
-                setDarkTheme();
-            } else {
-                setLightTheme();
-            }
-        });
-    </script>
-
-    <!-- Auto-hide flash messages -->
-    <script>
-        // Auto-hide flash messages after 5 seconds
-        setTimeout(() => {
-            const flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(message => {
-                message.style.opacity = '0';
-                setTimeout(() => message.remove(), 300);
-            });
-        }, 5000);
-
-        // Enhanced 3D Card Interactions
-        document.addEventListener('DOMContentLoaded', () => {
-            const cards = document.querySelectorAll('.card-3d');
-
-            // Add glow effect on mouse move
-            document.addEventListener('mousemove', (e) => {
-                cards.forEach(card => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-
-                    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-                        card.style.background = `
-                            radial-gradient(
-                                circle at ${x}px ${y}px,
-                                rgba(99, 102, 241, 0.15),
-                                rgba(255, 255, 255, 0.05)
-                            )
-                        `;
-                    }
-                });
-            });
-
-
-
-            // Card click interactions
-            cards.forEach((card, index) => {
-                card.addEventListener('click', () => {
-                    // Add pulse animation
-                    card.style.animation = 'none';
-                    card.offsetHeight; // Trigger reflow
-                    card.style.animation = `float-card 4s ease-in-out infinite ${index}s, pulse 0.6s ease`;
-                });
-            });
-
-            // Intersection Observer for stagger animations
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
-
-            // Observe feature cards for entrance animation
-            document.querySelectorAll('.feature-card').forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.transition = `all 0.6s ease ${index * 0.1}s`;
-                observer.observe(card);
-            });
-        });
-
-        // Add pulse animation keyframe
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
 </body>
 </html>

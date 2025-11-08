@@ -8,7 +8,14 @@
  */
 function togglePassword(fieldId) {
   const field = document.getElementById(fieldId);
-  const icon = field.nextElementSibling.querySelector('span');
+  if (!field) return;
+
+  // Find the toggle button - works for both old and neo designs
+  const toggleButton = field.parentElement.querySelector('.password-toggle, .password-toggle-neo');
+  if (!toggleButton) return;
+
+  const icon = toggleButton.querySelector('span');
+  if (!icon) return;
 
   if (field.type === 'password') {
     field.type = 'text';
@@ -38,12 +45,25 @@ function validatePasswordStrength(password) {
   const strength = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'][Math.min(score, 4)];
   const colors = ['#ff4757', '#ff6b7a', '#ffa502', '#2ed573', '#20bf6b'];
 
-  strengthIndicator.innerHTML = `
-    <div class="strength-bar">
-      <div class="strength-fill" style="width: ${score * 20}%; background-color: ${colors[score - 1] || colors[0]}"></div>
-    </div>
-    <span class="strength-text" style="color: ${colors[score - 1] || colors[0]}">${strength}</span>
-  `;
+  // Check if using neo design
+  const isNeo = strengthIndicator.classList.contains('password-strength-neo') ||
+                document.querySelector('.auth-page-neo');
+
+  if (isNeo) {
+    strengthIndicator.innerHTML = `
+      <div class="strength-bar-neo">
+        <div class="strength-fill-neo" style="width: ${score * 20}%; background-color: ${colors[score - 1] || colors[0]}"></div>
+      </div>
+      <span class="strength-text-neo" style="color: ${colors[score - 1] || colors[0]}">${strength}</span>
+    `;
+  } else {
+    strengthIndicator.innerHTML = `
+      <div class="strength-bar">
+        <div class="strength-fill" style="width: ${score * 20}%; background-color: ${colors[score - 1] || colors[0]}"></div>
+      </div>
+      <span class="strength-text" style="color: ${colors[score - 1] || colors[0]}">${strength}</span>
+    `;
+  }
 }
 
 function checkPasswordMatch() {
@@ -58,11 +78,23 @@ function checkPasswordMatch() {
     return;
   }
 
-  if (password === confirmPassword && password.length > 0) {
-        matchIndicator.innerHTML = '<span class="match-success"><span style="margin-right: 5px;">✅</span> Passwords match</span>';
-    } else if (confirmPassword.length > 0) {
-        matchIndicator.innerHTML = '<span class="match-error"><span style="margin-right: 5px;">❌</span> Passwords do not match</span>';
+  // Check if using neo design
+  const isNeo = matchIndicator.classList.contains('password-match-neo') ||
+                document.querySelector('.auth-page-neo');
+
+  if (password.value === confirmPassword.value && password.value.length > 0) {
+    if (isNeo) {
+      matchIndicator.innerHTML = '<span class="match-success-neo">✅ Passwords match</span>';
+    } else {
+      matchIndicator.innerHTML = '<span class="match-success"><span style="margin-right: 5px;">✅</span> Passwords match</span>';
     }
+  } else if (confirmPassword.value.length > 0) {
+    if (isNeo) {
+      matchIndicator.innerHTML = '<span class="match-error-neo">❌ Passwords do not match</span>';
+    } else {
+      matchIndicator.innerHTML = '<span class="match-error"><span style="margin-right: 5px;">❌</span> Passwords do not match</span>';
+    }
+  }
 }
 
 /**

@@ -18,14 +18,15 @@ const requireAuth = async (req, res, next) => {
 
     // Check if session is available
     if (!req.session) {
-      console.error('Session not available in requireAuth middleware');
+      console.error('❌ Session not available in requireAuth middleware');
       return res.redirect('/auth/login');
     }
 
     // Check if user is logged in via session
     if (!req.session.user || !req.session.user.id) {
       console.log('❌ No user in session');
-      if (req.flash) {
+      // Only use flash if session exists
+      if (req.session && typeof req.flash === 'function') {
         req.flash('error', 'Please log in to access this page');
       }
       return res.redirect('/auth/login');
@@ -34,16 +35,20 @@ const requireAuth = async (req, res, next) => {
     // Verify user still exists and is active
     const user = await User.findById(req.session.user.id);
     if (!user || !user.isActive) {
-      req.session.destroy();
-      if (req.flash) {
+      // Use flash BEFORE destroying session
+      if (req.session && typeof req.flash === 'function') {
         req.flash('error', 'Your account is no longer active');
+      }
+      // Destroy session after flash
+      if (req.session) {
+        req.session.destroy();
       }
       return res.redirect('/auth/login');
     }
 
     // Check if user is verified
     if (!user.isVerified) {
-      if (req.flash) {
+      if (req.session && typeof req.flash === 'function') {
         req.flash('error', 'Please verify your email address to continue');
       }
       return res.redirect('/auth/verify-email');
@@ -55,7 +60,8 @@ const requireAuth = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    if (req.flash) {
+    // Check if session still exists before using flash
+    if (req.session && req.flash) {
       req.flash('error', 'Authentication error occurred');
     }
     res.redirect('/auth/login');
@@ -68,7 +74,7 @@ const requireAuth = async (req, res, next) => {
 const requireAdmin = async (req, res, next) => {
   try {
     if (!req.user || req.user.role !== 'admin') {
-      if (req.flash) {
+      if (req.session && typeof req.flash === 'function') {
         req.flash('error', 'Access denied. Admin privileges required.');
       }
       return res.redirect('/posts');
@@ -76,7 +82,7 @@ const requireAdmin = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Admin auth middleware error:', error);
-    if (req.flash) {
+    if (req.session && typeof req.flash === 'function') {
       req.flash('error', 'Authorization error occurred');
     }
     res.redirect('/posts');
@@ -103,7 +109,7 @@ const requireOwnership = (resourceModel) => {
       const resource = await resourceModel.findById(resourceId);
 
       if (!resource) {
-        if (req.flash) {
+        if (req.session && typeof req.flash === 'function') {
           req.flash('error', 'Resource not found');
         }
         return res.redirect('/posts');
@@ -111,7 +117,7 @@ const requireOwnership = (resourceModel) => {
 
       // Check if user owns the resource or is admin
       if (resource.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-        if (req.flash) {
+        if (req.session && typeof req.flash === 'function') {
           req.flash('error', 'You do not have permission to perform this action');
         }
         return res.redirect('/posts');
@@ -121,7 +127,7 @@ const requireOwnership = (resourceModel) => {
       next();
     } catch (error) {
       console.error('Ownership middleware error:', error);
-      if (req.flash) {
+      if (req.session && typeof req.flash === 'function') {
         req.flash('error', 'Error checking resource ownership');
       }
       res.redirect('/posts');
@@ -137,7 +143,7 @@ const validateEduEmail = (req, res, next) => {
 
   // Allow both .edu.in and gmail.com for testing purposes
   if (!email || (!email.endsWith('.edu.in') && !email.endsWith('@gmail.com'))) {
-    if (req.flash) {
+    if (req.session && typeof req.flash === 'function') {
       req.flash('error', 'Please use a valid .edu.in email address or Gmail for testing');
     }
     return res.redirect('/auth/register');

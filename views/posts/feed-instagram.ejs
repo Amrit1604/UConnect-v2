@@ -1,909 +1,2621 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | UConnect</title>
+<!-- Professional Campus Feed - Modern & Clean -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- CSS -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="/css/main.css" rel="stylesheet">
+<style>
+/* ==========================================
+   PROFESSIONAL CAMPUS FEED - ULTIMATE EDITION
+   Vibrant Colors, Particles, Mind-Blowing Effects
+   ========================================== */
 
-    <style>
-        /* 🚀 PROFESSIONAL INSTAGRAM-LIKE FEED */
-        body {
-            background: #fafafa;
-            font-family: 'Inter', sans-serif;
-        }
+:root {
+    --primary-dark: #0f172a;
+    --primary-gray: #1e293b;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-teal: #06b6d4;
+    --accent-pink: #ec4899;
+    --accent-orange: #f97316;
+    --accent-green: #10b981;
+    --surface-white: #ffffff;
+    --surface-gray: #f8fafc;
+    --surface-dark: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --border-light: #e2e8f0;
+    --border-medium: #cbd5e1;
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.25);
+}
 
-        .posts-container {
-            min-height: 100vh;
-            padding-top: 4rem;
-            background: #fafafa;
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        .posts-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr 300px;
-            gap: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+    background-size: 400% 400%;
+    background-attachment: fixed;
+    animation: gradientFlow 15s ease infinite;
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    position: relative;
+}
 
-        /* 📱 MOBILE RESPONSIVE DESIGN */
-        @media (max-width: 768px) {
-            .posts-layout {
-                grid-template-columns: 1fr;
-                padding: 1rem;
-                gap: 1rem;
-            }
+@keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 
-            .categories-sidebar {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100vh;
-                background: rgba(0,0,0,0.5);
-                z-index: 1000;
-                padding: 0;
-                border-radius: 0;
-            }
+/* ==========================================
+   ANIMATED PARTICLES BACKGROUND
+   ========================================== */
 
-            .categories-sidebar.mobile-open {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.4) 0%, transparent 40%),
+        radial-gradient(circle at 85% 25%, rgba(139, 92, 246, 0.4) 0%, transparent 40%),
+        radial-gradient(circle at 50% 60%, rgba(236, 72, 153, 0.3) 0%, transparent 40%),
+        radial-gradient(circle at 25% 85%, rgba(6, 182, 212, 0.4) 0%, transparent 40%),
+        radial-gradient(circle at 75% 90%, rgba(249, 115, 22, 0.3) 0%, transparent 40%);
+    animation: particleMove 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
 
-            .categories-sidebar .sidebar-content {
-                background: white;
-                border-radius: 12px;
-                padding: 2rem;
-                margin: 2rem;
-                max-height: 80vh;
-                overflow-y: auto;
-                width: calc(100% - 4rem);
-                max-width: 400px;
-            }
+@keyframes particleMove {
+    0%, 100% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    25% {
+        transform: translate(50px, -50px) scale(1.1) rotate(90deg);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translate(-30px, 30px) scale(0.9) rotate(180deg);
+        opacity: 1;
+    }
+    75% {
+        transform: translate(40px, 60px) scale(1.05) rotate(270deg);
+        opacity: 0.9;
+    }
+}
 
-            .trending-sidebar {
-                display: none;
-            }
-        }
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(2px 2px at 20% 30%, white, transparent),
+        radial-gradient(2px 2px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(1px 1px at 80% 10%, white, transparent),
+        radial-gradient(2px 2px at 90% 60%, white, transparent),
+        radial-gradient(1px 1px at 33% 80%, white, transparent),
+        radial-gradient(2px 2px at 10% 90%, white, transparent);
+    background-size: 200% 200%;
+    animation: stars 3s linear infinite, starFloat 8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+}
 
-        /* MOBILE CATEGORY TOGGLE BUTTON */
-        .mobile-category-toggle {
-            display: none;
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            cursor: pointer;
-            z-index: 999;
-            transition: all 0.3s ease;
-        }
+@keyframes stars {
+    from { transform: translateY(0); }
+    to { transform: translateY(-20px); }
+}
 
-        .mobile-category-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-        }
+@keyframes starFloat {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+}
 
-        @media (max-width: 768px) {
-            .mobile-category-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+.feed-container {
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+}
 
-            .sidebar-close {
-                display: block !important;
-            }
-        }
+.feed-layout {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    display: grid;
+    grid-template-columns: 300px 1fr 320px;
+    gap: 2rem;
+    align-items: start;
+}
 
-        /* CATEGORIES SIDEBAR */
-        .categories-sidebar {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 1.5rem;
-            height: fit-content;
-            position: sticky;
-            top: 6rem;
-        }
+/* ==========================================
+   VIBRANT GLASSMORPHISM SIDEBAR
+   ========================================== */
 
-        .categories-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
+.sidebar {
+    position: sticky;
+    top: 2rem;
+    animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-        .categories-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0;
-        }
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
 
-        .category-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #4b5563;
-            margin-bottom: 0.5rem;
-            transition: all 0.2s ease;
-        }
+.sidebar-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border-radius: 24px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 8px 32px rgba(31, 38, 135, 0.37),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5),
+        0 0 60px rgba(139, 92, 246, 0.15);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
 
-        .category-item:hover {
-            background: #f3f4f6;
-            color: #1f2937;
-        }
+.sidebar-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.6s;
+}
 
-        .category-item.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
+.sidebar-section:hover::before {
+    left: 100%;
+}
 
-        .category-count {
-            margin-left: auto;
-            background: #e5e7eb;
-            color: #6b7280;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+.sidebar-section:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+        0 20px 60px rgba(31, 38, 135, 0.5),
+        inset 0 2px 8px rgba(255, 255, 255, 0.6),
+        0 0 80px rgba(139, 92, 246, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
 
-        .category-item.active .category-count {
-            background: rgba(255,255,255,0.2);
-            color: white;
-        }
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid transparent;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899) no-repeat bottom;
+    background-size: 100% 3px;
+    animation: gradientSlide 3s ease infinite;
+    background-size: 200% 3px;
+}
 
-        /* MAIN FEED */
-        .posts-main {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
+@keyframes gradientSlide {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
 
-        .posts-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+.section-icon {
+    width: 28px;
+    height: 28px;
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+    animation: iconPulse 2s ease-in-out infinite;
+    color: #3b82f6;
+}
 
-        .posts-title {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0;
-        }
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)); }
+    50% { transform: scale(1.15); filter: drop-shadow(0 0 16px rgba(139, 92, 246, 1)); }
+}
 
-        .create-post-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% auto;
+    animation: gradientText 3s ease infinite;
+}
 
-        .create-post-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
+@keyframes gradientText {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
 
-        .posts-feed {
-            max-height: 80vh;
-            overflow-y: auto;
-        }
+/* Category Links with Rainbow Hover */
+.categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
 
-        .post-card {
-            border-bottom: 1px solid #e5e7eb;
-            padding: 1.5rem;
-            transition: all 0.2s ease;
-        }
+.category-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    text-decoration: none;
+    color: #1e293b;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.2);
+}
 
-        .post-card:hover {
-            background: #f9fafb;
-        }
+.category-link::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    transform: translateY(-50%);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+    border-radius: 16px;
+}
 
-        .post-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
+.category-link:hover::before {
+    width: 100%;
+}
 
-        .post-author {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
+.category-link:hover {
+    color: white;
+    transform: translateX(10px) scale(1.03);
+    border-color: transparent;
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+}
 
-        .author-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            flex-shrink: 0;
-            overflow: hidden;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            text-decoration: none;
-            position: relative;
-        }
+.category-link.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    color: white;
+    box-shadow:
+        0 8px 30px rgba(59, 130, 246, 0.6),
+        0 0 40px rgba(139, 92, 246, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.4);
+}
 
-        .author-avatar img {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover;
-            border-radius: 50%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 2;
-        }
+.category-icon {
+    width: 22px;
+    height: 22px;
+    transition: transform 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
 
-        .author-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-        }
+.category-link:hover .category-icon {
+    transform: rotate(360deg) scale(1.2);
+    filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.8));
+}
 
-        .post-author {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
+.category-count {
+    font-size: 0.75rem;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 0.4rem 0.7rem;
+    border-radius: 20px;
+    min-width: 28px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
 
-        .author-info {
-            display: flex;
-            flex-direction: column;
-        }
+.category-link:hover .category-count,
+.category-link.active .category-count {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+}
 
-        .author-name {
-            font-weight: 600;
-            color: #1f2937;
-            text-decoration: none;
-        }
+/* ==========================================
+   MAIN FEED - Vibrant Glass Design
+   ========================================== */
 
-        .post-time {
-            font-size: 0.875rem;
-            color: #6b7280;
-        }
+.main-feed {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border-radius: 28px;
+    box-shadow:
+        0 8px 32px rgba(31, 38, 135, 0.37),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5),
+        0 0 60px rgba(59, 130, 246, 0.2);
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-        .post-category {
-            background: #f3f4f6;
-            color: #4b5563;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
-        .post-content {
-            margin-bottom: 1rem;
-        }
+.feed-header {
+    padding: 2.5rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%);
+    position: relative;
+    overflow: hidden;
+}
 
-        .post-text {
-            color: #1f2937;
-            line-height: 1.6;
-            margin: 0 0 1rem 0;
-        }
+.feed-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+}
 
-        .post-location {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            color: #6b7280;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-        }
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
-        .post-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
+.feed-title {
+    font-size: 2.25rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 300% auto;
+    animation: gradientShift 4s ease infinite;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.4));
+}
 
-        .post-tag {
-            background: #ddd6fe;
-            color: #7c3aed;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            text-decoration: none;
-            font-weight: 500;
-        }
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
 
-        .post-actions {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+.feed-title-icon {
+    width: 40px;
+    height: 40px;
+    filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.8));
+    animation: iconBounce 2s ease-in-out infinite;
+    color: #3b82f6;
+}
 
-        .action-buttons {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+@keyframes iconBounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-12px) rotate(-15deg); }
+    75% { transform: translateY(-6px) rotate(15deg); }
+}
 
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            background: none;
-            border: none;
-            color: #6b7280;
-            padding: 0.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
+.create-post-button {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    color: white;
+    padding: 1.1rem 2.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 8px 25px rgba(59, 130, 246, 0.6),
+        0 0 40px rgba(139, 92, 246, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
 
-        .action-btn:hover {
-            background: #f3f4f6;
-            color: #1f2937;
-        }
+.create-post-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
 
-        .priority-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+.create-post-button:hover::before {
+    left: 100%;
+}
 
-        .priority-badge.urgent {
-            background: #fef2f2;
-            color: #dc2626;
-        }
+.create-post-button:hover {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow:
+        0 12px 40px rgba(59, 130, 246, 0.7),
+        0 0 60px rgba(139, 92, 246, 0.6),
+        inset 0 2px 8px rgba(255, 255, 255, 0.4);
+}
 
-        .priority-badge.high {
-            background: #fffbeb;
-            color: #d97706;
-        }
+.create-post-button:active {
+    transform: translateY(-2px) scale(1.05);
+}
 
-        /* RIGHT SIDEBAR */
-        .posts-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
+/* ==========================================
+   STORIES - Neon Glow Effect
+   ========================================== */
 
-        .sidebar-widget {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 1.5rem;
-        }
+.stories-section {
+    padding: 2rem 2.5rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(90deg,
+        rgba(59, 130, 246, 0.1),
+        rgba(139, 92, 246, 0.1),
+        rgba(236, 72, 153, 0.1),
+        rgba(59, 130, 246, 0.1)
+    );
+    background-size: 300% 100%;
+    animation: storiesGlow 5s ease infinite;
+}
 
-        .widget-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
+@keyframes storiesGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
 
-        .widget-title {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0;
-        }
+.stories-row {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.6) transparent;
+    scroll-behavior: smooth;
+}
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
+.stories-row::-webkit-scrollbar {
+    height: 8px;
+}
 
-        .stat-item {
-            text-align: center;
-            padding: 1rem;
-            background: #f9fafb;
-            border-radius: 8px;
-        }
+.stories-row::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
 
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #667eea;
-        }
+.stories-row::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
+}
 
-        .stat-label {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-top: 0.25rem;
-        }
+.story-item {
+    flex-shrink: 0;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
 
-        /* EMPTY STATE */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #6b7280;
-        }
+.story-item:hover {
+    transform: translateY(-10px) scale(1.08);
+}
 
-        .empty-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
+.story-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #f97316);
+    background-size: 300% 300%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    padding: 4px;
+    box-shadow:
+        0 8px 30px rgba(59, 130, 246, 0.7),
+        0 0 60px rgba(139, 92, 246, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+    animation: storyGradient 4s ease infinite;
+    position: relative;
+}
 
-        /* RESPONSIVE */
-        @media (max-width: 1024px) {
-            .posts-layout {
-                grid-template-columns: 1fr;
-                padding: 1rem;
-            }
+@keyframes storyGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
 
-            .categories-sidebar,
-            .posts-sidebar {
-                display: none;
-            }
-        }
-    </style>
+.story-avatar::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        transparent,
+        rgba(255, 255, 255, 0.5),
+        transparent 30%
+    );
+    animation: storyShine 2s linear infinite;
+}
+
+@keyframes storyShine {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.story-avatar img {
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    position: relative;
+    z-index: 1;
+}
+
+.story-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #0f172a;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================
+   POST CARDS - Colorful Glass Effect
+   ========================================== */
+
+.posts-container {
+    padding: 0;
+}
+
+.post-item {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    padding: 2.5rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.post-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 0;
+    background: linear-gradient(180deg, #3b82f6, #8b5cf6, #ec4899);
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+}
+
+.post-item:hover::before {
+    height: 100%;
+}
+
+.post-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateX(10px);
+    box-shadow: -10px 0 40px rgba(59, 130, 246, 0.3);
+}
+
+.post-item:nth-child(1) { animation-delay: 0.1s; opacity: 0; animation: fadeInUp 0.6s ease-out 0.1s forwards; }
+.post-item:nth-child(2) { animation-delay: 0.2s; opacity: 0; animation: fadeInUp 0.6s ease-out 0.2s forwards; }
+.post-item:nth-child(3) { animation-delay: 0.3s; opacity: 0; animation: fadeInUp 0.6s ease-out 0.3s forwards; }
+.post-item:nth-child(4) { animation-delay: 0.4s; opacity: 0; animation: fadeInUp 0.6s ease-out 0.4s forwards; }
+.post-item:nth-child(5) { animation-delay: 0.5s; opacity: 0; animation: fadeInUp 0.6s ease-out 0.5s forwards; }
+
+/* Post Header */
+.post-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex: 1;
+}
+
+.author-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 4px 20px rgba(139, 92, 246, 0.6),
+        0 0 30px rgba(59, 130, 246, 0.4);
+    text-decoration: none;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.author-avatar:hover {
+    transform: scale(1.15) rotate(10deg);
+    box-shadow:
+        0 8px 30px rgba(139, 92, 246, 0.8),
+        0 0 50px rgba(59, 130, 246, 0.6);
+}
+
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.author-name {
+    font-weight: 700;
+    color: #0f172a;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 0.25rem;
+    transition: all 0.3s ease;
+    position: relative;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.author-name::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+    transition: width 0.3s ease;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.8);
+}
+
+.author-name:hover::after {
+    width: 100%;
+}
+
+.post-meta {
+    font-size: 0.8rem;
+    color: #475569;
+    font-weight: 600;
+}
+
+.post-category {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow:
+        0 6px 20px rgba(59, 130, 246, 0.6),
+        0 0 40px rgba(139, 92, 246, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-category:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow:
+        0 10px 30px rgba(59, 130, 246, 0.8),
+        0 0 60px rgba(139, 92, 246, 0.6),
+        inset 0 2px 8px rgba(255, 255, 255, 0.4);
+}
+
+/* Post Content */
+.post-text {
+    color: #0f172a;
+    line-height: 1.8;
+    font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+/* Post Images - Vibrant Gallery */
+.post-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.post-image {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.2),
+        0 0 40px rgba(139, 92, 246, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.post-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.4), rgba(236, 72, 153, 0.4));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.post-image:hover::before {
+    opacity: 1;
+}
+
+.post-image:hover {
+    transform: scale(1.08) translateY(-8px) rotate(2deg);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 80px rgba(139, 92, 246, 0.6);
+    border-color: #8b5cf6;
+}
+
+.post-video {
+    width: 100%;
+    max-height: 450px;
+    border-radius: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.2),
+        0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+/* Post Location with Neon Pulse */
+.post-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: #0f172a;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+    backdrop-filter: blur(15px);
+    border-radius: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+}
+
+.post-location:hover {
+    transform: translateX(8px) scale(1.05);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+    border-color: #8b5cf6;
+}
+
+.post-location-icon {
+    width: 18px;
+    height: 18px;
+    color: #3b82f6;
+    animation: locationPulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.8));
+}
+
+@keyframes locationPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+/* Tags - Neon Pills */
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.post-tag {
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 0.625rem 1.25rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(139, 92, 246, 0.8));
+    border-radius: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 4px 20px rgba(139, 92, 246, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.post-tag::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: linear-gradient(135deg, #ec4899, #f97316);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+}
+
+.post-tag:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.post-tag:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow:
+        0 8px 30px rgba(236, 72, 153, 0.7),
+        0 0 40px rgba(249, 115, 22, 0.5);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* ==========================================
+   ACTION BUTTONS - Neon Interactive
+   ========================================== */
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: #0f172a;
+    padding: 0.875rem 1.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.9rem;
+    font-weight: 700;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+}
+
+.action-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.action-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.action-button:hover {
+    color: white;
+    border-color: transparent;
+    transform: translateY(-5px) scale(1.08);
+    box-shadow:
+        0 10px 35px rgba(59, 130, 246, 0.6),
+        0 0 50px rgba(139, 92, 246, 0.5);
+}
+
+.action-button span,
+.action-button-icon {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.action-button:hover .action-button-icon {
+    transform: scale(1.3) rotate(15deg);
+}
+
+.action-button.liked {
+    color: white;
+    background: linear-gradient(135deg, #ec4899, #f43f5e);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 6px 25px rgba(236, 72, 153, 0.7),
+        0 0 40px rgba(244, 63, 94, 0.5);
+}
+
+.action-button.liked:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow:
+        0 12px 40px rgba(236, 72, 153, 0.9),
+        0 0 60px rgba(244, 63, 94, 0.7);
+}
+
+/* Priority Badges with Mega Glow */
+.priority-badge {
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    position: relative;
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+.priority-badge.urgent {
+    background: linear-gradient(135deg, #ef4444, #dc2626, #b91c1c);
+    color: white;
+    box-shadow:
+        0 6px 30px rgba(239, 68, 68, 0.8),
+        0 0 60px rgba(220, 38, 38, 0.6),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    animation: urgentGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes urgentGlow {
+    0%, 100% {
+        box-shadow:
+            0 6px 30px rgba(239, 68, 68, 0.8),
+            0 0 60px rgba(220, 38, 38, 0.6),
+            inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    }
+    50% {
+        box-shadow:
+            0 10px 50px rgba(239, 68, 68, 1),
+            0 0 100px rgba(220, 38, 38, 0.9),
+            inset 0 2px 8px rgba(255, 255, 255, 0.5);
+    }
+}
+
+.priority-badge.high {
+    background: linear-gradient(135deg, #f59e0b, #d97706, #b45309);
+    color: white;
+    box-shadow:
+        0 6px 30px rgba(245, 158, 11, 0.8),
+        0 0 60px rgba(217, 119, 6, 0.6),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+/* ==========================================
+   COMMENTS SECTION - Glass Rollout
+   ========================================== */
+
+.comments-section {
+    margin-top: 1.5rem;
+    padding-top: 0;
+    border-top: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                padding-top 0.5s ease,
+                opacity 0.4s ease;
+    opacity: 0;
+}
+
+.comments-section.expanded {
+    max-height: 1200px;
+    opacity: 1;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.comments-container {
+    padding: 2.5rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow:
+        0 8px 32px rgba(31, 38, 135, 0.37),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.comment-form {
+    margin-bottom: 2rem;
+}
+
+.comment-input-container {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.comment-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 3px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
+
+.comment-input {
+    width: 100%;
+    min-height: 120px;
+    padding: 1.25rem;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8));
+    backdrop-filter: blur(10px);
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow:
+        0 0 0 4px rgba(139, 92, 246, 0.2),
+        0 8px 30px rgba(59, 130, 246, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    background: white;
+}
+
+.comment-form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.25rem;
+}
+
+.character-count {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.comment-submit {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    color: white;
+    padding: 0.875rem 1.75rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    box-shadow:
+        0 6px 25px rgba(59, 130, 246, 0.6),
+        0 0 40px rgba(139, 92, 246, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.comment-submit:hover {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow:
+        0 10px 40px rgba(59, 130, 246, 0.8),
+        0 0 60px rgba(139, 92, 246, 0.6),
+        inset 0 2px 8px rgba(255, 255, 255, 0.4);
+}
+
+.comment-submit:active {
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Comment Items */
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.comment-item {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    animation: commentSlideIn 0.4s ease-out;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+}
+
+@keyframes commentSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.comment-item:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(8px);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.comment-author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 2px 15px rgba(139, 92, 246, 0.3);
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.625rem;
+}
+
+.comment-author {
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 0.95rem;
+}
+
+.comment-time {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.comment-text {
+    color: #1e293b;
+    line-height: 1.7;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* ==========================================
+   STATS SIDEBAR - Neon Cards
+   ========================================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 1.75rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+    animation: statRotate 2s linear infinite;
+}
+
+@keyframes statRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.stat-card:hover {
+    transform: translateY(-10px) scale(1.08);
+    box-shadow:
+        0 15px 50px rgba(59, 130, 246, 0.5),
+        0 0 60px rgba(139, 92, 246, 0.4);
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(139, 92, 246, 0.6);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% auto;
+    animation: gradientText 3s ease infinite;
+    margin-bottom: 0.625rem;
+    display: block;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+    filter: drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3));
+}
+
+.stat-card:hover .stat-number {
+    transform: scale(1.15);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #0f172a;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================
+   EMPTY STATE
+   ========================================== */
+
+.empty-state {
+    text-align: center;
+    padding: 6rem 2rem;
+    animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.empty-icon {
+    font-size: 5rem;
+    margin-bottom: 2rem;
+    opacity: 0.7;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 8px 20px rgba(139, 92, 246, 0.4));
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-25px); }
+}
+
+.empty-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% auto;
+    animation: gradientText 3s ease infinite;
+    margin-bottom: 1.25rem;
+}
+
+.empty-description {
+    font-size: 1.2rem;
+    color: #1e293b;
+    margin-bottom: 3rem;
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.9;
+    font-weight: 600;
+}
+
+/* ==========================================
+   MOBILE FAB - Neon Button
+   ========================================== */
+
+.mobile-category-toggle {
+    display: none;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.75rem;
+    cursor: pointer;
+    box-shadow:
+        0 10px 40px rgba(59, 130, 246, 0.7),
+        0 0 80px rgba(139, 92, 246, 0.5);
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fabPulse 2s ease-in-out infinite;
+}
+
+@keyframes fabPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.mobile-category-toggle:hover {
+    transform: scale(1.25) rotate(90deg);
+    box-shadow:
+        0 15px 60px rgba(59, 130, 246, 0.9),
+        0 0 100px rgba(139, 92, 246, 0.7);
+}
+
+.mobile-category-toggle:active {
+    transform: scale(1.15) rotate(90deg);
+}
+
+/* ==========================================
+   MEDIA MODAL
+   ========================================== */
+
+.media-modal {
+    backdrop-filter: blur(30px);
+    background: rgba(0, 0, 0, 0.95);
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(30px);
+    }
+}
+
+.modal-close {
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    transform: rotate(90deg) scale(1.3);
+    color: #ec4899 !important;
+    filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.8));
+}
+
+.modal-media-container img,
+.modal-media-container video {
+    border-radius: 16px;
+    box-shadow: 0 20px 80px rgba(139, 92, 246, 0.6);
+    animation: mediaZoomIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes mediaZoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ==========================================
+   SCROLLBARS
+   ========================================== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+    width: 14px;
+}
+
+::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6, #8b5cf6, #ec4899);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ec4899, #f97316, #10b981);
+    box-shadow: 0 0 30px rgba(236, 72, 153, 1);
+}
+
+::selection {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    color: white;
+}
+
+::-moz-selection {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    color: white;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 1200px) {
+    .feed-layout {
+        grid-template-columns: 260px 1fr 280px;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .feed-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .mobile-category-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .feed-container {
+        padding: 1rem 0;
+    }
+
+    .feed-layout {
+        padding: 0 0.5rem;
+    }
+
+    .feed-header {
+        flex-direction: column;
+        gap: 1.25rem;
+        text-align: center;
+        padding: 2rem 1.5rem;
+    }
+
+    .feed-title {
+        font-size: 1.75rem;
+    }
+
+    .create-post-button {
+        width: 100%;
+        justify-content: center;
+        padding: 1rem 2rem;
+    }
+
+    .post-item {
+        padding: 1.75rem;
+    }
+
+    .post-images {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        gap: 0.625rem;
+        flex-wrap: wrap;
+    }
+
+    .action-button {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.85rem;
+    }
+
+    .stories-row {
+        padding: 0.75rem 0;
+    }
+
+    .story-avatar {
+        width: 70px;
+        height: 70px;
+    }
+
+    .mobile-category-toggle {
+        width: 60px;
+        height: 60px;
+        bottom: 1.5rem;
+        right: 1.5rem;
+    }
+
+    .stat-card {
+        padding: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .feed-title {
+        font-size: 1.5rem;
+    }
+
+    .post-item {
+        padding: 1.25rem;
+    }
+
+    .stat-number {
+        font-size: 1.75rem;
+    }
+}
+
+/* Performance */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* GPU Acceleration */
+.post-item,
+.sidebar-section,
+.action-button,
+.category-link,
+.story-item,
+.stat-card {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* ==========================================
+   ADDITIONAL NEON EFFECTS
+   ========================================== */
+
+/* Floating Action Indicators */
+@keyframes heartFloat {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Ripple Effect on Click */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.action-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+}
+
+.action-button:active::after {
+    animation: ripple 0.6s ease-out;
+}
+
+/* Neon Text Glow */
+@keyframes neonGlow {
+    0%, 100% {
+        text-shadow:
+            0 0 10px rgba(59, 130, 246, 0.8),
+            0 0 20px rgba(139, 92, 246, 0.6),
+            0 0 30px rgba(236, 72, 153, 0.4);
+    }
+    50% {
+        text-shadow:
+            0 0 20px rgba(59, 130, 246, 1),
+            0 0 40px rgba(139, 92, 246, 0.8),
+            0 0 60px rgba(236, 72, 153, 0.6);
+    }
+}
+
+/* Sparkle Effect */
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.stat-card::after {
+    content: '✨';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    opacity: 0;
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+.stat-card:hover::after {
+    animation: sparkle 0.6s ease-in-out infinite;
+}
+
+/* Loading Shimmer Enhanced */
+.loading-shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(59, 130, 246, 0.2) 0%,
+        rgba(139, 92, 246, 0.4) 25%,
+        rgba(236, 72, 153, 0.4) 50%,
+        rgba(139, 92, 246, 0.4) 75%,
+        rgba(59, 130, 246, 0.2) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Hover Glow for Images */
+.post-image::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.6), transparent 70%);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.post-image:hover::after {
+    opacity: 1;
+}
+
+/* Pulsing Rings */
+@keyframes pulseRing {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.story-avatar::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    border: 3px solid rgba(139, 92, 246, 0.6);
+    animation: pulseRing 2s ease-out infinite;
+}
+
+/* Gradient Border Animation */
+@keyframes borderGlow {
+    0%, 100% {
+        border-color: rgba(59, 130, 246, 0.6);
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+    33% {
+        border-color: rgba(139, 92, 246, 0.6);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+    }
+    66% {
+        border-color: rgba(236, 72, 153, 0.6);
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
+    }
+}
+
+.sidebar-section:hover,
+.main-feed {
+    animation: borderGlow 3s ease infinite;
+}
+
+/* Floating Particles Inside Elements */
+.feed-header::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+    background-size: 50px 50px, 80px 80px;
+    background-position: 0 0, 40px 40px;
+    opacity: 0.3;
+    animation: floatParticles 20s linear infinite;
+}
+
+@keyframes floatParticles {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-100px);
+    }
+}
+
+/* Neon Underline Animation */
+.author-name {
+    background: linear-gradient(to right, transparent 50%, rgba(139, 92, 246, 0.2) 50%);
+    background-size: 200% 100%;
+    background-position: left bottom;
+    transition: background-position 0.3s ease;
+}
+
+.author-name:hover {
+    background-position: right bottom;
+}
+
+/* 3D Flip Effect for Stats */
+.stat-card {
+    perspective: 1000px;
+}
+
+.stat-card:hover {
+    animation: flip 0.6s ease-in-out;
+}
+
+@keyframes flip {
+    0% {
+        transform: rotateY(0) translateY(0);
+    }
+    50% {
+        transform: rotateY(180deg) translateY(-10px);
+    }
+    100% {
+        transform: rotateY(360deg) translateY(-10px);
+    }
+}
+
+/* Neon Box Shadow Pulse */
+@keyframes boxShadowPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 20px rgba(59, 130, 246, 0.4),
+            0 0 40px rgba(139, 92, 246, 0.2),
+            inset 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        box-shadow:
+            0 0 40px rgba(59, 130, 246, 0.8),
+            0 0 80px rgba(139, 92, 246, 0.4),
+            inset 0 0 40px rgba(255, 255, 255, 0.2);
+    }
+}
+
+.create-post-button {
+    animation: boxShadowPulse 3s ease-in-out infinite;
+}
+
+/* Wave Effect on Hover */
+@keyframes wave {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.post-category::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: translateX(-100%);
+}
+
+.post-category:hover::after {
+    animation: wave 1s ease;
+}
+
+/* Breathing Effect */
+@keyframes breathe {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.03);
+    }
+}
+
+.post-item:hover {
+    animation: breathe 2s ease-in-out infinite;
+}
+
+/* Rainbow Border */
+@keyframes rainbowBorder {
+    0% {
+        border-color: #3b82f6;
+    }
+    25% {
+        border-color: #8b5cf6;
+    }
+    50% {
+        border-color: #ec4899;
+    }
+    75% {
+        border-color: #f97316;
+    }
+    100% {
+        border-color: #3b82f6;
+    }
+}
+
+.comment-input:focus {
+    animation: rainbowBorder 4s linear infinite;
+}
+
+/* Magnetic Effect Simulation */
+.story-item:hover {
+    animation: magnetic 0.3s ease-out;
+}
+
+@keyframes magnetic {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+    100% {
+        transform: translateY(-10px) scale(1.08);
+    }
+}
+
+/* Glitch Effect for Title */
+@keyframes glitch {
+    0% {
+        text-shadow:
+            2px 2px 0 #3b82f6,
+            -2px -2px 0 #ec4899;
+    }
+    25% {
+        text-shadow:
+            -2px 2px 0 #3b82f6,
+            2px -2px 0 #ec4899;
+    }
+    50% {
+        text-shadow:
+            2px -2px 0 #3b82f6,
+            -2px 2px 0 #ec4899;
+    }
+    75% {
+        text-shadow:
+            -2px -2px 0 #3b82f6,
+            2px 2px 0 #ec4899;
+    }
+    100% {
+        text-shadow:
+            2px 2px 0 #3b82f6,
+            -2px -2px 0 #ec4899;
+    }
+}
+
+.feed-title:hover {
+    animation: glitch 0.3s ease-in-out;
+}
+
+/* Shine Sweep */
+@keyframes shineSweep {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+.post-tag::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    transform: skewX(-25deg);
+}
+
+.post-tag:hover::after {
+    animation: shineSweep 0.8s ease;
+}
+
+/* Color Shift Animation */
+@keyframes colorShift {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+
+.mobile-category-toggle:hover {
+    animation: colorShift 2s linear infinite;
+}
+
+/* Bounce In Effect */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(-50px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05) translateY(0);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.comment-item {
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Glow Trail Effect */
+@keyframes glowTrail {
+    0% {
+        box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+    }
+}
+
+.category-link:hover {
+    animation: glowTrail 1.5s ease-in-out infinite;
+}
+
+/* Typewriter Effect for Empty State */
+@keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+.empty-title {
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typewriter 2s steps(30) 1s both, gradientText 3s ease infinite;
+}
+
+/* Zoom Pulse */
+@keyframes zoomPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.author-avatar:hover {
+    animation: zoomPulse 0.6s ease-in-out;
+}
+
+/* Confetti Burst (for celebrations) */
+@keyframes confettiFall {
+    0% {
+        transform: translateY(-100%) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* Neon Text Flicker */
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    41% { opacity: 1; }
+    42% { opacity: 0.8; }
+    43% { opacity: 1; }
+    45% { opacity: 0.9; }
+    46% { opacity: 1; }
+}
+
+.priority-badge.urgent {
+    animation: flicker 3s linear infinite, urgentGlow 1.5s ease-in-out infinite;
+}
+
+/* Smooth Color Transition */
+.post-item,
+.sidebar-section,
+.stat-card,
+.comment-item {
+    transition:
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        background 0.4s ease,
+        border-color 0.4s ease;
+}
+
+/* Final Polish - Smooth Transitions */
+* {
+    transition: opacity 0.3s ease;
+}
+</style>
 </head>
-<body>
-    <!-- Navigation -->
-    <%- include('../partials/navbar') %>
+<div class="feed-container">
+    <div class="feed-layout">
 
-    <!-- Flash Messages -->
-    <%- include('../partials/flash-messages') %>
-
-    <div class="posts-container">
-        <div class="posts-layout">
-
-            <!-- 🎯 CATEGORIES SIDEBAR -->
-            <div class="categories-sidebar" id="categoriesSidebar">
-                <div class="sidebar-content">
-                    <div class="categories-header">
-                        <span>🎯</span>
-                        <h2 class="categories-title">Categories</h2>
-                        <button class="sidebar-close" onclick="toggleMobileCategories()" style="display: none; margin-left: auto; background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
-                    </div>
+        <!-- Categories Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <h3 class="section-title">Categories</h3>
+                </div>
 
                 <div class="categories-list">
-                    <a href="/posts" class="category-item <%= !currentCategory || currentCategory === 'all' ? 'active' : '' %>">
-                        <span>🌟</span>
-                        <span>All Posts</span>
+                    <a href="/posts" class="category-link <%= !currentCategory || currentCategory === 'all' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        </svg>
+                        <span class="category-name">All Posts</span>
                         <span class="category-count"><%= posts ? posts.length : 0 %></span>
                     </a>
 
-                    <a href="/posts?category=lost-found" class="category-item <%= currentCategory === 'lost-found' ? 'active' : '' %>">
-                        <span>🔍</span>
-                        <span>Lost & Found</span>
-                        <span class="category-count"><%= categoryStats['lost-found'] || 0 %></span>
+                    <a href="/posts?category=lost-found" class="category-link <%= currentCategory === 'lost-found' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span class="category-name">Lost & Found</span>
+                        <span class="category-count"><%= (categoryStats && categoryStats['lost-found']) || 0 %></span>
                     </a>
 
-                    <a href="/posts?category=hostels" class="category-item <%= currentCategory === 'hostels' ? 'active' : '' %>">
-                        <span>🏠</span>
-                        <span>Hostels</span>
-                        <span class="category-count"><%= categoryStats['hostels'] || 0 %></span>
+                    <a href="/posts?category=hostels" class="category-link <%= currentCategory === 'hostels' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        <span class="category-name">Hostels</span>
+                        <span class="category-count"><%= (categoryStats && categoryStats['hostels']) || 0 %></span>
                     </a>
 
-                    <a href="/posts?category=canteen" class="category-item <%= currentCategory === 'canteen' ? 'active' : '' %>">
-                        <span>🍕</span>
-                        <span>Canteen</span>
-                        <span class="category-count"><%= categoryStats['canteen'] || 0 %></span>
+                    <a href="/posts?category=canteen" class="category-link <%= currentCategory === 'canteen' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <span class="category-name">Canteen</span>
+                        <span class="category-count"><%= (categoryStats && categoryStats['canteen']) || 0 %></span>
                     </a>
 
-                    <a href="/posts?category=study" class="category-item <%= currentCategory === 'study' ? 'active' : '' %>">
-                        <span>📚</span>
-                        <span>Study Groups</span>
-                        <span class="category-count"><%= categoryStats['study'] || 0 %></span>
+                    <a href="/posts?category=study" class="category-link <%= currentCategory === 'study' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <span class="category-name">Study Groups</span>
+                        <span class="category-count"><%= (categoryStats && categoryStats['study']) || 0 %></span>
                     </a>
 
-                    <a href="/posts?category=events" class="category-item <%= currentCategory === 'events' ? 'active' : '' %>">
-                        <span>🎉</span>
-                        <span>Events</span>
-                        <span class="category-count"><%= categoryStats['events'] || 0 %></span>
+                    <a href="/posts?category=events" class="category-link <%= currentCategory === 'events' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="category-name">Events</span>
+                        <span class="category-count"><%= (categoryStats && categoryStats['events']) || 0 %></span>
                     </a>
 
-                    <a href="/posts?category=sports" class="category-item <%= currentCategory === 'sports' ? 'active' : '' %>">
-                        <span>⚽</span>
-                        <span>Sports</span>
-                        <span class="category-count"><%= categoryStats['sports'] || 0 %></span>
+                    <a href="/posts?category=sports" class="category-link <%= currentCategory === 'sports' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        <span class="category-name">Sports</span>
+                        <span class="category-count"><%= (categoryStats && categoryStats['sports']) || 0 %></span>
                     </a>
 
-                    <a href="/posts?category=academics" class="category-item <%= currentCategory === 'academics' ? 'active' : '' %>">
-                        <span>🎓</span>
-                        <span>Academics</span>
-                        <span class="category-count"><%= categoryStats['academics'] || 0 %></span>
+                    <a href="/posts?category=academics" class="category-link <%= currentCategory === 'academics' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                        </svg>
+                        <span class="category-name">Academics</span>
+                        <span class="category-count"><%= (categoryStats && categoryStats['academics']) || 0 %></span>
                     </a>
 
-                    <a href="/posts?category=general" class="category-item <%= currentCategory === 'general' ? 'active' : '' %>">
-                        <span>💬</span>
-                        <span>General</span>
-                        <span class="category-count"><%= categoryStats['general'] || 0 %></span>
+                    <a href="/posts?category=general" class="category-link <%= currentCategory === 'general' ? 'active' : '' %>">
+                        <svg class="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <span class="category-name">General</span>
+                        <span class="category-count"><%= (categoryStats && categoryStats['general']) || 0 %></span>
                     </a>
-                </div>
-                </div>
-            </div>
-
-            <!-- 📱 MAIN POSTS FEED -->
-            <div class="posts-main">
-                <div class="posts-header">
-                    <h1 class="posts-title">
-                        <span>🔥</span>
-                        <%= currentCategory === 'all' || !currentCategory ? 'Campus Feed' :
-                            currentCategory === 'lost-found' ? 'Lost & Found' :
-                            currentCategory === 'hostels' ? 'Hostels' :
-                            currentCategory === 'canteen' ? 'Canteen' :
-                            currentCategory === 'study' ? 'Study Groups' :
-                            currentCategory === 'events' ? 'Events' :
-                            currentCategory === 'sports' ? 'Sports' :
-                            currentCategory === 'academics' ? 'Academics' :
-                            'General' %>
-                    </h1>
-                    <a href="/posts/create" class="create-post-btn">
-                        <span>➕</span> Create Post
-                    </a>
-                </div>
-
-                <div class="posts-feed">
-                    <% if (posts && posts.length > 0) { %>
-                        <% posts.forEach(post => { %>
-                            <article class="post-card">
-                                <!-- Post Header -->
-                                <div class="post-header">
-                                    <div class="post-author">
-                                        <% if (post.author) { %>
-                                        <a href="/users/<%= post.author.username ? post.author.username : post.author._id %>" class="author-avatar">
-                                            <%
-                                            // Generate avatar URL based on User model logic
-                                            let avatarUrl;
-                                            if (post.author.avatar && post.author.avatarType === 'upload') {
-                                                avatarUrl = `/uploads/avatars/${post.author.avatar}`;
-                                            } else if (post.author.avatarSeed && post.author.avatarType === 'api') {
-                                                avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author.avatarSeed}`;
-                                            } else {
-                                                const seed = post.author.username || 'default';
-                                                avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
-                                            }
-                                            %>
-                                            <% if (avatarUrl) { %>
-                                                <img src="<%= avatarUrl %>"
-                                                     alt="<%= post.author.username || 'User' %>'s avatar"
-                                                     onload="console.log('✅ Avatar loaded:', '<%= avatarUrl %>')"
-                                                     onerror="console.log('❌ Avatar failed:', '<%= avatarUrl %>'); this.style.display='none';">
-                                            <% } %>
-                                        <% } else { %>
-                                        <div class="author-avatar">
-                                            <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=unknown" alt="Unknown User's avatar">
-                                        <% } %>
-                                            <!-- Always show fallback letter -->
-                                            <span style="position: absolute; z-index: 1;">
-                                                <%= post.author && post.author.username ? post.author.username.charAt(0).toUpperCase() : '?' %>
-                                            </span>
-                                        </a>
-                                        <div class="author-info">
-                                            <a href="/users/<%= post.author && post.author.username ? post.author.username : post.author._id %>" class="author-name">
-                                                @<%= post.author && post.author.username ? post.author.username : 'Unknown' %>
-                                            </a>
-                                            <time class="post-time">
-                                                <%= new Date(post.createdAt).toLocaleDateString() %>
-                                            </time>
-                                        </div>
-                                    </div>
-                                    <div class="post-category">
-                                        <span>
-                                            <%= post.category === 'lost-found' ? '🔍' :
-                                                post.category === 'hostels' ? '🏠' :
-                                                post.category === 'canteen' ? '🍕' :
-                                                post.category === 'pgs' ? '🏡' :
-                                                post.category === 'study' ? '📚' :
-                                                post.category === 'events' ? '🎉' :
-                                                post.category === 'sports' ? '⚽' :
-                                                post.category === 'academics' ? '🎓' :
-                                                post.category === 'staff' ? '👨‍🏫' : '💬' %>
-                                        </span>
-                                        <%= post.category.charAt(0).toUpperCase() + post.category.slice(1).replace('-', ' & ') %>
-                                    </div>
-                                </div>
-
-                                <!-- Post Content -->
-                                <div class="post-content">
-                                    <p class="post-text"><%= post.content %></p>
-
-                                    <% if (post.location) { %>
-                                        <div class="post-location">
-                                            <span>📍</span> <%= post.location %>
-                                        </div>
-                                    <% } %>
-
-                                    <% if (post.tags && post.tags.length > 0) { %>
-                                        <div class="post-tags">
-                                            <% post.tags.forEach(tag => { %>
-                                                <a href="/posts?tag=<%= tag %>" class="post-tag">#<%= tag %></a>
-                                            <% }); %>
-                                        </div>
-                                    <% } %>
-                                </div>
-
-                                <!-- Post Actions -->
-                                <div class="post-actions">
-                                    <div class="action-buttons">
-                                        <button class="action-btn">
-                                            <span>🤍</span>
-                                            <span><%= post.likes ? post.likes.length : 0 %></span>
-                                        </button>
-
-                                        <a href="/posts/<%= post._id %>" class="action-btn">
-                                            <span>💬</span>
-                                            <span><%= post.comments ? post.comments.length : 0 %></span>
-                                        </a>
-
-                                        <button class="action-btn">
-                                            <span>↗️</span>
-                                        </button>
-                                    </div>
-
-                                    <% if (post.priority === 'urgent') { %>
-                                        <span class="priority-badge urgent">🚨 URGENT</span>
-                                    <% } else if (post.priority === 'high') { %>
-                                        <span class="priority-badge high">⚡ HIGH</span>
-                                    <% } %>
-                                </div>
-                            </article>
-                        <% }); %>
-                    <% } else { %>
-                        <!-- Empty State -->
-                        <div class="empty-state">
-                            <div class="empty-icon">💬</div>
-                            <h3>Welcome to UConnect!</h3>
-                            <p>Be the first to share something with your campus community.</p>
-                            <a href="/posts/create" class="create-post-btn">
-                                <span>➕</span> Create Your First Post
-                            </a>
-                        </div>
-                    <% } %>
-                </div>
-            </div>
-
-            <!-- 🎯 RIGHT SIDEBAR -->
-            <div class="posts-sidebar">
-                <!-- Campus Stats Widget -->
-                <div class="sidebar-widget">
-                    <div class="widget-header">
-                        <span>📊</span>
-                        <h3 class="widget-title">Campus Stats</h3>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-number"><%= campusUsers || 0 %></div>
-                            <div class="stat-label">👥 Students</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number"><%= posts ? posts.length : 0 %></div>
-                            <div class="stat-label">📝 Posts</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number"><%= totalLikes || 0 %></div>
-                            <div class="stat-label">❤️ Likes</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number"><%= totalComments || 0 %></div>
-                            <div class="stat-label">💬 Comments</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 📱 MOBILE CATEGORY TOGGLE BUTTON -->
-        <button class="mobile-category-toggle" onclick="toggleMobileCategories()" title="Browse Categories">
-            🎯
-        </button>
+        <!-- Main Feed -->
+        <div class="main-feed">
+            <div class="feed-header">
+                <h1 class="feed-title">
+                    <svg class="feed-title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <%= currentCategory === 'all' || !currentCategory ? 'Campus Feed' :
+                        currentCategory === 'lost-found' ? 'Lost & Found' :
+                        currentCategory === 'hostels' ? 'Hostels' :
+                        currentCategory === 'canteen' ? 'Canteen' :
+                        currentCategory === 'study' ? 'Study Groups' :
+                        currentCategory === 'events' ? 'Events' :
+                        currentCategory === 'sports' ? 'Sports' :
+                        currentCategory === 'academics' ? 'Academics' :
+                        'General' %>
+                </h1>
+                <a href="/posts/create" class="create-post-button">
+                    <svg class="create-post-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Create Post
+                </a>
+            </div>
+
+            <!-- Stories Section -->
+            <div class="stories-section">
+                <div class="stories-row" role="list" aria-label="Stories">
+                    <% (stories || []).forEach(s => { %>
+                        <div class="story-item" role="listitem" data-story-username="<%= s.username %>">
+                            <div class="story-avatar">
+                                <img src="<%= s.avatarUrl %>" alt="<%= s.displayName || s.username %>'s story">
+                            </div>
+                            <div class="story-label"><%= s.displayName || s.username %></div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Posts Container -->
+            <div class="posts-container">
+                <% if (posts && posts.length > 0) { %>
+                    <% posts.forEach(post => { %>
+                        <article class="post-item" data-post-id="<%= post._id %>">
+                            <!-- Post Header -->
+                            <div class="post-header">
+                                <div class="post-author">
+                                    <% if (post.author) { %>
+                                    <a href="/users/<%= post.author.username ? post.author.username : post.author._id %>" class="author-avatar">
+                                        <%
+                                        // Generate avatar URL based on User model logic
+                                        let avatarUrl;
+                                        if (post.author.avatar && post.author.avatarType === 'upload') {
+                                            avatarUrl = `/uploads/avatars/${post.author.avatar}`;
+                                        } else if (post.author.avatarSeed && post.author.avatarType === 'api') {
+                                            avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author.avatarSeed}`;
+                                        } else {
+                                            const seed = post.author.username || 'default';
+                                            avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+                                        }
+                                        %>
+                                        <% if (avatarUrl) { %>
+                                            <img src="<%= avatarUrl %>"
+                                                 alt="<%= post.author.username || 'User' %>'s avatar"
+                                                 onload="console.log('✅ Avatar loaded:', '<%= avatarUrl %>')"
+                                                 onerror="console.log('❌ Avatar failed:', '<%= avatarUrl %>'); this.style.display='none';">
+                                        <% } %>
+                                    <% } else { %>
+                                    <div class="author-avatar">
+                                        <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=unknown" alt="Unknown User's avatar">
+                                    <% } %>
+                                        <!-- Always show fallback letter -->
+                                        <span style="position: absolute; z-index: 1;">
+                                            <%= post.author && post.author.username ? post.author.username.charAt(0).toUpperCase() : '?' %>
+                                        </span>
+                                    </a>
+                                    <div class="author-info">
+                                        <a href="/users/<%= post.author && post.author.username ? post.author.username : post.author._id %>" class="author-name">
+                                            @<%= post.author && post.author.username ? post.author.username : 'Unknown' %>
+                                        </a>
+                                        <div class="post-meta">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <time><%= new Date(post.createdAt).toLocaleDateString() %></time>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="post-category">
+                                    <svg class="post-category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    <%= post.category.charAt(0).toUpperCase() + post.category.slice(1).replace('-', ' & ') %>
+                                </div>
+                            </div>
+
+                            <!-- Post Content -->
+                            <div class="post-content">
+                                <p class="post-text"><%= post.content %></p>
+
+                                <!-- Media Display -->
+                                <% if (post.images && post.images.length > 0) { %>
+                                    <div class="post-images">
+                                        <% post.images.forEach(image => { %>
+                                            <img src="<%= image.url %>" alt="Post image" class="post-image" onclick="openMediaModal('<%= image.url %>', 'image')">
+                                        <% }); %>
+                                    </div>
+                                <% } %>
+
+                                <% if (post.media && post.media.length > 0) { %>
+                                    <div class="post-media">
+                                        <% post.media.forEach(media => { %>
+                                            <% if (media.type === 'video') { %>
+                                                <video controls class="post-video" onclick="openMediaModal('<%= media.url %>', 'video', '<%= media.mimetype %>')">
+                                                    <source src="<%= media.url %>" type="<%= media.mimetype %>">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            <% } %>
+                                        <% }); %>
+                                    </div>
+                                <% } %>
+
+                                <% if (post.location) { %>
+                                    <div class="post-location">
+                                        <svg class="post-location-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <%= post.location %>
+                                    </div>
+                                <% } %>
+
+                                <% if (post.tags && post.tags.length > 0) { %>
+                                    <div class="post-tags">
+                                        <% post.tags.forEach(tag => { %>
+                                            <a href="/posts?tag=<%= tag %>" class="post-tag">#<%= tag %></a>
+                                        <% }); %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <!-- Post Actions -->
+                            <div class="post-actions">
+                                <div class="action-buttons">
+                                    <button class="action-button like-btn <%= post.isLikedBy(user._id) ? 'liked' : '' %>"
+                                            onclick="toggleLike('<%= post._id %>')">
+                                        <svg class="action-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                        </svg>
+                                        <span><%= post.likes ? post.likes.length : 0 %></span>
+                                    </button>
+
+                                    <button class="action-button comment-btn" onclick="toggleCommentsRollout('<%= post._id %>')">
+                                        <svg class="action-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                        </svg>
+                                        <span><%= post.comments ? post.comments.length : 0 %></span>
+                                    </button>
+
+                                    <button class="action-button share-btn" onclick="sharePost('<%= post._id %>')">
+                                        <svg class="action-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                        </svg>
+                                        <span>Share</span>
+                                    </button>
+
+                                    <% if (post.author && post.author._id.toString() === user._id.toString()) { %>
+                                    <button class="action-button delete-btn" onclick="deletePost('<%= post._id %>')" title="Delete Post">
+                                        <svg class="action-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        <span>Delete</span>
+                                    </button>
+                                    <% } %>
+                                </div>
+
+                                <% if (post.priority === 'urgent') { %>
+                                    <span class="priority-badge urgent">🚨 URGENT</span>
+                                <% } else if (post.priority === 'high') { %>
+                                    <span class="priority-badge high">⚡ HIGH</span>
+                                <% } %>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <div class="comments-section" id="comments-<%= post._id %>">
+                                <div class="comments-container">
+                                    <!-- Add Comment Form -->
+                                    <form class="comment-form" data-post-id="<%= post._id %>">
+                                        <div class="comment-input-container">
+                                            <img src="<%= user.avatarUrl || '/images/default-avatar.png' %>"
+                                                 alt="<%= user.name %>" class="comment-avatar">
+                                            <div class="comment-input-group">
+                                                <textarea name="content" class="comment-input" placeholder="Write a comment..."
+                                                          required maxlength="500"></textarea>
+                                                <div class="comment-form-footer">
+                                                    <small class="character-count"><span id="comment-char-<%= post._id %>">0</span>/500</small>
+                                                    <button type="submit" class="comment-submit">
+                                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                                        </svg>
+                                                        Comment
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    <!-- Comments List -->
+                                    <div class="comments-list">
+                                        <% if (post.comments && post.comments.length > 0) { %>
+                                            <% post.comments.forEach(comment => { %>
+                                                <% if (comment.author) { %>
+                                                <div class="comment-item">
+                                                    <img src="<%= comment.author.avatarUrl || '/images/default-avatar.png' %>"
+                                                         alt="<%= comment.author.username %>" class="comment-author-avatar">
+                                                    <div class="comment-content">
+                                                        <div class="comment-header">
+                                                            <strong class="comment-author"><%= comment.author.username %></strong>
+                                                            <small class="comment-time"><%= new Date(comment.createdAt).toLocaleDateString() %></small>
+                                                        </div>
+                                                        <p class="comment-text"><%= comment.content %></p>
+                                                    </div>
+                                                </div>
+                                                <% } %>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.5;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                                </svg>
+                                                <p>No comments yet. Be the first to comment!</p>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    <% }); %>
+                <% } else { %>
+                    <!-- Empty State -->
+                    <div class="empty-state">
+                        <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <h3 class="empty-title">Welcome to UConnect!</h3>
+                        <p class="empty-description">Be the first to share something with your campus community.</p>
+                        <a href="/posts/create" class="create-post-button">
+                            <svg class="create-post-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Create Your First Post
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="sidebar">
+            <!-- Campus Stats Widget -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <h3 class="widget-title">Campus Stats</h3>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number"><%= campusUsers || 0 %></div>
+                        <div class="stat-label">Students</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number"><%= posts ? posts.length : 0 %></div>
+                        <div class="stat-label">Posts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number"><%= typeof totalLikes === 'number' ? totalLikes : 0 %></div>
+                        <div class="stat-label">Likes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number"><%= typeof totalComments === 'number' ? totalComments : 0 %></div>
+                        <div class="stat-label">Comments</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Footer -->
-    <%- include('../partials/footer') %>
+    <!-- Mobile Category Toggle -->
+    <button class="mobile-category-toggle" onclick="toggleMobileCategories()" title="Browse Categories">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+    </button>
+</div>
 
-    <!-- JavaScript -->
-    <script src="/js/main.js"></script>
-
-    <!-- Socket.IO Client for Real-time Features -->
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Media Modal for Full-Size Viewing -->
+    <div id="mediaModal" class="media-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;">
+        <div class="modal-content" style="max-width: 90%; max-height: 90%; position: relative;">
+            <button class="modal-close" onclick="closeMediaModal()" style="position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 30px; cursor: pointer; z-index: 10001;">✕</button>
+            <div class="modal-media-container" style="display: flex; justify-content: center; align-items: center; max-width: 100%; max-height: 100%;">
+                <!-- Media content will be inserted here -->
+            </div>
+        </div>
+    </div>
 
     <script>
-        // 🚀 REAL-TIME SOCKET.IO - INSTAGRAM-LIKE FEATURES
-        const socket = io();
+        // Media Modal Functions
+        function openMediaModal(src, type, mimetype = '') {
+            const modal = document.getElementById('mediaModal');
+            const container = modal.querySelector('.modal-media-container');
 
-        // Join campus room for real-time updates
-        socket.emit('join-campus', '<%= user.campus %>');
-        console.log('🚀 Joined campus room:', '<%= user.campus %>');
-
-        // 📱 Real-time new post updates (like Instagram)
-        socket.on('new-post', (data) => {
-            console.log('⚡ New post received:', data);
-            showNewPostNotification();
-        });
-
-        // 💙 Real-time like updates
-        socket.on('post-liked', (data) => {
-            console.log('⚡ Post like update:', data);
-            updateLikeCount(data.postId, data.likes, data.isLiked);
-        });
-
-        // 💬 Real-time comment updates
-        socket.on('new-comment', (data) => {
-            console.log('⚡ New comment:', data);
-            addCommentToPost(data.postId, data.comment);
-        });
-
-        // 🌟 Helper functions for real-time updates
-        function updateLikeCount(postId, likes, isLiked) {
-            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-            if (postElement) {
-                const likeBtn = postElement.querySelector('.like-btn');
-                if (likeBtn) {
-                    likeBtn.innerHTML = `<i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> ${likes}`;
-                    likeBtn.classList.toggle('liked', isLiked);
-
-                    // Add heart animation (Instagram-style)
-                    if (isLiked) {
-                        addHeartAnimation(postId);
-                    }
-                }
-            }
-        }
-
-        function addCommentToPost(postId, comment) {
-            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-            if (postElement) {
-                const commentsSection = postElement.querySelector('.comments-section');
-                if (commentsSection) {
-                    const commentElement = document.createElement('div');
-                    commentElement.className = 'comment new-comment';
-                    commentElement.innerHTML = `
-                        <strong>${comment.author.username}:</strong> ${comment.content}
-                    `;
-                    commentsSection.appendChild(commentElement);
-
-                    // Animate in
-                    setTimeout(() => {
-                        commentElement.classList.remove('new-comment');
-                    }, 2000);
-                }
-            }
-        }
-
-        function showNewPostNotification() {
-            // Show Instagram-style notification
-            const notification = document.createElement('div');
-            notification.className = 'new-post-notification';
-            notification.innerHTML = `
-                <i class="fas fa-plus-circle"></i>
-                New post available
-                <button onclick="window.location.reload()">Refresh</button>
-            `;
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #4caf50;
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                z-index: 1000;
-                animation: slideInRight 0.3s ease;
-            `;
-            document.body.appendChild(notification);
-
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
-        }
-
-        function addHeartAnimation(postId) {
-            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-            if (postElement) {
-                const heart = document.createElement('div');
-                heart.className = 'heart-animation';
-                heart.innerHTML = '<i class="fas fa-heart"></i>';
-                heart.style.cssText = `
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 3em;
-                    color: #e91e63;
-                    pointer-events: none;
-                    animation: heartPop 1s ease forwards;
+            if (type === 'image') {
+                container.innerHTML = `<img src="${src}" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Full size image">`;
+            } else if (type === 'video') {
+                container.innerHTML = `
+                    <video controls autoplay style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                        <source src="${src}" type="${mimetype}">
+                        Your browser does not support the video tag.
+                    </video>
                 `;
-                postElement.style.position = 'relative';
-                postElement.appendChild(heart);
+            }
 
-                // Remove after animation
-                setTimeout(() => {
-                    heart.remove();
-                }, 1000);
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeMediaModal() {
+            const modal = document.getElementById('mediaModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+
+            // Stop video playback when closing
+            const video = modal.querySelector('video');
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
             }
         }
 
-        // 📱 Enhanced like function with real-time broadcast
-        async function toggleLike(postId) {
-            try {
-                const response = await fetch(`/posts/${postId}/like`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('👍 Like response:', data);
-                    // The real-time update will come via socket
-                }
-            } catch (error) {
-                console.error('Error toggling like:', error);
-            }
-        }
-
-        // 🔄 Auto-refresh connection handling
-        socket.on('connect', () => {
-            console.log('⚡ Connected to real-time server');
-        });
-
-        socket.on('disconnect', () => {
-            console.log('❌ Disconnected from real-time server');
-        });
-
-        console.log('🚀 Real-time features initialized - Instagram-like experience activated!');
-
-        // 📱 MOBILE CATEGORY TOGGLE FUNCTIONALITY
-        function toggleMobileCategories() {
-            const sidebar = document.getElementById('categoriesSidebar');
-            if (sidebar.classList.contains('mobile-open')) {
-                sidebar.classList.remove('mobile-open');
-                document.body.style.overflow = '';
-            } else {
-                sidebar.classList.add('mobile-open');
-                document.body.style.overflow = 'hidden'; // Prevent background scrolling
-            }
-        }
-
-        // Close on overlay click
-        document.getElementById('categoriesSidebar').addEventListener('click', function(e) {
+        // Close modal when clicking outside
+        document.getElementById('mediaModal').addEventListener('click', function(e) {
             if (e.target === this) {
-                toggleMobileCategories();
+                closeMediaModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('mediaModal').style.display === 'flex') {
+                closeMediaModal();
             }
         });
     </script>

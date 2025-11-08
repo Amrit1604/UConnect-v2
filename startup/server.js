@@ -45,54 +45,6 @@ const configureServer = (app) => {
       socket.to(data.campus).emit('user-typing', data);
     });
 
-    // Private chat functionality
-    socket.on('joinPrivateRoom', (data) => {
-      const { roomId } = data;
-      socket.join(roomId);
-      console.log(`🔒 User joined private room: ${roomId}`);
-    });
-
-    socket.on('sendPrivateMessage', async (data) => {
-      const { roomId, message } = data;
-      try {
-        const PrivateChat = require('../models/PrivateChat');
-        const newMessage = new PrivateChat({
-          roomId: roomId,
-          sender: socket.userId,
-          message: message,
-          timestamp: new Date()
-        });
-
-        await newMessage.save();
-        await newMessage.populate('sender', 'name username avatarUrl');
-
-        const messageData = {
-          sender: {
-            id: newMessage.sender._id,
-            name: newMessage.sender.name,
-            username: newMessage.sender.username,
-            avatarUrl: newMessage.sender.avatarUrl
-          },
-          message: newMessage.message,
-          timestamp: newMessage.timestamp.toLocaleTimeString()
-        };
-
-        io.to(roomId).emit('newPrivateMessage', messageData);
-        console.log(`💬 Private message sent in room: ${roomId}`);
-      } catch (error) {
-        console.error('Error sending private message:', error);
-        socket.emit('messageError', { error: 'Failed to send message' });
-      }
-    });
-
-    socket.on('privateTyping', (data) => {
-      const { roomId, isTyping } = data;
-      socket.to(roomId).emit('userTyping', {
-        userId: socket.userId,
-        isTyping: isTyping
-      });
-    });
-
     socket.on('setUserId', (userId) => {
       socket.userId = userId;
       console.log(`🔑 User ID set for socket: ${userId}`);

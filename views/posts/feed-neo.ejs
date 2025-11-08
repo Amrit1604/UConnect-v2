@@ -1,0 +1,511 @@
+<!-- Neo Feed - Brutalist + Apple Design -->
+<div class="posts-page">
+    <!-- Background Effects (Same as index2.ejs) -->
+    <div class="parallax-bg">
+        <div class="parallax-layer layer-1"></div>
+        <div class="parallax-layer layer-2"></div>
+        <div class="blob-container">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+    </div>
+
+    <!-- Floating Emoji Reactions -->
+    <div class="emoji-reactions">
+        <div class="emoji-float emoji-1">😂</div>
+        <div class="emoji-float emoji-2">❤️</div>
+        <div class="emoji-float emoji-3">🔥</div>
+        <div class="emoji-float emoji-4">😢</div>
+        <div class="emoji-float emoji-5">😡</div>
+        <div class="emoji-float emoji-6">👍</div>
+        <div class="emoji-float emoji-7">🎉</div>
+    </div>
+
+    <!-- Main Feed Container -->
+    <div class="feed-layout-neo">
+        <!-- Left Sidebar - Profile Only -->
+        <aside class="feed-sidebar-left">
+            <!-- User Profile Card -->
+            <div class="profile-card-neo">
+                <div class="profile-header-neo">
+                    <%
+                    let avatarUrl = '/images/default-avatar.png';
+                    if (user.avatarType === 'upload' && user.avatar) {
+                        avatarUrl = '/uploads/avatars/' + user.avatar;
+                    } else if (user.avatarUrl) {
+                        avatarUrl = user.avatarUrl;
+                    } else if (user.avatarSeed) {
+                        avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed;
+                    }
+                    %>
+                    <img src="<%= avatarUrl %>"
+                         alt="<%= user.name %>"
+                         class="profile-avatar-neo"
+                         onerror="this.src='/images/default-avatar.png'">
+                    <div class="profile-info-neo">
+                        <h3 class="profile-name-neo"><%= user.name %></h3>
+                        <p class="profile-username-neo">@<%= user.username %></p>
+                        <p class="profile-campus-neo">🏫 <%= user.campus || 'Campus' %></p>
+                    </div>
+                </div>
+                <div class="profile-stats-neo">
+                    <div class="stat-item-neo">
+                        <span class="stat-value-neo"><%= stats.totalPosts || 0 %></span>
+                        <span class="stat-label-neo">POSTS</span>
+                    </div>
+                    <div class="stat-item-neo">
+                        <span class="stat-value-neo"><%= stats.totalLikes || 0 %></span>
+                        <span class="stat-label-neo">LIKES</span>
+                    </div>
+                    <div class="stat-item-neo">
+                        <span class="stat-value-neo"><%= stats.totalComments || 0 %></span>
+                        <span class="stat-label-neo">COMMENTS</span>
+                    </div>
+                </div>
+                <a href="/posts/create" class="create-post-btn-neo">
+                    ✨ CREATE POST
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Feed -->
+        <main class="feed-main-neo">
+            <!-- Category Filters with Quick Links Button -->
+            <div class="categories-bar-neo">
+                <a href="/posts?category=all" class="category-chip-neo <%= !category || category === 'all' ? 'active' : '' %>">
+                    🌐 ALL
+                </a>
+                <a href="/posts?category=lost-found" class="category-chip-neo <%= category === 'lost-found' ? 'active' : '' %>">
+                    🔍 LOST & FOUND
+                </a>
+                <a href="/posts?category=events" class="category-chip-neo <%= category === 'events' ? 'active' : '' %>">
+                    🎉 EVENTS
+                </a>
+                <a href="/posts?category=academics" class="category-chip-neo <%= category === 'academics' ? 'active' : '' %>">
+                    🎓 ACADEMICS
+                </a>
+                <a href="/posts?category=sports" class="category-chip-neo <%= category === 'sports' ? 'active' : '' %>">
+                    ⚽ SPORTS
+                </a>
+                <a href="/posts?category=canteen" class="category-chip-neo <%= category === 'canteen' ? 'active' : '' %>">
+                    🍕 CANTEEN
+                </a>
+                <!-- Mobile Quick Links Toggle -->
+                <button class="quick-links-toggle-btn" id="quickLinksToggleBtn">
+                    <span class="toggle-icon">☰</span>
+                    <span class="toggle-text">MENU</span>
+                </button>
+            </div>
+
+            <!-- Posts Feed -->
+            <% if (posts && posts.length > 0) { %>
+                <div class="posts-grid-neo">
+                    <% posts.forEach(post => { %>
+                        <% if (post && post.author) { %>
+                        <article class="post-card-neo" data-post-id="<%= post._id %>">
+                            <!-- Post Header -->
+                            <header class="post-header-neo">
+                                <div class="post-author-neo">
+                                    <%
+                                    let postAuthorAvatar = '/images/default-avatar.png';
+                                    if (post.author.avatarType === 'upload' && post.author.avatar) {
+                                        postAuthorAvatar = '/uploads/avatars/' + post.author.avatar;
+                                    } else if (post.author.avatarUrl) {
+                                        postAuthorAvatar = post.author.avatarUrl;
+                                    } else if (post.author.avatarSeed) {
+                                        postAuthorAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + post.author.avatarSeed;
+                                    }
+                                    %>
+                                    <img src="<%= postAuthorAvatar %>"
+                                         alt="<%= post.author.username %>"
+                                         class="author-avatar-neo"
+                                         onerror="this.src='/images/default-avatar.png'">
+                                    <div class="author-info-neo">
+                                        <span class="author-name-neo"><%= post.author.username %></span>
+                                        <span class="post-time-neo">
+                                            <%= new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
+                                        </span>
+                                    </div>
+                                </div>
+                                <% if (post.category) { %>
+                                    <span class="post-category-badge-neo"><%= post.category.toUpperCase() %></span>
+                                <% } %>
+                            </header>
+
+                            <!-- Post Content -->
+                            <div class="post-content-neo">
+                                <% if (post.title) { %>
+                                    <h2 class="post-title-neo"><%= post.title %></h2>
+                                <% } %>
+                                <% if (post.content) { %>
+                                    <p class="post-text-neo"><%= post.content.substring(0, 200) %><%= post.content.length > 200 ? '...' : '' %></p>
+                                <% } %>
+
+                                <!-- Post Media -->
+                                <% if (post.images && post.images.length > 0) { %>
+                                    <div class="post-media-neo">
+                                        <% if (post.images[0].url) { %>
+                                            <img src="<%= post.images[0].url %>"
+                                                 alt="<%= post.images[0].originalName || 'Post image' %>"
+                                                 class="post-image-neo"
+                                                 loading="lazy"
+                                                 onerror="this.style.display='none'">
+                                        <% } else if (post.images[0].filename) { %>
+                                            <img src="/uploads/posts/<%= post.images[0].filename %>"
+                                                 alt="<%= post.images[0].originalName || 'Post image' %>"
+                                                 class="post-image-neo"
+                                                 loading="lazy"
+                                                 onerror="this.style.display='none'">
+                                        <% } else if (typeof post.images[0] === 'string') { %>
+                                            <img src="/uploads/posts/<%= post.images[0] %>"
+                                                 alt="Post image"
+                                                 class="post-image-neo"
+                                                 loading="lazy"
+                                                 onerror="this.style.display='none'">
+                                        <% } %>
+                                    </div>
+                                <% } else if (post.media && post.media.length > 0) { %>
+                                    <% const firstMedia = post.media[0]; %>
+                                    <% if (firstMedia.type === 'image') { %>
+                                        <div class="post-media-neo">
+                                            <img src="<%= firstMedia.url || '/uploads/posts/' + firstMedia.filename %>"
+                                                 alt="<%= firstMedia.originalName || 'Post image' %>"
+                                                 class="post-image-neo"
+                                                 loading="lazy"
+                                                 onerror="this.style.display='none'">
+                                        </div>
+                                    <% } else if (firstMedia.type === 'video') { %>
+                                        <div class="post-media-neo">
+                                            <video class="post-video-neo" controls>
+                                                <source src="<%= firstMedia.url || '/uploads/posts/' + firstMedia.filename %>"
+                                                        type="<%= firstMedia.mimetype || 'video/mp4' %>">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                    <% } %>
+                                <% } else if (post.videos && post.videos.length > 0) { %>
+                                    <div class="post-media-neo">
+                                        <% if (post.videos[0].url) { %>
+                                            <video class="post-video-neo" controls>
+                                                <source src="<%= post.videos[0].url %>" type="<%= post.videos[0].mimetype || 'video/mp4' %>">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        <% } else if (post.videos[0].filename) { %>
+                                            <video class="post-video-neo" controls>
+                                                <source src="/uploads/posts/<%= post.videos[0].filename %>" type="<%= post.videos[0].mimetype || 'video/mp4' %>">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        <% } else if (typeof post.videos[0] === 'string') { %>
+                                            <video class="post-video-neo" controls>
+                                                <source src="/uploads/posts/<%= post.videos[0] %>" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+
+                                <!-- Tags -->
+                                <% if (post.tags && post.tags.length > 0) { %>
+                                    <div class="post-tags-neo">
+                                        <% post.tags.slice(0, 3).forEach(tag => { %>
+                                            <span class="tag-chip-neo">#<%= tag %></span>
+                                        <% }); %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <!-- Post Actions -->
+                            <footer class="post-actions-neo">
+                                <button class="action-btn-neo like-btn <%= post.likes && post.likes.includes(user._id.toString()) ? 'liked' : '' %>"
+                                        data-action="like"
+                                        data-post-id="<%= post._id %>">
+                                    <span class="action-icon">❤️</span>
+                                    <span class="action-count"><%= post.likes ? post.likes.length : 0 %></span>
+                                </button>
+                                <button class="action-btn-neo comment-btn" data-action="comment">
+                                    <span class="action-icon">💬</span>
+                                    <span class="action-count"><%= post.comments ? post.comments.length : 0 %></span>
+                                </button>
+                                <a href="/posts/<%= post._id %>" class="action-btn-neo view-btn">
+                                    <span class="action-icon">👁️</span>
+                                    <span class="action-text">VIEW</span>
+                                </a>
+                            </footer>
+
+                            <!-- Quick Comment Section (Initially Hidden) -->
+                            <div class="quick-comment-section" style="display: none;">
+                                <form class="quick-comment-form" data-post-id="<%= post._id %>">
+                                    <input type="text"
+                                           class="quick-comment-input"
+                                           placeholder="Add a comment..."
+                                           required>
+                                    <button type="submit" class="quick-comment-submit">POST</button>
+                                </form>
+
+                                <% if (post.comments && post.comments.length > 0) { %>
+                                    <div class="quick-comments-list">
+                                        <% post.comments.slice(0, 2).forEach(comment => { %>
+                                            <% if (comment && comment.author) { %>
+                                                <div class="quick-comment-item">
+                                                    <img src="<%= comment.author.avatarUrl || '/images/default-avatar.png' %>"
+                                                         alt="<%= comment.author.username %>"
+                                                         class="quick-comment-avatar">
+                                                    <div class="quick-comment-content">
+                                                        <strong><%= comment.author.username %></strong>
+                                                        <p><%= comment.content %></p>
+                                                    </div>
+                                                </div>
+                                            <% } %>
+                                        <% }); %>
+                                        <% if (post.comments.length > 2) { %>
+                                            <a href="/posts/<%= post._id %>" class="view-all-comments">
+                                                View all <%= post.comments.length %> comments
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </article>
+                        <% } %>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <!-- Empty State -->
+                <div class="empty-state-neo">
+                    <div class="empty-icon-neo">📭</div>
+                    <h3 class="empty-title-neo">NO POSTS YET</h3>
+                    <p class="empty-text-neo">Be the first to share something with your campus!</p>
+                    <a href="/posts/create" class="empty-btn-neo">CREATE FIRST POST</a>
+                </div>
+            <% } %>
+
+            <!-- Load More Button -->
+            <% if (posts && posts.length >= 20) { %>
+                <div class="load-more-container">
+                    <button class="load-more-btn-neo" data-page="<%= page + 1 %>">
+                        LOAD MORE POSTS
+                    </button>
+                </div>
+            <% } %>
+        </main>
+
+        <!-- Right Sidebar (Hidden on mobile, toggle with button) -->
+        <aside class="feed-sidebar-right" id="quickLinksPanel">
+            <!-- Close Button for Mobile -->
+            <button class="close-panel-btn" id="closePanelBtn">✕</button>
+
+            <!-- Trending Tags -->
+            <div class="trending-card-neo">
+                <h3 class="card-title-neo">🔥 TRENDING</h3>
+                <div class="trending-list-neo">
+                    <% if (typeof trendingTags !== 'undefined' && trendingTags && trendingTags.length > 0) { %>
+                        <% trendingTags.slice(0, 5).forEach(tag => { %>
+                            <a href="/posts?tag=<%= tag %>" class="trending-item-neo">
+                                <span class="trending-tag">#<%= tag %></span>
+                                <span class="trending-arrow">→</span>
+                            </a>
+                        <% }); %>
+                    <% } else { %>
+                        <p class="trending-empty">No trending tags yet</p>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="links-card-neo">
+                <h3 class="card-title-neo">⚡ QUICK LINKS</h3>
+                <div class="links-list-neo">
+                    <a href="/users/campus" class="link-item-neo">
+                        <span class="link-icon">👥</span>
+                        <span class="link-text">Campus Users</span>
+                    </a>
+                    <a href="/users/profile" class="link-item-neo">
+                        <span class="link-icon">👤</span>
+                        <span class="link-text">My Profile</span>
+                    </a>
+                    <a href="/users/settings/profile" class="link-item-neo">
+                        <span class="link-icon">⚙️</span>
+                        <span class="link-text">Settings</span>
+                    </a>
+                    <a href="/auth/logout" class="link-item-neo logout">
+                        <span class="link-icon">🚪</span>
+                        <span class="link-text">Logout</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Overlay for mobile panel -->
+    <div class="panel-overlay" id="panelOverlay"></div>
+</div>
+
+<!-- Inline JavaScript for Quick Interactions -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Like button functionality
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const countSpan = this.querySelector('.action-count');
+
+            try {
+                const response = await fetch(`/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.classList.toggle('liked');
+                    countSpan.textContent = data.likesCount || 0;
+                }
+            } catch (error) {
+                console.error('Like error:', error);
+            }
+        });
+    });
+
+    // Comment toggle
+    document.querySelectorAll('.comment-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postCard = this.closest('.post-card-neo');
+            const commentSection = postCard.querySelector('.quick-comment-section');
+            const isVisible = commentSection.style.display !== 'none';
+            commentSection.style.display = isVisible ? 'none' : 'block';
+
+            if (!isVisible) {
+                commentSection.querySelector('.quick-comment-input').focus();
+            }
+        });
+    });
+
+    // Quick comment submit
+    document.querySelectorAll('.quick-comment-form').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const input = this.querySelector('.quick-comment-input');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            try {
+                const response = await fetch(`/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                    location.reload(); // Simple reload for now
+                }
+            } catch (error) {
+                console.error('Comment error:', error);
+            }
+        });
+    });
+
+    // Load more posts
+    const loadMoreBtn = document.querySelector('.load-more-btn-neo');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            const page = this.dataset.page;
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('page', page);
+            window.location.href = currentUrl.toString();
+        });
+    }
+});
+
+// Quick Links Panel Toggle (Mobile)
+function toggleQuickLinks() {
+    console.log('🔥 toggleQuickLinks called!');
+    const panel = document.getElementById('quickLinksPanel');
+    const overlay = document.getElementById('panelOverlay');
+
+    console.log('Panel element:', panel);
+    console.log('Overlay element:', overlay);
+
+    if (!panel || !overlay) {
+        console.error('❌ Panel or overlay not found!');
+        return;
+    }
+
+    if (panel.classList.contains('open')) {
+        console.log('🚪 Closing panel...');
+        panel.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    } else {
+        console.log('🚀 Opening panel...');
+        panel.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// Add event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle button
+    const toggleBtn = document.getElementById('quickLinksToggleBtn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', toggleQuickLinks);
+        console.log('✅ Toggle button listener added');
+    } else {
+        console.error('❌ Toggle button not found');
+    }
+
+    // Close button
+    const closeBtn = document.getElementById('closePanelBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', toggleQuickLinks);
+        console.log('✅ Close button listener added');
+    }
+
+    // Overlay
+    const overlay = document.getElementById('panelOverlay');
+    if (overlay) {
+        overlay.addEventListener('click', toggleQuickLinks);
+        console.log('✅ Overlay listener added');
+    }
+});
+</script>
+
+<!-- Footer (Same as index2.ejs) -->
+<footer class="footer-neo">
+    <div class="footer-container-neo">
+        <div class="footer-content-neo">
+            <div class="footer-brand">
+                <div class="logo-brutalist">U</div>
+                <span class="brand-text">CONNECT</span>
+            </div>
+            <div class="footer-links-neo">
+                <div class="footer-column">
+                    <h4>PLATFORM</h4>
+                    <a href="/posts/create">Create Post</a>
+                    <a href="/users/campus">Campus Users</a>
+                    <a href="/about">About</a>
+                </div>
+                <div class="footer-column">
+                    <h4>SUPPORT</h4>
+                    <a href="/help">Help Center</a>
+                    <a href="/privacy">Privacy</a>
+                    <a href="/terms">Terms</a>
+                </div>
+                <div class="footer-column">
+                    <h4>CONNECT</h4>
+                    <a href="#">Twitter</a>
+                    <a href="#">Instagram</a>
+                    <a href="#">LinkedIn</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom-neo">
+            <p>&copy; <%= new Date().getFullYear() %> UCONNECT. ALL RIGHTS RESERVED.</p>
+        </div>
+    </div>
+</footer>

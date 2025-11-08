@@ -133,13 +133,14 @@ router.post('/profile', [
             privacy: req.session.user.privacy
         });
 
-        req.session.user = updatedUser;
+        req.session.user = updatedUser.toObject({ virtuals: true });
 
         console.log('✅ GODLY SUCCESS: Profile updated and session synced!');
         console.log('New session user:', {
             username: req.session.user.username,
             bio: req.session.user.bio,
-            privacy: req.session.user.privacy
+            privacy: req.session.user.privacy,
+            avatarUrl: req.session.user.avatarUrl
         });
 
         // Save session to ensure persistence
@@ -183,6 +184,7 @@ router.post('/avatar', upload.uploadAvatar.single('avatar'), async (req, res) =>
 
         const updatedUser = await User.findByIdAndUpdate(req.user.id, {
             avatar: req.file.filename,
+            avatarSeed: null, // Clear the API avatar seed when uploading a photo
             avatarType: 'upload',
             updatedAt: new Date()
         }, { new: true }).select('-password');
@@ -190,19 +192,30 @@ router.post('/avatar', upload.uploadAvatar.single('avatar'), async (req, res) =>
         console.log('📊 Database update result:');
         console.log('Avatar Type:', updatedUser.avatarType);
         console.log('Avatar Filename:', updatedUser.avatar);
+        console.log('Avatar Seed cleared:', updatedUser.avatarSeed === null);
 
         // Update session data with new avatar
         console.log('🔄 Updating session avatar data...');
         console.log('Old session avatar type:', req.session.user.avatarType);
+        console.log('Old session avatar URL:', req.session.user.avatarUrl);
 
-        req.session.user = updatedUser;
+        req.session.user = updatedUser.toObject({ virtuals: true });
 
         console.log('✅ Session avatar updated:');
         console.log('New session avatar type:', req.session.user.avatarType);
         console.log('New session avatar filename:', req.session.user.avatar);
+        console.log('New session avatar URL:', req.session.user.avatarUrl);
 
-        req.flash('success', 'Avatar updated successfully! 🎉');
-        res.redirect('/users/settings/profile');
+        // Save session to ensure persistence
+        req.session.save((err) => {
+            if (err) {
+                console.error('❌ Session save error:', err);
+            } else {
+                console.log('✅ Session saved successfully!');
+            }
+            req.flash('success', 'Avatar updated successfully! 🎉');
+            res.redirect('/users/settings/profile');
+        });
     } catch (error) {
         console.error('💥 GODLY ERROR in avatar upload:', error);
         req.flash('error', 'Error uploading avatar');
@@ -243,19 +256,28 @@ router.post('/avatar-api', async (req, res) => {
         console.log('🔄 Updating session avatar data...');
         console.log('Old session:', {
             avatarType: req.session.user.avatarType,
-            avatarSeed: req.session.user.avatarSeed
+            avatarSeed: req.session.user.avatarSeed,
+            avatarUrl: req.session.user.avatarUrl
         });
 
-        req.session.user = updatedUser;
+        req.session.user = updatedUser.toObject({ virtuals: true });
 
         console.log('✅ Session updated:', {
             avatarType: req.session.user.avatarType,
             avatarSeed: req.session.user.avatarSeed,
-            avatarUrl: req.session.user.avatarUrl?.substring(0, 50) + '...'
+            avatarUrl: req.session.user.avatarUrl
         });
 
-        req.flash('success', 'Avatar updated successfully! 🎉');
-        res.redirect('/users/settings/profile');
+        // Save session to ensure persistence
+        req.session.save((err) => {
+            if (err) {
+                console.error('❌ Session save error:', err);
+            } else {
+                console.log('✅ Session saved successfully!');
+            }
+            req.flash('success', 'Avatar updated successfully! 🎉');
+            res.redirect('/users/settings/profile');
+        });
     } catch (error) {
         console.error('💥 GODLY ERROR in random avatar:', error);
         req.flash('error', 'Error updating avatar');
@@ -289,19 +311,29 @@ router.post('/remove-avatar', async (req, res) => {
         console.log('🔄 Updating session avatar data...');
         console.log('Old session:', {
             avatarType: req.session.user.avatarType,
-            hasAvatar: !!req.session.user.avatar
+            hasAvatar: !!req.session.user.avatar,
+            avatarUrl: req.session.user.avatarUrl
         });
 
-        req.session.user = updatedUser;
+        req.session.user = updatedUser.toObject({ virtuals: true });
 
         console.log('✅ Session updated:', {
             avatarType: req.session.user.avatarType,
             avatarSeed: req.session.user.avatarSeed,
-            hasAvatar: !!req.session.user.avatar
+            hasAvatar: !!req.session.user.avatar,
+            avatarUrl: req.session.user.avatarUrl
         });
 
-        req.flash('success', 'Avatar removed successfully!');
-        res.redirect('/users/settings/profile');
+        // Save session to ensure persistence
+        req.session.save((err) => {
+            if (err) {
+                console.error('❌ Session save error:', err);
+            } else {
+                console.log('✅ Session saved successfully!');
+            }
+            req.flash('success', 'Avatar removed successfully!');
+            res.redirect('/users/settings/profile');
+        });
     } catch (error) {
         console.error('Error removing avatar:', error);
         req.flash('error', 'Error removing avatar');
@@ -333,9 +365,7 @@ router.post('/password', [
         .withMessage('Current password is required'),
     body('newPassword')
         .isLength({ min: 8 })
-        .withMessage('New password must be at least 8 characters long')
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
-        .withMessage('New password must contain uppercase, lowercase, number, and special character'),
+        .withMessage('New password must be at least 8 characters long'),
     body('confirmPassword')
         .custom((value, { req }) => {
             if (value !== req.body.newPassword) {

@@ -57,14 +57,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [8, 'Password must be at least 8 characters'],
-    validate: {
-      validator: function(password) {
-        // Require at least one uppercase, one lowercase, one number, and one special character
-        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(password);
-      },
-      message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
-    }
+    minlength: [8, 'Password must be at least 8 characters']
+    // No validation - accept any password 8+ characters
   },
 
   avatar: {
@@ -289,22 +283,32 @@ userSchema.virtual('avatarUrl').get(function() {
   if (this.avatar && this.avatarType === 'upload') {
     // Check if uploaded avatar file exists, fallback to API if not
     const fs = require('fs');
-    const uploadPath = `public/uploads/avatars/${this.avatar}`;
+    const path = require('path');
+    const uploadPath = path.join(__dirname, '../public/uploads/avatars', this.avatar);
+    console.log(`🔍 Checking avatar file: ${uploadPath}`);
     if (fs.existsSync(uploadPath)) {
-      return `/uploads/avatars/${this.avatar}`;
+      const url = `/uploads/avatars/${this.avatar}`;
+      console.log(`✅ Avatar file exists, returning URL: ${url}`);
+      return url;
     } else {
       // File missing, fallback to API avatar
       console.log(`⚠️ Avatar file not found: ${uploadPath}, using API fallback`);
       const seed = this.avatarSeed || this.username || this.email.split('@')[0] || 'default';
-      return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+      const apiUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+      console.log(`🔄 API fallback URL: ${apiUrl}`);
+      return apiUrl;
     }
   } else if (this.avatarSeed && this.avatarType === 'api') {
     // Return API-generated avatar
-    return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;
+    const apiUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;
+    console.log(`🎨 API avatar URL: ${apiUrl}`);
+    return apiUrl;
   }
   // Generate a default API avatar based on username or email
   const seed = this.username || this.email.split('@')[0] || 'default';
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+  const defaultUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+  console.log(`🏠 Default avatar URL: ${defaultUrl}`);
+  return defaultUrl;
 });
 
 module.exports = mongoose.model('User', userSchema);

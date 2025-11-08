@@ -1,0 +1,916 @@
+/**
+ * Authentication Neo Styles - UConnect
+ * Brutalist + Apple Hybrid Design
+ */
+
+/* ========================================
+   ROOT VARIABLES
+   ======================================== */
+:root {
+    --black: #000000;
+    --white: #FFFFFF;
+    --red: #FF0000;
+    --gray-light: #F5F5F5;
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+.auth-page-neo {
+    background: var(--black);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--white);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Animated background geometric shapes */
+.auth-bg-shapes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.03;
+}
+
+.auth-bg-shape {
+    position: absolute;
+    border: 2px solid var(--red);
+}
+
+.auth-bg-shape:nth-child(1) {
+    width: 300px;
+    height: 300px;
+    top: 10%;
+    left: 5%;
+    animation: float 20s ease-in-out infinite;
+}
+
+.auth-bg-shape:nth-child(2) {
+    width: 200px;
+    height: 200px;
+    top: 60%;
+    right: 10%;
+    border-radius: 50%;
+    animation: float 15s ease-in-out infinite reverse;
+}
+
+.auth-bg-shape:nth-child(3) {
+    width: 150px;
+    height: 150px;
+    bottom: 15%;
+    left: 50%;
+    animation: float 25s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    33% {
+        transform: translate(30px, -30px) rotate(120deg);
+    }
+    66% {
+        transform: translate(-20px, 20px) rotate(240deg);
+    }
+}
+
+/* ========================================
+   CONTAINER & LAYOUT
+   ======================================== */
+.auth-container-neo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 120px 24px 48px;
+    gap: 64px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================================
+   AUTH CARD
+   ======================================== */
+.auth-card-neo {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 48px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.auth-card-neo:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+}
+
+/* Header */
+.auth-header-neo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.auth-logo-neo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.logo-icon-neo {
+    font-size: 48px;
+    filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.5));
+}
+
+.logo-text-neo {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--white);
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.auth-title-neo {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    color: var(--white);
+    letter-spacing: -0.02em;
+}
+
+.auth-subtitle-neo {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+/* ========================================
+   FORM STYLES
+   ======================================== */
+.auth-form-neo {
+    margin-bottom: 32px;
+}
+
+.form-group-neo {
+    margin-bottom: 24px;
+}
+
+.form-label-neo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+}
+
+.form-input-neo {
+    width: 100%;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--white);
+    font-size: 16px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.form-input-neo::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.form-input-neo:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--red);
+    box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-input-neo:hover:not(:focus) {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Password Input */
+.password-input-neo {
+    position: relative;
+}
+
+.password-toggle-neo {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle-neo:hover {
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.password-toggle-neo:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+/* Form Help Text */
+.form-help-neo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+/* Password Strength */
+.password-strength-neo {
+    margin-top: 12px;
+}
+
+.strength-bar-neo {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.strength-fill-neo {
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-text-neo {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Password Match */
+.password-match-neo {
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.match-success-neo {
+    color: #00FF00;
+}
+
+.match-error-neo {
+    color: var(--red);
+}
+
+/* Error Messages */
+.form-errors-neo {
+    margin-bottom: 24px;
+}
+
+.error-message-neo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid rgba(255, 0, 0, 0.3);
+    border-radius: 12px;
+    color: var(--red);
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Checkbox */
+.checkbox-label-neo {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.checkbox-label-neo input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-custom-neo {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    margin-top: 2px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.checkbox-label-neo:hover .checkbox-custom-neo {
+    border-color: var(--red);
+}
+
+.checkbox-label-neo input[type="checkbox"]:checked + .checkbox-custom-neo {
+    background: var(--red);
+    border-color: var(--red);
+}
+
+.checkbox-label-neo input[type="checkbox"]:checked + .checkbox-custom-neo::after {
+    content: '✓';
+    color: var(--white);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.checkbox-text-neo a {
+    color: var(--red);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.checkbox-text-neo a:hover {
+    text-decoration: underline;
+}
+
+/* Form Options */
+.form-options-neo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    font-size: 14px;
+}
+
+.forgot-link-neo {
+    color: var(--red);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.forgot-link-neo:hover {
+    text-decoration: underline;
+    transform: translateX(4px);
+}
+
+/* Buttons */
+.btn-neo {
+    width: 100%;
+    padding: 18px 32px;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-primary-neo {
+    background: var(--red);
+    color: var(--white);
+    border: 2px solid var(--red);
+}
+
+.btn-primary-neo:hover {
+    background: var(--white);
+    color: var(--red);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 0, 0, 0.3);
+}
+
+.btn-primary-neo:active {
+    transform: translateY(0);
+}
+
+.btn-secondary-neo {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary-neo:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--white);
+    transform: translateY(-2px);
+}
+
+.btn-outline-neo {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid var(--white);
+}
+
+.btn-outline-neo:hover {
+    background: var(--white);
+    color: var(--black);
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   AVATAR SELECTION
+   ======================================== */
+.avatar-selection-neo {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+.avatar-selection-neo:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.avatar-preview-neo {
+    flex-shrink: 0;
+}
+
+.avatar-preview-img-neo {
+    width: 100px;
+    height: 100px;
+    border-radius: 16px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.avatar-preview-img-neo:hover {
+    transform: scale(1.05) rotate(2deg);
+    border-color: var(--red);
+    box-shadow: 0 8px 24px rgba(255, 0, 0, 0.3);
+}
+
+.avatar-options-neo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.avatar-options-neo .btn-neo {
+    font-size: 14px;
+    padding: 14px 24px;
+}
+
+#diceIcon {
+    transition: transform 0.5s ease-in-out;
+    display: inline-block;
+}
+
+.dice-spin {
+    animation: diceRotate 0.6s ease-in-out;
+}
+
+@keyframes diceRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   DIVIDER
+   ======================================== */
+.auth-divider-neo {
+    position: relative;
+    text-align: center;
+    margin: 32px 0;
+}
+
+.auth-divider-neo::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-divider-neo span {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    color: rgba(255, 255, 255, 0.5);
+    padding: 0 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    position: relative;
+}
+
+/* ========================================
+   QUICK ACTIONS
+   ======================================== */
+.quick-actions-neo {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.quick-action-neo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.quick-action-neo:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--red);
+    border-color: var(--red);
+    transform: translateY(-4px);
+}
+
+.quick-action-neo span:first-child {
+    font-size: 24px;
+}
+
+/* ========================================
+   AUTH FOOTER
+   ======================================== */
+.auth-footer-neo {
+    text-align: center;
+    padding-top: 24px;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-footer-neo p {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    font-size: 14px;
+}
+
+.auth-footer-neo a {
+    color: var(--red);
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.auth-footer-neo a:hover {
+    text-decoration: underline;
+    color: var(--white);
+}
+
+/* ========================================
+   BENEFITS / SECURITY SECTION
+   ======================================== */
+.benefits-card-neo {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.benefits-card-neo h3 {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 32px;
+    color: var(--white);
+    letter-spacing: -0.02em;
+}
+
+.benefits-list-neo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.benefit-item-neo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.benefit-item-neo:hover {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: var(--red);
+    transform: translateX(8px);
+}
+
+.benefit-item-neo span:first-child {
+    font-size: 32px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3));
+}
+
+.benefit-item-neo span:last-child {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Security Notice */
+.security-notice-neo {
+    background: rgba(255, 0, 0, 0.05);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 0, 0, 0.2);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 400px;
+}
+
+.security-content-neo {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.security-content-neo span:first-child {
+    font-size: 48px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.5));
+}
+
+.security-content-neo h4 {
+    margin-bottom: 12px;
+    color: var(--white);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.security-content-neo p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ========================================
+   RESEND VERIFICATION
+   ======================================== */
+.resend-verification-neo {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 12px;
+    border-left: 4px solid var(--red);
+}
+
+.resend-verification-neo .btn-link-neo {
+    background: none;
+    border: none;
+    color: var(--red);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    font-size: 14px;
+}
+
+.resend-verification-neo .btn-link-neo:hover {
+    color: var(--white);
+    text-decoration: underline;
+}
+
+/* ========================================
+   LIGHT THEME
+   ======================================== */
+body.light-theme .auth-page-neo {
+    background: var(--gray-light);
+    color: var(--black);
+}
+
+body.light-theme .auth-bg-shape {
+    border-color: var(--black);
+}
+
+body.light-theme .auth-card-neo {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .logo-text-neo,
+body.light-theme .auth-title-neo {
+    color: var(--black);
+}
+
+body.light-theme .auth-subtitle-neo {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+body.light-theme .form-label-neo {
+    color: var(--black);
+}
+
+body.light-theme .form-input-neo {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--black);
+}
+
+body.light-theme .form-input-neo::placeholder {
+    color: rgba(0, 0, 0, 0.3);
+}
+
+body.light-theme .form-input-neo:focus {
+    background: var(--white);
+    box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.1);
+}
+
+body.light-theme .form-help-neo {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+body.light-theme .checkbox-label-neo {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+body.light-theme .checkbox-custom-neo {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+body.light-theme .btn-outline-neo {
+    color: var(--black);
+    border-color: var(--black);
+}
+
+body.light-theme .btn-outline-neo:hover {
+    background: var(--black);
+    color: var(--white);
+}
+
+body.light-theme .benefits-card-neo,
+body.light-theme .security-notice-neo {
+    background: var(--white);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .benefits-card-neo h3,
+body.light-theme .security-content-neo h4 {
+    color: var(--black);
+}
+
+body.light-theme .benefit-item-neo {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .benefit-item-neo span:last-child,
+body.light-theme .security-content-neo p {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1024px) {
+    .auth-container-neo {
+        flex-direction: column;
+        gap: 48px;
+    }
+
+    .benefits-card-neo,
+    .security-notice-neo {
+        max-width: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-container-neo {
+        padding: 100px 16px 32px;
+    }
+
+    .auth-card-neo {
+        padding: 32px 24px;
+    }
+
+    .auth-title-neo {
+        font-size: 24px;
+    }
+
+    .form-options-neo {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .quick-actions-neo {
+        flex-direction: column;
+    }
+
+    .benefits-card-neo,
+    .security-notice-neo {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card-neo {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+
+    .logo-text-neo {
+        font-size: 24px;
+    }
+
+    .auth-title-neo {
+        font-size: 20px;
+    }
+
+    .avatar-selection-neo {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .avatar-preview-img-neo {
+        width: 80px;
+        height: 80px;
+    }
+
+    .avatar-options-neo {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   LOADING STATE
+   ======================================== */
+.btn-neo:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+    color: transparent;
+}
+
+.btn-neo:disabled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: btnSpin 1s linear infinite;
+}
+
+@keyframes btnSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

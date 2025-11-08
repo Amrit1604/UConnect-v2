@@ -86,6 +86,22 @@
                     </div>
                 </div>
 
+                <!-- Stories Row (top) -->
+                <div class="stories-row">
+                    <div class="story story-add" onclick="window.location.href='/posts/create'">
+                        <div class="story-avatar add">+</div>
+                        <div class="story-label">Your Story</div>
+                    </div>
+                    <% (stories || []).forEach(s => { %>
+                        <div class="story" onclick="window.location.href='/users/<%= s.username %>'">
+                            <div class="story-avatar">
+                                <img src="<%= s.avatarUrl %>" alt="<%= s.username %>">
+                            </div>
+                            <div class="story-label"><%= s.displayName || s.username %></div>
+                        </div>
+                    <% }) %>
+                </div>
+
                 <!-- Filter Tabs -->
                 <div class="feed-categories">
                     <a href="/posts?filter=recent" class="category-tab <%= currentFilter === 'recent' ? 'active' : '' %>">
@@ -126,7 +142,7 @@
                                             <i class="fas fa-ellipsis-h"></i>
                                         </button>
                                         <div class="post-menu-dropdown" id="postMenu<%= post._id %>">
-                                            <% if (post.author._id.toString() === user.id) { %>
+                                            <% if (post.author._id.toString() === user._id.toString()) { %>
                                                 <a href="/posts/<%= post._id %>/edit" class="menu-item">
                                                     <i class="fas fa-edit"></i> Edit Post
                                                 </a>
@@ -161,9 +177,9 @@
                                 <!-- Post Actions -->
                                 <div class="post-actions">
                                     <div class="action-buttons-left">
-                                        <button class="action-btn like-btn <%= post.isLikedBy(user.id) ? 'liked' : '' %>"
+                                        <button class="action-btn like-btn"
                                                 onclick="toggleLike('<%= post._id %>')">
-                                            <span class="icon"><%= post.isLikedBy(user.id) ? '❤️' : '🤍' %></span>
+                                            <span class="icon">🤍</span>
                                         </button>
 
                                         <a href="/posts/<%= post._id %>" class="action-btn">
@@ -213,9 +229,6 @@
                                                               data-username="<%= comment.author.username %>"
                                                               data-post-id="<%= post._id %>">
                                                             <%= comment.author.username %>
-                                                            <% if (comment.author._id.toString() !== user._id.toString()) { %>
-                                                                <span class="secret-chat-icon" title="Send secret message">🔐</span>
-                                                            <% } %>
                                                         </span>
                                                         <span><%= comment.content %></span>
                                                     </div>
@@ -463,9 +476,9 @@
                 </div>
                 <div class="post-content">
                     <p>${post.content}</p>
-                    ${post.images && post.images.length > 0 ?
+                    ${post.media && post.media.length > 0 ?
                         `<div class="post-images">
-                            ${post.images.map(img => `<img src="${img.url}" alt="Post image">`).join('')}
+                            ${post.media.map(img => `<img src="${img.url}" alt="Post image">`).join('')}
                         </div>` : ''}
                 </div>
                 <div class="post-actions">
@@ -671,382 +684,6 @@
         .liked {
             color: #e91e63 !important;
         }
-
-        /* 🔥 HULK-POWERED SECRET CHAT STYLES 🔥 */
-        .username-hover {
-            transition: all 0.3s ease;
-            border-radius: 4px;
-            padding: 2px 4px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .username-hover:hover {
-            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
-            transform: scale(1.02);
-        }
-
-        .secret-chat-icon {
-            opacity: 0;
-            font-size: 10px;
-            margin-left: 4px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: absolute;
-            top: -2px;
-            right: -15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: scale(0);
-        }
-
-        .username-hover:hover .secret-chat-icon {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .secret-chat-icon:hover {
-            transform: scale(1.2) !important;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-        }
-
-        .comment-item {
-            border-radius: 8px;
-            padding: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .comment-item:hover {
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        .chat-request-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .chat-request-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 2rem;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            animation: modalSlideIn 0.3s ease;
-        }
-
-        .modal-header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-header h3 {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #64748b;
-        }
-
-        .modal-close:hover {
-            color: #ef4444;
-        }
-
-        .user-card {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-        }
-
-        .user-card img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #667eea;
-        }
-
-        .user-card h4 {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .user-card p {
-            margin: 0;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
-        .message-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-family: inherit;
-            margin-bottom: 1rem;
-            resize: vertical;
-            min-height: 80px;
-            transition: border-color 0.3s ease;
-        }
-
-        .message-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-
-        .btn-modal {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-cancel {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .btn-cancel:hover {
-            background: #e2e8f0;
-        }
-
-        .btn-send {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-send:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-send:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
     </style>
-
-    <!-- Secret Chat Request Modal -->
-    <div id="chatRequestModal" class="chat-request-modal">
-        <div class="chat-request-content">
-            <button class="modal-close" onclick="closeChatRequest()">&times;</button>
-
-            <div class="modal-header">
-                <h3>🔐 Request Secret Chat</h3>
-            </div>
-
-            <div id="modalUserCard" class="user-card">
-                <!-- User info will be populated by JavaScript -->
-            </div>
-
-            <form id="chatRequestForm">
-                <label for="chatMessage" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
-                    Your message:
-                </label>
-                <textarea
-                    id="chatMessage"
-                    class="message-input"
-                    placeholder="Hi! I'd like to have a private chat with you about this post. What do you think?"
-                    maxlength="200"
-                    required></textarea>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-modal btn-cancel" onclick="closeChatRequest()">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn-modal btn-send" id="sendRequestBtn">
-                        🚀 Send Request
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // 🔥 HULK-POWERED SECRET CHAT REQUEST SYSTEM 🔥
-        let currentChatRequest = {
-            userId: null,
-            username: null,
-            postId: null
-        };
-
-        // Handle username hover clicks for secret chat
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('secret-chat-icon')) {
-                const usernameElement = e.target.parentElement;
-                const userId = usernameElement.getAttribute('data-user-id');
-                const username = usernameElement.getAttribute('data-username');
-                const postId = usernameElement.getAttribute('data-post-id');
-
-                openChatRequest(userId, username, postId);
-            }
-        });
-
-        function openChatRequest(userId, username, postId) {
-            currentChatRequest = { userId, username, postId };
-
-            // Populate user card
-            document.getElementById('modalUserCard').innerHTML = `
-                <img src="/uploads/avatars/default-avatar.png" alt="${username}" onerror="this.src='/images/logo.png'">
-                <div>
-                    <h4>${username}</h4>
-                    <p>Request a private chat to connect securely</p>
-                </div>
-            `;
-
-            // Show modal
-            document.getElementById('chatRequestModal').style.display = 'block';
-            document.getElementById('chatMessage').focus();
-        }
-
-        function closeChatRequest() {
-            document.getElementById('chatRequestModal').style.display = 'none';
-            document.getElementById('chatMessage').value = '';
-            currentChatRequest = { userId: null, username: null, postId: null };
-        }
-
-        // Handle form submission
-        document.getElementById('chatRequestForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const message = document.getElementById('chatMessage').value.trim();
-            if (!message) return;
-
-            const sendBtn = document.getElementById('sendRequestBtn');
-            sendBtn.disabled = true;
-            sendBtn.innerHTML = '⏳ Sending...';
-
-            try {
-                const response = await fetch('/chat/request', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        recipientId: currentChatRequest.userId,
-                        postId: currentChatRequest.postId,
-                        message: message
-                    })
-                });
-
-                console.log('🔥 CHAT REQUEST RESPONSE STATUS:', response.status);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ HTTP Error:', response.status, errorText);
-                    throw new Error(`HTTP ${response.status}: ${errorText}`);
-                }
-
-                const result = await response.json();
-
-                console.log('🔥 CHAT REQUEST RESPONSE:', result);
-
-                if (result.success) {
-                    alert('🎉 Secret chat request sent successfully! ' + currentChatRequest.username + ' will be notified.');
-                    closeChatRequest();
-                } else {
-                    console.error('❌ Chat request failed:', result);
-                    alert('❌ Error: ' + (result.message || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Error sending chat request:', error);
-                alert('❌ Something went wrong. Please try again.');
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '🚀 Send Request';
-            }
-        });
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('chatRequestModal');
-            if (event.target === modal) {
-                closeChatRequest();
-            }
-        }
-
-        // Listen for new chat requests
-        socket.on('newChatRequest', function(data) {
-            if (data.recipientId === '<%= user._id %>') {
-                showNotification('💬 New secret chat request from ' + data.requesterName);
-            }
-        });
-
-        function showNotification(message) {
-            // Simple notification (can be enhanced)
-            if (Notification.permission === 'granted') {
-                new Notification('UConnect Secret Chat', {
-                    body: message,
-                    icon: '/images/logo.png'
-                });
-            } else {
-                // Fallback to alert
-                setTimeout(() => alert(message), 1000);
-            }
-        }
-
-        // Request notification permission
-        if (Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-
-        console.log('🔥 HULK CHAT: Secret messaging system loaded on feed!');
-    </script>
-    </script>
 </body>
 </html>

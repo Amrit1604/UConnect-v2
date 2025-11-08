@@ -138,6 +138,12 @@ const postSchema = new mongoose.Schema({
     size: {
       type: Number,
       required: true
+    },
+    mimetype: {
+      type: String
+    },
+    url: {
+      type: String
     }
   }],
 

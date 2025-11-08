@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link href="/css/landing-neo.css" rel="stylesheet">
+    <link href="/css/auth-neo.css" rel="stylesheet">
+</head>
+<body class="auth-page-neo">
+    <!-- Animated Background Shapes -->
+    <div class="auth-bg-shapes">
+        <div class="auth-bg-shape"></div>
+        <div class="auth-bg-shape"></div>
+        <div class="auth-bg-shape"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar-neo">
+        <div class="nav-container-neo">
+            <!-- Left: Logo -->
+            <div class="nav-brand-neo">
+                <a href="/" class="brand-link-neo">
+                    <div class="logo-brutalist">U</div>
+                    <span class="brand-text">CONNECT</span>
+                </a>
+            </div>
+
+            <!-- Center: Navigation Links -->
+            <div class="nav-center-neo">
+                <a href="/" class="nav-link-neo">HOME</a>
+                <a href="#features" class="nav-link-neo">FEATURES</a>
+                <a href="#about" class="nav-link-neo">ABOUT</a>
+            </div>
+
+            <!-- Right: Action Buttons -->
+            <div class="nav-actions-neo">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon moon">🌙</span>
+                    <span class="theme-icon sun">☀️</span>
+                </button>
+
+                <a href="/auth/register" class="nav-btn-ghost">SIGN UP</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu-btn-neo" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="auth-container-neo">
+            <!-- Auth Card -->
+            <div class="auth-card-neo">
+                <div class="auth-header-neo">
+                    <div class="auth-logo-neo">
+                        <span class="logo-icon-neo">🎓</span>
+                        <h1 class="logo-text-neo">UCONNECT</h1>
+                    </div>
+                    <h2 class="auth-title-neo">WELCOME BACK!</h2>
+                    <p class="auth-subtitle-neo">Sign in to connect with your campus community</p>
+                </div>
+
+                <form class="auth-form-neo" method="POST" action="/auth/login" novalidate>
+                    <!-- Display Errors -->
+                    <% if (errors && errors.length > 0) { %>
+                        <div class="form-errors-neo">
+                            <% errors.forEach(error => { %>
+                                <div class="error-message-neo">
+                                    <span>⚠️</span>
+                                    <%= error.msg %>
+                                </div>
+                            <% }) %>
+
+                            <!-- Show resend verification option if user is not verified -->
+                            <% if (typeof showResendVerification !== 'undefined' && showResendVerification && typeof userEmail !== 'undefined') { %>
+                                <div class="resend-verification-neo">
+                                    <form method="POST" action="/auth/resend-verification" style="display: inline;">
+                                        <input type="hidden" name="email" value="<%= userEmail %>">
+                                        <button type="submit" class="btn-link-neo">
+                                            📧 Resend verification email
+                                        </button>
+                                    </form>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% } %>
+
+                    <!-- Email/Username Field -->
+                    <div class="form-group-neo">
+                        <label for="email" class="form-label-neo">
+                            <span>�</span>
+                            EMAIL OR USERNAME
+                        </label>
+                        <input
+                            type="text"
+                            id="email"
+                            name="email"
+                            class="form-input-neo"
+                            placeholder="email@university.edu.in or username"
+                            value="<%= formData.email || '' %>"
+                            required
+                            autocomplete="username"
+                            autofocus
+                        >
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group-neo">
+                        <label for="password" class="form-label-neo">
+                            <span>🔒</span>
+                            PASSWORD
+                        </label>
+                        <div class="password-input-neo">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-input-neo"
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password"
+                            >
+                            <button type="button" class="password-toggle-neo" onclick="togglePassword('password')">
+                                <span>👁️</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me and Forgot Password -->
+                    <div class="form-options-neo">
+                        <label class="checkbox-label-neo">
+                            <input type="checkbox" name="remember">
+                            <span class="checkbox-custom-neo"></span>
+                            <span class="checkbox-text-neo">Remember me</span>
+                        </label>
+                        <a href="/auth/forgot-password" class="forgot-link-neo">Forgot password?</a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-neo btn-primary-neo">
+                        <span>🔐</span>
+                        SIGN IN
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="auth-divider-neo">
+                    <span>or</span>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions-neo">
+                    <a href="/auth/verify-email" class="quick-action-neo">
+                        <span>📬</span>
+                        <span>Verify Email</span>
+                    </a>
+                    <a href="/auth/resend-verification" class="quick-action-neo">
+                        <span>📤</span>
+                        <span>Resend Code</span>
+                    </a>
+                </div>
+
+                <div class="auth-footer-neo">
+                    <p>Don't have an account? <a href="/auth/register">Join your campus</a></p>
+                </div>
+            </div>
+
+            <!-- Login Benefits -->
+            <div class="benefits-card-neo">
+                <h3>WHY UCONNECT?</h3>
+                <div class="benefits-list-neo">
+                    <div class="benefit-item-neo">
+                        <span>👥</span>
+                        <span>Connect with campus peers</span>
+                    </div>
+                    <div class="benefit-item-neo">
+                        <span>📅</span>
+                        <span>Stay updated on events</span>
+                    </div>
+                    <div class="benefit-item-neo">
+                        <span>💬</span>
+                        <span>Join meaningful discussions</span>
+                    </div>
+                    <div class="benefit-item-neo">
+                        <span>🛡️</span>
+                        <span>Secure and verified community</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="/js/landing-neo.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>
