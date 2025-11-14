@@ -167,7 +167,7 @@ fetch('/posts/POST_ID_HERE/like', { method: 'POST' })
   .then(console.log);
 
 // Test comment endpoint
-fetch('/posts/POST_ID_HERE/comments', { 
+fetch('/posts/POST_ID_HERE/comments', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ content: 'Test comment' })

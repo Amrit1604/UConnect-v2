@@ -78,9 +78,9 @@
                             avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed;
                         }
                         %>
-                        <img src="<%= avatarUrl %>" 
-                             alt="Current Avatar" 
-                             class="current-avatar-neo" 
+                        <img src="<%= avatarUrl %>"
+                             alt="Current Avatar"
+                             class="current-avatar-neo"
                              id="avatarPreview"
                              onerror="this.src='/images/default-avatar.png'">
                         <h3 class="avatar-title-neo">PROFILE PICTURE</h3>
@@ -103,13 +103,13 @@
                     <!-- Username -->
                     <div class="form-group-neo">
                         <label for="username" class="form-label-neo">USERNAME</label>
-                        <input type="text" 
-                               id="username" 
-                               name="username" 
+                        <input type="text"
+                               id="username"
+                               name="username"
                                class="form-input-neo"
-                               value="<%= user.username %>" 
-                               required 
-                               maxlength="20" 
+                               value="<%= user.username %>"
+                               required
+                               maxlength="20"
                                pattern="[a-zA-Z0-9_]+">
                         <small class="form-help-neo">Only letters, numbers, and underscores allowed (3-20 characters)</small>
                     </div>
@@ -117,9 +117,9 @@
                     <!-- Bio -->
                     <div class="form-group-neo">
                         <label for="bio" class="form-label-neo">BIO</label>
-                        <textarea id="bio" 
-                                  name="bio" 
-                                  class="form-textarea-neo" 
+                        <textarea id="bio"
+                                  name="bio"
+                                  class="form-textarea-neo"
                                   maxlength="200"
                                   placeholder="Tell other students about yourself..."><%= user.bio || '' %></textarea>
                         <small class="form-help-neo" id="bioHelp">Share a bit about yourself (0/200 characters)</small>
@@ -129,25 +129,25 @@
                     <div class="privacy-section-neo">
                         <h3 class="privacy-title-neo">🔒 PRIVACY SETTINGS</h3>
                         <div class="checkbox-group-neo">
-                            <input type="checkbox" 
-                                   id="profilePublic" 
-                                   name="profilePublic" 
+                            <input type="checkbox"
+                                   id="profilePublic"
+                                   name="profilePublic"
                                    class="checkbox-neo"
                                    <%= user.privacy?.profilePublic !== false ? 'checked' : '' %>>
                             <label for="profilePublic" class="checkbox-label-neo">Make my profile visible to other students</label>
                         </div>
                         <div class="checkbox-group-neo">
-                            <input type="checkbox" 
-                                   id="showEmail" 
-                                   name="showEmail" 
+                            <input type="checkbox"
+                                   id="showEmail"
+                                   name="showEmail"
                                    class="checkbox-neo"
                                    <%= user.privacy?.showEmail === true ? 'checked' : '' %>>
                             <label for="showEmail" class="checkbox-label-neo">Show my email to other students</label>
                         </div>
                         <div class="checkbox-group-neo">
-                            <input type="checkbox" 
-                                   id="allowMessages" 
-                                   name="allowMessages" 
+                            <input type="checkbox"
+                                   id="allowMessages"
+                                   name="allowMessages"
                                    class="checkbox-neo"
                                    <%= user.privacy?.allowMessages !== false ? 'checked' : '' %>>
                             <label for="allowMessages" class="checkbox-label-neo">Allow other students to message me</label>

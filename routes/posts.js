@@ -42,9 +42,9 @@ const commentValidation = [
 // GET /posts - 🚀 ADVANCED FEED WITH CATEGORIES & SEARCH
 router.get('/', requireAuth, async (req, res) => {
   try {
-    // 🚨 Ensure user has a campus assigned
-    if (!req.user.campus) {
-      console.log(`⚠️ User ${req.user.username} has no campus, setting to 'Main Campus'`);
+    // 🚨 Ensure ALL users have Main Campus assigned (fix for visibility bug)
+    if (!req.user.campus || req.user.campus !== 'Main Campus') {
+      console.log(`⚠️ User ${req.user.username} campus: ${req.user.campus}, updating to 'Main Campus'`);
       await User.findByIdAndUpdate(req.user._id, { campus: 'Main Campus' });
       req.user.campus = 'Main Campus';
     }

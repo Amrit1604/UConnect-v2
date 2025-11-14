@@ -52,11 +52,11 @@
                          alt="<%= profileUser.displayName || profileUser.name || profileUser.username %>"
                          class="profile-avatar-large-neo"
                          onerror="this.src='/images/default-avatar.png'">
-                    
+
                     <div class="profile-details-neo">
                         <h1 class="profile-name-large-neo"><%= profileUser.displayName || profileUser.name || profileUser.username %></h1>
                         <div class="profile-username-large-neo">@<%= profileUser.username %></div>
-                        
+
                         <% if (profileUser.bio) { %>
                             <p class="profile-bio-neo"><%= profileUser.bio %></p>
                         <% } %>
@@ -122,7 +122,7 @@
                         <% posts.forEach(post => { %>
                             <div class="profile-post-card-neo" data-post-id="<%= post._id %>">
                                 <input type="checkbox" class="post-checkbox-neo" value="<%= post._id %>">
-                                
+
                                 <div class="profile-post-header-neo">
                                     <span class="profile-post-date-neo">
                                         🕒 <%= new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
@@ -184,7 +184,7 @@
         if (deleteModeToggle) {
             deleteModeToggle.addEventListener('click', function() {
                 deleteMode = !deleteMode;
-                
+
                 if (deleteMode) {
                     postsGrid.classList.add('delete-mode');
                     deleteModeToggle.classList.add('active');
@@ -236,7 +236,7 @@
                 }
 
                 const confirmation = confirm(`Are you sure you want to delete ${selectedIds.length} post(s)? This action cannot be undone.`);
-                
+
                 if (confirmation) {
                     try {
                         // Delete posts one by one

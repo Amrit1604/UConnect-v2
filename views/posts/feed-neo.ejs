@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', async function() {
             const postId = this.dataset.postId;
             const postUrl = `${window.location.origin}/posts/${postId}`;
-            
+
             try {
                 // Try using Web Share API if available (mobile devices)
                 if (navigator.share) {
@@ -429,12 +429,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     // Fallback to clipboard copy
                     await navigator.clipboard.writeText(postUrl);
-                    
+
                     // Visual feedback
                     const originalText = this.querySelector('.action-text').textContent;
                     this.querySelector('.action-text').textContent = 'COPIED!';
                     this.style.background = '#FF0000';
-                    
+
                     setTimeout(() => {
                         this.querySelector('.action-text').textContent = originalText;
                         this.style.background = '';

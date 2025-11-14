@@ -126,17 +126,11 @@ const userSchema = new mongoose.Schema({
     default: null
   },
 
-  // Campus information extracted from email
+  // Campus information - all users belong to Main Campus for now
   campus: {
     type: String,
-    default: function() {
-      if (this.email) {
-        // Extract campus from email (e.g., student@xyz.edu.in -> xyz)
-        const match = this.email.match(/@([^.]+)\.edu\.in$/);
-        return match ? match[1] : null;
-      }
-      return null;
-    }
+    default: 'Main Campus',
+    required: true
   },
 
   // User statistics
@@ -291,12 +285,12 @@ userSchema.virtual('avatarUrl').get(function() {
     // If file doesn't exist, fall through to API avatar
     console.log(`⚠️ Avatar file not found: ${uploadPath}, using API fallback`);
   }
-  
+
   // Priority 2: API avatar with saved seed
   if (this.avatarSeed) {
     return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;
   }
-  
+
   // Priority 3: Generate seed from username/email as absolute fallback
   const seed = this.username || this.email.split('@')[0] || 'default';
   return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
