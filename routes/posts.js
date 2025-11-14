@@ -8,7 +8,6 @@ const { body, validationResult } = require('express-validator');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const { requireAuth, requireOwnership, logActivity } = require('../middleware/auth');
-const { uploadPostImage, uploadPostMedia, optimizeImage } = require('../middleware/uploadImages');
 const { uploadPostImages } = require('../utils/gridfs');
 
 const router = express.Router();
@@ -242,8 +241,8 @@ router.get('/create', requireAuth, (req, res) => {
   });
 });
 
-// POST /posts/create - 🎯 ULTIMATE CREATE POST WITH IMAGES, VIDEO & REAL-TIME
-router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity('create post'), async (req, res) => {
+// POST /posts/create - 🎯 ULTIMATE CREATE POST WITH IMAGES (GridFS) & REAL-TIME
+router.post('/create', requireAuth, uploadPostImages.array('images', 5), postValidation, logActivity('create post'), async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -264,32 +263,22 @@ router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity
     const images = [];
     const media = [];
 
-    console.log('📁 Received files:', req.files ? Object.keys(req.files) : 'none');
+    console.log('📁 Received files:', req.files ? req.files.length : 'none');
 
-    // req.files is an object with possible keys 'images' and 'videos'
-    if (req.files) {
-      if (Array.isArray(req.files.images)) {
-        console.log(`🖼️ Processing ${req.files.images.length} images`);
-        for (const file of req.files.images) {
-          try { await optimizeImage(file.path); } catch (e) { console.error('Image optimization error', e.message); }
-          images.push({ filename: file.filename, originalName: file.originalname, size: file.size, mimetype: file.mimetype, url: `/uploads/posts/${file.filename}` });
-          console.log(`📸 Image uploaded: ${file.filename}`);
-        }
-      }
-
-      if (Array.isArray(req.files.videos)) {
-        console.log(`🎥 Processing ${req.files.videos.length} videos`);
-        for (const file of req.files.videos) {
-          // basic server-side size check (50MB)
-          if (file.size > 50 * 1024 * 1024) {
-            try { require('fs').unlinkSync(file.path); } catch (e) {}
-            console.warn('⛔ Skipped oversized video:', file.originalname);
-            continue;
-          }
-
-          media.push({ type: 'video', filename: file.filename, originalName: file.originalname, size: file.size, mimetype: file.mimetype, url: `/uploads/posts/${file.filename}` });
-          console.log(`🎥 Video uploaded: ${file.filename}`);
-        }
+    // req.files is an array of uploaded images (GridFS)
+    if (req.files && Array.isArray(req.files)) {
+      console.log(`🖼️ Processing ${req.files.length} images (GridFS)`);
+      for (const file of req.files) {
+        images.push({ 
+          filename: file.filename, 
+          originalName: file.originalname, 
+          size: file.size, 
+          mimetype: file.mimetype, 
+          url: `/gridfs/${file.id}`,
+          gridFSId: file.id,
+          storageType: 'gridfs'
+        });
+        console.log(`📸 Image uploaded to GridFS: ${file.filename} → ID: ${file.id}`);
       }
     }
 
