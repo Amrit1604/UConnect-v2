@@ -117,6 +117,15 @@ const postSchema = new mongoose.Schema({
     url: {
       type: String,
       required: true
+    },
+    gridFSId: {
+      type: mongoose.Schema.Types.ObjectId, // GridFS file ID if stored in MongoDB
+      default: null
+    },
+    storageType: {
+      type: String,
+      enum: ['local', 'gridfs'], // Track where image is stored
+      default: 'local'
     }
   }],
 

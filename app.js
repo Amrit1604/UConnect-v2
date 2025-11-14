@@ -32,6 +32,7 @@ const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
+const gridfsRoutes = require('./routes/gridfs');
 
 // ==========================================
 // MIDDLEWARE
@@ -48,6 +49,12 @@ const PORT = process.env.PORT || 4000;
 
 // Database connection
 connectDB();
+
+// Initialize GridFS after database connection
+const { initGridFS } = require('./utils/gridfs');
+mongoose.connection.once('open', () => {
+  initGridFS();
+});
 
 // Security middleware
 configureHelmet(app);
@@ -75,6 +82,7 @@ app.use('/posts', postRoutes);
 app.use('/users', userRoutes);
 app.use('/admin', adminRoutes);
 app.use('/settings', settingsRoutes);
+app.use('/gridfs', gridfsRoutes);
 
 // URL test route for debugging 🔧
 // app.use('/debug', createUrlTestRoute());

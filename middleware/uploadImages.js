@@ -114,9 +114,29 @@ const optimizeImage = async (filePath, width = 800, quality = 80) => {
   }
 };
 
+// Optimize an image and return a Buffer (useful for streaming to GridFS)
+const optimizeImageToBuffer = async (filePath, width = 800, quality = 80) => {
+  try {
+    const buffer = await sharp(filePath)
+      .resize(width, null, {
+        withoutEnlargement: true,
+        fit: 'inside'
+      })
+      .jpeg({ quality })
+      .toBuffer();
+
+    console.log(`✅ Image optimized to buffer: ${path.basename(filePath)}`);
+    return buffer;
+  } catch (error) {
+    console.error('❌ Image optimization to buffer failed:', error.message);
+    throw error;
+  }
+};
+
 module.exports = {
   uploadPostImage, // kept for backwards-compat; single-field image uploads
   uploadPostMedia, // new combined handler: accepts images[] and videos[]
   uploadAvatar,
   optimizeImage
+  , optimizeImageToBuffer
 };

@@ -12,6 +12,7 @@ const fsSync = require('fs');
 const User = require('../models/User');
 const Post = require('../models/Post');
 const { requireAuth, sensitiveOperationLimit, logActivity } = require('../middleware/auth');
+const { uploadAvatar, deleteFile } = require('../utils/gridfs');
 
 const router = express.Router();
 
@@ -301,9 +302,9 @@ router.post('/settings/profile',
   }
 );
 
-// POST /users/settings/avatar - Update avatar
+// POST /users/settings/avatar - Update avatar (GridFS)
 router.post('/settings/avatar',
-  upload.single('avatar'),
+  uploadAvatar.single('avatar'),
   logActivity('update avatar'),
   async (req, res) => {
     try {
@@ -314,39 +315,19 @@ router.post('/settings/avatar',
 
       const user = await User.findById(req.user._id);
 
-      // Delete old uploaded avatar if exists
-      if (user.avatar && user.avatarType === 'upload') {
-        try {
-          const oldAvatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
-          await fs.unlink(oldAvatarPath);
-          console.log('🗑️ Deleted old avatar:', user.avatar);
-        } catch (error) {
-          console.log('Old avatar deletion failed:', error.message);
-        }
+      // Delete old GridFS avatar if exists
+      if (user.avatarGridFSId && user.avatarType === 'gridfs') {
+        await deleteFile(user.avatarGridFSId);
+        console.log('🗑️ Deleted old GridFS avatar:', user.avatarGridFSId);
       }
 
-      // Create final avatar filename
-      const fileExtension = path.extname(req.file.originalname);
-      const avatarFilename = `avatar-${user._id}-${Date.now()}${fileExtension}`;
-      const finalAvatarPath = path.join(__dirname, '../public/uploads/avatars', avatarFilename);
-
-      // Ensure avatars directory exists
-      const avatarsDir = path.join(__dirname, '../public/uploads/avatars');
-      try {
-        await fs.mkdir(avatarsDir, { recursive: true });
-      } catch (error) {
-        console.log('Avatars directory already exists');
-      }
-
-      // Move uploaded file to final location
-      await fs.rename(req.file.path, finalAvatarPath);
-
-      // Update user with avatar filename (NOT binary data!)
-      user.avatar = avatarFilename;
-      user.avatarType = 'upload';
+      // Update user with GridFS file ID
+      user.avatarGridFSId = req.file.id;
+      user.avatar = req.file.filename;
+      user.avatarType = 'gridfs';
       await user.save();
 
-      console.log('✅ Avatar uploaded successfully:', avatarFilename);
+      console.log('✅ Avatar uploaded to GridFS:', req.file.id);
       console.log('📂 Avatar URL will be:', user.avatarUrl);
 
       // Update session with new avatar info
@@ -359,7 +340,7 @@ router.post('/settings/avatar',
         });
       });
 
-      console.log('📁 Avatar uploaded successfully');
+      console.log('📁 Avatar uploaded successfully to MongoDB');
       req.flash('success', 'Avatar updated successfully!');
       res.redirect('/users/settings/profile');
 

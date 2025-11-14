@@ -9,6 +9,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const { requireAuth, requireOwnership, logActivity } = require('../middleware/auth');
 const { uploadPostImage, uploadPostMedia, optimizeImage } = require('../middleware/uploadImages');
+const { uploadPostImages } = require('../utils/gridfs');
 
 const router = express.Router();
 

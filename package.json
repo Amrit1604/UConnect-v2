@@ -6,10 +6,12 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-  "smoke:test": "node scripts/smokePostsTest.js",
+    "smoke:test": "node scripts/smokePostsTest.js",
     "test": "jest --coverage",
     "lint": "eslint .",
-    "seed": "node scripts/seedDatabase.js"
+    "seed": "node scripts/seedDatabase.js",
+    "agent": "node scripts/agent.js",
+    "migrate:gridfs": "node scripts/migrateToGridFS.js"
   },
   "keywords": [
     "social-media",
@@ -33,6 +35,7 @@
     "express-rate-limit": "^6.10.0",
     "express-session": "^1.17.3",
     "express-validator": "^7.0.1",
+    "gridfs-stream": "^1.1.1",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
@@ -40,7 +43,8 @@
     "mongoose": "^7.5.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.4",
+    "multer-gridfs-storage": "^5.0.2",
+    "nodemailer": "^7.0.10",
     "sanitize-html": "^2.11.0",
     "sharp": "^0.34.3",
     "socket.io": "^4.8.1",
