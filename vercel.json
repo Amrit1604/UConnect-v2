@@ -6,7 +6,8 @@
       "src": "app.js",
       "use": "@vercel/node",
       "config": {
-        "maxLambdaSize": "50mb"
+        "maxLambdaSize": "50mb",
+        "installCommand": "npm install --legacy-peer-deps"
       }
     }
   ],
