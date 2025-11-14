@@ -381,8 +381,8 @@ router.get('/verify-email', async (req, res) => {
         return res.redirect('/auth/login');
       }
 
-      // Handle avatar - save to filesystem properly
-      let avatarFilename = null;
+      // Handle avatar - save to GridFS properly
+      let avatarGridFSId = null;
       let avatarSeed = null;
       let avatarType = tempUserData.avatarType || 'api';
 
@@ -393,11 +393,21 @@ router.get('/verify-email', async (req, res) => {
           // Convert base64 back to Buffer
           const avatarBuffer = Buffer.from(tempUserData.tempAvatar.data, 'base64');
 
-          // Save to filesystem with proper filename
-          const { saveTempAvatarToDisk } = require('../middleware/upload');
-          avatarFilename = await saveTempAvatarToDisk(avatarBuffer, tempUserData.tempAvatar.originalname);
+          // Save to GridFS
+          const { saveBufferToGridFS } = require('../utils/gridfs');
+          avatarGridFSId = await saveBufferToGridFS(
+            avatarBuffer,
+            tempUserData.tempAvatar.originalname,
+            {
+              originalName: tempUserData.tempAvatar.originalname,
+              mimetype: tempUserData.tempAvatar.mimetype,
+              uploadType: 'avatar'
+            },
+            'avatars'
+          );
 
-          console.log(`✅ Avatar file saved: ${avatarFilename}`);
+          avatarType = 'gridfs';
+          console.log(`✅ Avatar saved to GridFS: ${avatarGridFSId}`);
         } catch (avatarError) {
           console.error('❌ Error processing avatar:', avatarError);
           // Fallback to API avatar if upload fails
@@ -428,11 +438,13 @@ router.get('/verify-email', async (req, res) => {
       };
 
       // Add avatar data based on type
-      if (avatarType === 'upload' && avatarFilename) {
-        userData.avatar = avatarFilename; // Store just the filename
+      if (avatarType === 'gridfs' && avatarGridFSId) {
+        userData.avatarGridFSId = avatarGridFSId;
+        userData.avatar = null;
       } else {
         userData.avatarSeed = avatarSeed;
         userData.avatar = null; // Clear avatar field for API type
+        userData.avatarGridFSId = null;
       }
 
       const newUser = new User(userData);

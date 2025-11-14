@@ -8,7 +8,7 @@ const { body, validationResult } = require('express-validator');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const { requireAuth, requireOwnership, logActivity } = require('../middleware/auth');
-const { uploadPostImage, uploadPostMedia, optimizeImage } = require('../middleware/uploadImages');
+const { uploadPostImage, uploadPostMedia } = require('../utils/gridfs'); // Changed to GridFS
 
 const router = express.Router();
 
@@ -270,9 +270,16 @@ router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity
       if (Array.isArray(req.files.images)) {
         console.log(`🖼️ Processing ${req.files.images.length} images`);
         for (const file of req.files.images) {
-          try { await optimizeImage(file.path); } catch (e) { console.error('Image optimization error', e.message); }
-          images.push({ filename: file.filename, originalName: file.originalname, size: file.size, mimetype: file.mimetype, url: `/uploads/posts/${file.filename}` });
-          console.log(`📸 Image uploaded: ${file.filename}`);
+          images.push({
+            filename: file.filename,
+            originalName: file.originalname,
+            size: file.size,
+            mimetype: file.mimetype,
+            url: `/gridfs/file/${file.id}`,
+            gridFSId: file.id,
+            storageType: 'gridfs'
+          });
+          console.log(`📸 Image uploaded to GridFS: ${file.filename} (ID: ${file.id})`);
         }
       }
 
@@ -281,13 +288,20 @@ router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity
         for (const file of req.files.videos) {
           // basic server-side size check (50MB)
           if (file.size > 50 * 1024 * 1024) {
-            try { require('fs').unlinkSync(file.path); } catch (e) {}
             console.warn('⛔ Skipped oversized video:', file.originalname);
             continue;
           }
 
-          media.push({ type: 'video', filename: file.filename, originalName: file.originalname, size: file.size, mimetype: file.mimetype, url: `/uploads/posts/${file.filename}` });
-          console.log(`🎥 Video uploaded: ${file.filename}`);
+          media.push({
+            type: 'video',
+            filename: file.filename,
+            originalName: file.originalname,
+            size: file.size,
+            mimetype: file.mimetype,
+            url: `/gridfs/file/${file.id}`,
+            gridFSId: file.id
+          });
+          console.log(`🎥 Video uploaded to GridFS: ${file.filename} (ID: ${file.id})`);
         }
       }
     }
