@@ -242,7 +242,7 @@ router.get('/create', requireAuth, (req, res) => {
 });
 
 // POST /posts/create - 🎯 ULTIMATE CREATE POST WITH IMAGES (GridFS) & REAL-TIME
-router.post('/create', requireAuth, uploadPostImages.array('images', 5), postValidation, logActivity('create post'), async (req, res) => {
+router.post('/create', requireAuth, ...uploadPostImages, postValidation, logActivity('create post'), async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

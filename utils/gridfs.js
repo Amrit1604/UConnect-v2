@@ -6,7 +6,6 @@
 const mongoose = require('mongoose');
 const { GridFSBucket } = require('mongodb');
 const multer = require('multer');
-const { GridFsStorage } = require('multer-gridfs-storage');
 const path = require('path');
 const crypto = require('crypto');
 
@@ -40,83 +39,36 @@ function getGridFSBucket() {
 }
 
 /**
- * Create GridFS storage for avatars
+ * Upload file buffer to GridFS
  */
-function createAvatarStorage() {
-  if (!process.env.MONGODB_URI) {
-    console.error('❌ MONGODB_URI not set in environment');
-    return null;
-  }
-
-  return new GridFsStorage({
-    url: process.env.MONGODB_URI,
-    file: (req, file) => {
-      return new Promise((resolve, reject) => {
-        crypto.randomBytes(16, (err, buf) => {
-          if (err) {
-            return reject(err);
-          }
-          const filename = buf.toString('hex') + path.extname(file.originalname);
-          const fileInfo = {
-            filename: filename,
-            bucketName: 'uploads',
-            metadata: {
-              originalName: file.originalname,
-              type: 'avatar',
-              userId: req.user ? req.user._id.toString() : null,
-              uploadedAt: new Date()
-            }
-          };
-          resolve(fileInfo);
-        });
-      });
+async function uploadToGridFS(fileBuffer, filename, metadata) {
+  return new Promise((resolve, reject) => {
+    const bucket = getGridFSBucket();
+    if (!bucket) {
+      return reject(new Error('GridFS not initialized'));
     }
+
+    const uploadStream = bucket.openUploadStream(filename, {
+      metadata: metadata
+    });
+
+    uploadStream.on('error', reject);
+    uploadStream.on('finish', () => {
+      resolve({
+        id: uploadStream.id,
+        filename: filename
+      });
+    });
+
+    uploadStream.end(fileBuffer);
   });
 }
 
 /**
- * Create GridFS storage for post images
+ * Multer memory storage for avatars
  */
-function createPostImageStorage() {
-  if (!process.env.MONGODB_URI) {
-    console.error('❌ MONGODB_URI not set in environment');
-    return null;
-  }
-
-  return new GridFsStorage({
-    url: process.env.MONGODB_URI,
-    file: (req, file) => {
-      return new Promise((resolve, reject) => {
-        crypto.randomBytes(16, (err, buf) => {
-          if (err) {
-            return reject(err);
-          }
-          const filename = buf.toString('hex') + path.extname(file.originalname);
-          const fileInfo = {
-            filename: filename,
-            bucketName: 'uploads',
-            metadata: {
-              originalName: file.originalname,
-              type: 'post',
-              userId: req.user ? req.user._id.toString() : null,
-              uploadedAt: new Date()
-            }
-          };
-          resolve(fileInfo);
-        });
-      });
-    }
-  });
-}
-
-const avatarStorage = createAvatarStorage();
-const postImageStorage = createPostImageStorage();
-
-/**
- * Multer upload middleware for avatars
- */
-const uploadAvatar = avatarStorage ? multer({
-  storage: avatarStorage,
+const avatarUploadMemory = multer({
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -129,13 +81,13 @@ const uploadAvatar = avatarStorage ? multer({
       cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp)'));
     }
   }
-}) : null;
+});
 
 /**
- * Multer upload middleware for post images
+ * Multer memory storage for post images
  */
-const uploadPostImages = postImageStorage ? multer({
-  storage: postImageStorage,
+const postImagesUploadMemory = multer({
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB per file
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -148,7 +100,74 @@ const uploadPostImages = postImageStorage ? multer({
       cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp)'));
     }
   }
-}) : null;
+});
+
+/**
+ * Middleware to upload avatar to GridFS after multer processes it
+ */
+const uploadAvatar = [
+  avatarUploadMemory.single('avatar'),
+  async (req, res, next) => {
+    if (!req.file) {
+      return next();
+    }
+
+    try {
+      const filename = crypto.randomBytes(16).toString('hex') + path.extname(req.file.originalname);
+      const result = await uploadToGridFS(req.file.buffer, filename, {
+        originalName: req.file.originalname,
+        type: 'avatar',
+        userId: req.user ? req.user._id.toString() : null,
+        uploadedAt: new Date()
+      });
+
+      // Add GridFS info to req.file
+      req.file.id = result.id;
+      req.file.filename = result.filename;
+      
+      next();
+    } catch (error) {
+      console.error('Error uploading to GridFS:', error);
+      next(error);
+    }
+  }
+];
+
+/**
+ * Middleware to upload post images to GridFS after multer processes them
+ */
+const uploadPostImages = [
+  postImagesUploadMemory.array('images', 5),
+  async (req, res, next) => {
+    if (!req.files || req.files.length === 0) {
+      return next();
+    }
+
+    try {
+      const uploadPromises = req.files.map(async (file) => {
+        const filename = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
+        const result = await uploadToGridFS(file.buffer, filename, {
+          originalName: file.originalname,
+          type: 'post',
+          userId: req.user ? req.user._id.toString() : null,
+          uploadedAt: new Date()
+        });
+
+        // Add GridFS info to file object
+        file.id = result.id;
+        file.filename = result.filename;
+        
+        return file;
+      });
+
+      await Promise.all(uploadPromises);
+      next();
+    } catch (error) {
+      console.error('Error uploading to GridFS:', error);
+      next(error);
+    }
+  }
+];
 
 /**
  * Delete file from GridFS by ID

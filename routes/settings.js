@@ -161,7 +161,7 @@ router.post('/profile', [
 });
 
 // Avatar Upload (GridFS)
-router.post('/avatar', uploadAvatar.single('avatar'), async (req, res) => {
+router.post('/avatar', ...uploadAvatar, async (req, res) => {
     try {
         console.log('🔥 AVATAR UPLOAD REQUEST:');
         console.log('User ID:', req.user.id);

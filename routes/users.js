@@ -272,7 +272,7 @@ router.post('/settings/profile',
 
 // POST /users/settings/avatar - Update avatar (GridFS)
 router.post('/settings/avatar',
-  uploadAvatar.single('avatar'),
+  ...uploadAvatar, // Spread the middleware array
   logActivity('update avatar'),
   async (req, res) => {
     try {
