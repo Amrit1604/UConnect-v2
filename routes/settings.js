@@ -9,7 +9,7 @@ const crypto = require('crypto');
 
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { uploadAvatar, deleteFile } = require('../utils/gridfs');
 
 // Middleware to check if user is authenticated
 router.use(auth.requireAuth);
@@ -160,8 +160,8 @@ router.post('/profile', [
     }
 });
 
-// Avatar Upload
-router.post('/avatar', upload.uploadAvatar.single('avatar'), async (req, res) => {
+// Avatar Upload (GridFS)
+router.post('/avatar', uploadAvatar.single('avatar'), async (req, res) => {
     try {
         console.log('🔥 AVATAR UPLOAD REQUEST:');
         console.log('User ID:', req.user.id);
@@ -172,6 +172,7 @@ router.post('/avatar', upload.uploadAvatar.single('avatar'), async (req, res) =>
                 originalname: req.file.originalname,
                 mimetype: req.file.mimetype,
                 size: req.file.size,
+                id: req.file.id,
                 filename: req.file.filename
             });
         }
@@ -182,10 +183,20 @@ router.post('/avatar', upload.uploadAvatar.single('avatar'), async (req, res) =>
             return res.redirect('/users/settings/profile');
         }
 
+        const user = await User.findById(req.user.id);
+
+        // Delete old GridFS avatar if exists
+        if (user.avatarGridFSId && user.avatarType === 'gridfs') {
+            await deleteFile(user.avatarGridFSId);
+            console.log('🗑️ Deleted old GridFS avatar:', user.avatarGridFSId);
+        }
+
+        // Update user with GridFS file ID
         const updatedUser = await User.findByIdAndUpdate(req.user.id, {
+            avatarGridFSId: req.file.id,
             avatar: req.file.filename,
-            avatarSeed: null, // Clear the API avatar seed when uploading a photo
-            avatarType: 'upload',
+            avatarSeed: null,
+            avatarType: 'gridfs',
             updatedAt: new Date()
         }, { new: true }).select('-password');
 
