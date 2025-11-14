@@ -9,6 +9,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
+const crypto = require('crypto');
 const User = require('../models/User');
 const Post = require('../models/Post');
 const { requireAuth, sensitiveOperationLimit, logActivity } = require('../middleware/auth');
@@ -18,39 +19,6 @@ const router = express.Router();
 
 // 🔒 APPLY AUTHENTICATION TO ALL USER ROUTES
 router.use(requireAuth);
-
-// Configure multer for avatar uploads
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '../public/uploads/avatars');
-    try {
-      await fs.mkdir(uploadPath, { recursive: true });
-      cb(null, uploadPath);
-    } catch (error) {
-      cb(error);
-    }
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `avatar-${req.user._id}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
-
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Check file type
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'), false);
-    }
-  }
-});
 
 // Validation rules
 const profileValidation = [
