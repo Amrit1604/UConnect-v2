@@ -62,12 +62,7 @@ const userSchema = new mongoose.Schema({
   },
 
   avatar: {
-    type: String, // Store GridFS file ID, local filename, or null
-    default: null
-  },
-
-  avatarGridFSId: {
-    type: mongoose.Schema.Types.ObjectId, // GridFS file ID for MongoDB-stored avatars
+    type: String, // Store filename/path for uploaded images, or seed for API avatars
     default: null
   },
 
@@ -80,7 +75,7 @@ const userSchema = new mongoose.Schema({
 
   avatarType: {
     type: String,
-    enum: ['upload', 'api', 'default', 'gridfs'],
+    enum: ['upload', 'api', 'default'],
     default: 'api'
   },
 
@@ -279,12 +274,7 @@ userSchema.statics.getStats = async function() {
 
 // Virtual for avatar URL
 userSchema.virtual('avatarUrl').get(function() {
-  // Priority 1: GridFS avatar (MongoDB-stored)
-  if (this.avatarGridFSId && this.avatarType === 'gridfs') {
-    return `/gridfs/${this.avatarGridFSId}`;
-  }
-
-  // Priority 2: Uploaded avatar (local file)
+  // Priority 1: Uploaded avatar
   if (this.avatar && this.avatarType === 'upload') {
     const fs = require('fs');
     const path = require('path');
@@ -295,12 +285,12 @@ userSchema.virtual('avatarUrl').get(function() {
     // If file doesn't exist, fall through to API avatar
     console.log(`⚠️ Avatar file not found: ${uploadPath}, using API fallback`);
   }
-
-  // Priority 3: API avatar with saved seed
+  
+  // Priority 2: API avatar with saved seed
   if (this.avatarSeed) {
     return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;
   }
-
+  
   // Priority 3: Generate seed from username/email as absolute fallback
   const seed = this.username || this.email.split('@')[0] || 'default';
   return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;

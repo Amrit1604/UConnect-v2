@@ -9,16 +9,47 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
-const crypto = require('crypto');
 const User = require('../models/User');
 const Post = require('../models/Post');
 const { requireAuth, sensitiveOperationLimit, logActivity } = require('../middleware/auth');
-const { uploadAvatar, deleteFile } = require('../utils/gridfs');
 
 const router = express.Router();
 
 // 🔒 APPLY AUTHENTICATION TO ALL USER ROUTES
 router.use(requireAuth);
+
+// Configure multer for avatar uploads
+const storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '../public/uploads/avatars');
+    try {
+      await fs.mkdir(uploadPath, { recursive: true });
+      cb(null, uploadPath);
+    } catch (error) {
+      cb(error);
+    }
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `avatar-${req.user._id}-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Check file type
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
 
 // Validation rules
 const profileValidation = [
@@ -270,9 +301,9 @@ router.post('/settings/profile',
   }
 );
 
-// POST /users/settings/avatar - Update avatar (GridFS)
+// POST /users/settings/avatar - Update avatar
 router.post('/settings/avatar',
-  ...uploadAvatar, // Spread the middleware array
+  upload.single('avatar'),
   logActivity('update avatar'),
   async (req, res) => {
     try {
@@ -283,19 +314,39 @@ router.post('/settings/avatar',
 
       const user = await User.findById(req.user._id);
 
-      // Delete old GridFS avatar if exists
-      if (user.avatarGridFSId && user.avatarType === 'gridfs') {
-        await deleteFile(user.avatarGridFSId);
-        console.log('🗑️ Deleted old GridFS avatar:', user.avatarGridFSId);
+      // Delete old uploaded avatar if exists
+      if (user.avatar && user.avatarType === 'upload') {
+        try {
+          const oldAvatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
+          await fs.unlink(oldAvatarPath);
+          console.log('🗑️ Deleted old avatar:', user.avatar);
+        } catch (error) {
+          console.log('Old avatar deletion failed:', error.message);
+        }
       }
 
-      // Update user with GridFS file ID
-      user.avatarGridFSId = req.file.id;
-      user.avatar = req.file.filename;
-      user.avatarType = 'gridfs';
+      // Create final avatar filename
+      const fileExtension = path.extname(req.file.originalname);
+      const avatarFilename = `avatar-${user._id}-${Date.now()}${fileExtension}`;
+      const finalAvatarPath = path.join(__dirname, '../public/uploads/avatars', avatarFilename);
+
+      // Ensure avatars directory exists
+      const avatarsDir = path.join(__dirname, '../public/uploads/avatars');
+      try {
+        await fs.mkdir(avatarsDir, { recursive: true });
+      } catch (error) {
+        console.log('Avatars directory already exists');
+      }
+
+      // Move uploaded file to final location
+      await fs.rename(req.file.path, finalAvatarPath);
+
+      // Update user with avatar filename (NOT binary data!)
+      user.avatar = avatarFilename;
+      user.avatarType = 'upload';
       await user.save();
 
-      console.log('✅ Avatar uploaded to GridFS:', req.file.id);
+      console.log('✅ Avatar uploaded successfully:', avatarFilename);
       console.log('📂 Avatar URL will be:', user.avatarUrl);
 
       // Update session with new avatar info
@@ -308,7 +359,7 @@ router.post('/settings/avatar',
         });
       });
 
-      console.log('📁 Avatar uploaded successfully to MongoDB');
+      console.log('📁 Avatar uploaded successfully');
       req.flash('success', 'Avatar updated successfully!');
       res.redirect('/users/settings/profile');
 
