@@ -354,25 +354,47 @@ router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity
 
 // DELETE /posts/:id - Delete post
 router.delete('/:id',
-  requireOwnership(Post),
+  requireAuth,
   logActivity('delete post'),
   async (req, res) => {
     try {
+      const post = await Post.findById(req.params.id);
+
+      if (!post || !post.isActive) {
+        console.log('❌ Post not found or already inactive:', req.params.id);
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(404).json({ success: false, message: 'Post not found' });
+        }
+        req.flash('error', 'Post not found');
+        return res.redirect('/posts');
+      }
+
+      // Check ownership
+      if (post.author.toString() !== req.user._id.toString()) {
+        console.log('❌ Not authorized:', req.user._id, 'vs', post.author);
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(403).json({ success: false, message: 'Not authorized' });
+        }
+        req.flash('error', 'Not authorized to delete this post');
+        return res.redirect('/posts');
+      }
+
       // Soft delete - mark as inactive
-      req.resource.isActive = false;
-      await req.resource.save();
+      post.isActive = false;
+      await post.save();
 
       // Update user stats
       await User.findByIdAndUpdate(req.user._id, {
         $inc: { 'stats.postsCount': -1 }
       });
 
-      req.flash('success', 'Post deleted successfully!');
+      console.log('✅ Post deleted successfully:', req.params.id);
 
       if (req.xhr || req.headers.accept?.includes('application/json')) {
-        return res.json({ success: true });
+        return res.json({ success: true, message: 'Post deleted successfully' });
       }
 
+      req.flash('success', 'Post deleted successfully!');
       res.redirect('/posts');
 
     } catch (error) {
@@ -481,8 +503,8 @@ router.post('/:id/like',
         return res.json({
           success: true,
           liked,
-          likeCount: post.likeCount,
-          likes: post.likeCount, // For frontend compatibility
+          likesCount: post.likeCount,
+          likes: post.likes,
           isLiked: liked
         });
       }
@@ -574,6 +596,97 @@ router.post('/:id/comment',
               _id: newComment.author._id,
               username: newComment.author.username,
               avatarUrl: newComment.author.avatarUrl
+            }
+          }
+        });
+      }
+
+      req.flash('success', 'Comment added successfully!');
+      res.redirect(`/posts/${req.params.id}`);
+
+    } catch (error) {
+      console.error('Comment error:', error);
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(500).json({ success: false, message: 'Failed to add comment' });
+      }
+      req.flash('error', 'Failed to add comment');
+      res.redirect('back');
+    }
+  }
+);
+
+// POST /posts/:id/comments - Alias for comment endpoint (plural form)
+router.post('/:id/comments',
+  requireAuth,
+  body('content').trim().notEmpty().withMessage('Comment cannot be empty'),
+  logActivity('comment on post'),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(400).json({
+            success: false,
+            message: errors.array()[0].msg
+          });
+        }
+        req.flash('error', errors.array()[0].msg);
+        return res.redirect('back');
+      }
+
+      const post = await Post.findById(req.params.id);
+
+      if (!post || !post.isActive) {
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(404).json({ success: false, message: 'Post not found' });
+        }
+        req.flash('error', 'Post not found');
+        return res.redirect('back');
+      }
+
+      const newComment = {
+        content: req.body.content,
+        author: req.user._id,
+        createdAt: new Date()
+      };
+
+      post.comments.push(newComment);
+      await post.save();
+
+      await post.populate('comments.author', 'username avatarUrl avatarSeed');
+      const addedComment = post.comments[post.comments.length - 1];
+
+      // Real-time broadcast
+      if (req.app.get('io')) {
+        req.app.get('io').emit('new-comment', {
+          postId: post._id.toString(),
+          comment: {
+            _id: addedComment._id,
+            content: addedComment.content,
+            createdAt: addedComment.createdAt,
+            author: {
+              _id: addedComment.author._id,
+              username: addedComment.author.username,
+              avatarUrl: addedComment.author.avatarUrl
+            }
+          }
+        });
+        console.log(`⚡ Real-time broadcast: New comment on post by ${req.user.username}`);
+      }
+
+      // Return JSON for AJAX requests
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.json({
+          success: true,
+          message: 'Comment added successfully!',
+          comment: {
+            _id: addedComment._id,
+            content: addedComment.content,
+            createdAt: addedComment.createdAt,
+            author: {
+              _id: addedComment.author._id,
+              username: addedComment.author.username,
+              avatarUrl: addedComment.author.avatarUrl
             }
           }
         });

@@ -1,0 +1,505 @@
+/**
+ * Settings Neo Styles - Brutalist + Apple Design
+ */
+
+/* ========================================
+   BASE & BACKGROUND
+   ======================================== */
+
+.settings-page {
+    background: var(--black);
+    min-height: 100vh;
+    padding-top: 100px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ========================================
+   LAYOUT
+   ======================================== */
+
+.settings-layout-neo {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    position: relative;
+    z-index: 2;
+}
+
+/* ========================================
+   SETTINGS HEADER
+   ======================================== */
+
+.settings-header-neo {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 24px;
+    text-align: center;
+    grid-column: 1 / -1;
+}
+
+.settings-title-neo {
+    color: var(--white);
+    font-size: 48px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+}
+
+.settings-subtitle-neo {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* ========================================
+   SIDEBAR NAVIGATION
+   ======================================== */
+
+.settings-sidebar-neo {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    height: fit-content;
+    position: sticky;
+    top: 120px;
+}
+
+.settings-nav-neo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settings-nav-item-neo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+}
+
+.settings-nav-item-neo:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--red);
+    color: var(--white);
+    transform: translateX(4px);
+}
+
+.settings-nav-item-neo.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+}
+
+.settings-nav-icon-neo {
+    font-size: 20px;
+}
+
+/* ========================================
+   MAIN CONTENT
+   ======================================== */
+
+.settings-main-neo {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 40px;
+}
+
+.section-title-neo {
+    color: var(--white);
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ========================================
+   AVATAR SECTION
+   ======================================== */
+
+.avatar-section-neo {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 32px;
+    transition: all 0.3s ease;
+}
+
+.avatar-section-neo:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.current-avatar-neo {
+    width: 150px;
+    height: 150px;
+    border-radius: 20px;
+    border: 4px solid var(--red);
+    object-fit: cover;
+    margin: 0 auto 24px;
+    display: block;
+}
+
+.avatar-title-neo {
+    color: var(--white);
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.avatar-description-neo {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.avatar-buttons-neo {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.avatar-btn-neo {
+    padding: 14px 28px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--white);
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.avatar-btn-neo:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--red);
+    transform: translateY(-2px);
+}
+
+.avatar-btn-neo.danger {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: rgba(255, 0, 0, 0.3);
+    color: var(--red);
+}
+
+.avatar-btn-neo.danger:hover {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+}
+
+/* ========================================
+   FORM ELEMENTS
+   ======================================== */
+
+.form-group-neo {
+    margin-bottom: 28px;
+}
+
+.form-label-neo {
+    display: block;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+}
+
+.form-input-neo,
+.form-textarea-neo {
+    width: 100%;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--white);
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-input-neo:focus,
+.form-textarea-neo:focus {
+    outline: none;
+    border-color: var(--red);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.form-input-neo::placeholder,
+.form-textarea-neo::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.form-textarea-neo {
+    resize: vertical;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+.form-help-neo {
+    display: block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+/* ========================================
+   PRIVACY SECTION
+   ======================================== */
+
+.privacy-section-neo {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+}
+
+.privacy-title-neo {
+    color: var(--white);
+    font-size: 20px;
+    font-weight: 900;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-group-neo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-group-neo:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.checkbox-group-neo:last-child {
+    margin-bottom: 0;
+}
+
+.checkbox-neo {
+    width: 24px;
+    height: 24px;
+    appearance: none;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.checkbox-neo:checked {
+    background: var(--red);
+    border-color: var(--red);
+}
+
+.checkbox-neo:checked::after {
+    content: '✓';
+    color: var(--white);
+    font-size: 16px;
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.checkbox-label-neo {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn-neo {
+    padding: 16px 32px;
+    border: 2px solid;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary-neo {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+}
+
+.btn-primary-neo:hover {
+    background: var(--white);
+    color: var(--red);
+    transform: translateY(-2px);
+}
+
+.btn-secondary-neo {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+}
+
+.btn-secondary-neo:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--red);
+}
+
+/* ========================================
+   DANGER ZONE
+   ======================================== */
+
+.danger-zone-neo {
+    background: rgba(255, 0, 0, 0.05);
+    border: 2px solid rgba(255, 0, 0, 0.3);
+    border-radius: 16px;
+    padding: 32px;
+    margin-top: 48px;
+}
+
+.danger-title-neo {
+    color: var(--red);
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.danger-text-neo {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.btn-danger-neo {
+    background: var(--red);
+    border: 2px solid var(--red);
+    border-radius: 12px;
+    color: var(--white);
+    padding: 14px 28px;
+    font-weight: 900;
+    font-size: 14px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-danger-neo:hover {
+    background: #c82333;
+    border-color: #c82333;
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .settings-layout-neo {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-sidebar-neo {
+        position: static;
+        order: 2;
+        margin-top: 24px;
+    }
+
+    .settings-main-neo {
+        order: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .settings-page {
+        padding-top: 80px;
+    }
+
+    .settings-layout-neo {
+        padding: 16px;
+    }
+
+    .settings-header-neo {
+        padding: 24px;
+    }
+
+    .settings-title-neo {
+        font-size: 36px;
+    }
+
+    .settings-main-neo {
+        padding: 24px;
+    }
+
+    .avatar-section-neo {
+        padding: 24px;
+    }
+
+    .current-avatar-neo {
+        width: 120px;
+        height: 120px;
+    }
+
+    .avatar-buttons-neo {
+        flex-direction: column;
+    }
+
+    .avatar-btn-neo {
+        width: 100%;
+    }
+}

@@ -1103,7 +1103,6 @@ body.light-theme .load-more-btn-neo {
     background: rgba(0, 0, 0, 0.95);
     border-top: 3px solid var(--red);
     padding: 60px 24px 24px;
-    margin-top: 80px;
     position: relative;
     z-index: 3;
 }

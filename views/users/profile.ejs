@@ -4,412 +4,283 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %> | UConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="/css/main.css" rel="stylesheet">
-    <style>
-        .profile-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            color: white;
-            padding: 40px;
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .profile-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="white" opacity="0.1"/><circle cx="80" cy="40" r="1.5" fill="white" opacity="0.1"/><circle cx="40" cy="60" r="1" fill="white" opacity="0.1"/><circle cx="90" cy="90" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="80" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            pointer-events: none;
-        }
-
-        .profile-info {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid rgba(255,255,255,0.3);
-            object-fit: cover;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .profile-details h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-
-        .profile-details .username {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 15px;
-        }
-
-        .profile-stats {
-            display: flex;
-            gap: 30px;
-            margin-top: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .profile-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn-profile {
-            padding: 12px 24px;
-            border-radius: 25px;
-            border: 2px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.1);
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-profile:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.5);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .profile-content {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 30px;
-        }
-
-        .posts-section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .post-item {
-            border-bottom: 1px solid #eee;
-            padding: 20px 0;
-            transition: all 0.3s ease;
-        }
-
-        .post-item:last-child {
-            border-bottom: none;
-        }
-
-        .post-item:hover {
-            background: #f8f9fa;
-            margin: 0 -15px;
-            padding: 20px 15px;
-            border-radius: 10px;
-        }
-
-        .post-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .post-date {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .post-content {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        .post-stats {
-            display: flex;
-            gap: 20px;
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .info-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .info-item:last-child {
-            border-bottom: none;
-        }
-
-        .info-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.1rem;
-        }
-
-        .info-content {
-            flex: 1;
-        }
-
-        .info-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 2px;
-        }
-
-        .info-value {
-            font-weight: 500;
-            color: #333;
-        }
-
-        .no-posts {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .no-posts-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        @media (max-width: 768px) {
-            .profile-container {
-                padding: 10px;
-            }
-
-            .profile-info {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .profile-content {
-                grid-template-columns: 1fr;
-            }
-
-            .profile-stats {
-                justify-content: center;
-            }
-
-            .profile-actions {
-                justify-content: center;
-            }
-        }
-    </style>
+    <link href="/css/profile-neo.css" rel="stylesheet">
 </head>
 <body>
     <%- include('../partials/navbar') %>
     <%- include('../partials/flash-messages') %>
 
-    <main class="main-content">
-        <div class="profile-container">
+    <!-- Neo Profile Page -->
+    <div class="profile-page">
+        <!-- Background Effects (Same as feed-neo.ejs) -->
+        <div class="parallax-bg">
+            <div class="parallax-layer layer-1"></div>
+            <div class="parallax-layer layer-2"></div>
+            <div class="blob-container">
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+                <div class="blob blob-3"></div>
+            </div>
+        </div>
+
+        <!-- Floating Emoji Reactions -->
+        <div class="emoji-reactions">
+            <div class="emoji-float emoji-1">😂</div>
+            <div class="emoji-float emoji-2">❤️</div>
+            <div class="emoji-float emoji-3">🔥</div>
+            <div class="emoji-float emoji-4">😢</div>
+            <div class="emoji-float emoji-5">😡</div>
+            <div class="emoji-float emoji-6">👍</div>
+            <div class="emoji-float emoji-7">🎉</div>
+        </div>
+
+        <main class="profile-layout-neo">
             <!-- Profile Header -->
-            <div class="profile-header">
-                <div class="profile-info">
-                    <img src="<%= profileUser.avatarUrl %>?t=<%= Date.now() %>" alt="<%= profileUser.displayName %>" class="profile-avatar">
-                    <div class="profile-details">
-                        <h1><%= profileUser.displayName %></h1>
-                        <div class="username">@<%= profileUser.username %></div>
-                        <div class="profile-stats">
-                            <div class="stat-item">
-                                <span class="stat-number"><%= posts.length %></span>
-                                <span class="stat-label">Posts</span>
+            <div class="profile-header-neo">
+                <div class="profile-top-neo">
+                    <%
+                    let avatarUrl = '/images/default-avatar.png';
+                    if (profileUser.avatarType === 'upload' && profileUser.avatar) {
+                        avatarUrl = '/uploads/avatars/' + profileUser.avatar;
+                    } else if (profileUser.avatarSeed) {
+                        avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + profileUser.avatarSeed;
+                    }
+                    %>
+                    <img src="<%= avatarUrl %>"
+                         alt="<%= profileUser.displayName || profileUser.name || profileUser.username %>"
+                         class="profile-avatar-large-neo"
+                         onerror="this.src='/images/default-avatar.png'">
+                    
+                    <div class="profile-details-neo">
+                        <h1 class="profile-name-large-neo"><%= profileUser.displayName || profileUser.name || profileUser.username %></h1>
+                        <div class="profile-username-large-neo">@<%= profileUser.username %></div>
+                        
+                        <% if (profileUser.bio) { %>
+                            <p class="profile-bio-neo"><%= profileUser.bio %></p>
+                        <% } %>
+
+                        <div class="profile-meta-neo">
+                            <div class="profile-meta-item-neo">
+                                <span class="profile-meta-icon-neo">📧</span>
+                                <span><%= profileUser.email %></span>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-number"><%= profileUser.followers?.length || 0 %></span>
-                                <span class="stat-label">Followers</span>
+                            <div class="profile-meta-item-neo">
+                                <span class="profile-meta-icon-neo">🏫</span>
+                                <span><%= profileUser.campus || profileUser.email.split('@')[1] %></span>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-number"><%= profileUser.following?.length || 0 %></span>
-                                <span class="stat-label">Following</span>
+                            <div class="profile-meta-item-neo">
+                                <span class="profile-meta-icon-neo">📅</span>
+                                <span>Joined <%= new Date(profileUser.createdAt).toLocaleDateString() %></span>
                             </div>
                         </div>
-                        <div class="profile-actions">
-                            <a href="/users/settings/profile" class="btn-profile">
-                                ⚙️ Edit Profile
+
+                        <div class="profile-stats-large-neo">
+                            <div class="stat-item-large-neo">
+                                <span class="stat-value-large-neo"><%= posts.length %></span>
+                                <span class="stat-label-large-neo">POSTS</span>
+                            </div>
+                            <div class="stat-item-large-neo">
+                                <span class="stat-value-large-neo"><%= profileUser.stats?.totalLikesReceived || 0 %></span>
+                                <span class="stat-label-large-neo">LIKES</span>
+                            </div>
+                            <div class="stat-item-large-neo">
+                                <span class="stat-value-large-neo"><%= profileUser.stats?.commentsCount || 0 %></span>
+                                <span class="stat-label-large-neo">COMMENTS</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions-neo">
+                            <a href="/users/settings/profile" class="profile-action-btn-neo primary">
+                                ⚙️ EDIT PROFILE
                             </a>
-                            <a href="/posts/create" class="btn-profile">
-                                ✨ Create Post
+                            <a href="/posts/create" class="profile-action-btn-neo">
+                                ✨ CREATE POST
+                            </a>
+                            <a href="/users/settings/account" class="profile-action-btn-neo">
+                                🛡️ SETTINGS
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Profile Content -->
-            <div class="profile-content">
-                <!-- Posts Section -->
-                <div class="posts-section">
-                    <h2 class="section-title">📝 My Posts</h2>
+            <!-- Posts Section -->
+            <div class="profile-content-neo">
+                <div class="content-header-neo">
+                    <h2 class="content-title-neo">📝 MY POSTS</h2>
                     <% if (posts && posts.length > 0) { %>
-                        <% posts.forEach(post => { %>
-                            <div class="post-item">
-                                <div class="post-header">
-                                    <span class="post-date">🕒 <%= new Date(post.createdAt).toLocaleDateString() %></span>
-                                </div>
-                                <div class="post-content">
-                                    <%= post.content.substring(0, 200) %><% if (post.content.length > 200) { %>...<% } %>
-                                </div>
-                                <div class="post-stats">
-                                    <span>❤️ <%= post.likes?.length || 0 %> likes</span>
-                                    <span>💬 <%= post.comments?.length || 0 %> comments</span>
-                                    <a href="/posts/<%= post._id %>">📖 Read more</a>
-                                </div>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <div class="no-posts">
-                            <div class="no-posts-icon">📝</div>
-                            <h3>No posts yet</h3>
-                            <p>Share your first thought with the campus community!</p>
-                            <a href="/posts/create" class="btn btn-primary" style="margin-top: 15px;">✨ Create Your First Post</a>
-                        </div>
+                        <button class="delete-mode-toggle-neo" id="deleteModeToggle">
+                            🗑️ DELETE POSTS
+                        </button>
                     <% } %>
                 </div>
 
-                <!-- Sidebar -->
-                <div class="sidebar">
-                    <!-- Profile Info Card -->
-                    <div class="info-card">
-                        <h3 class="section-title">📊 Profile Info</h3>
-                        <div class="info-item">
-                            <div class="info-icon">📧</div>
-                            <div class="info-content">
-                                <div class="info-label">Email</div>
-                                <div class="info-value"><%= profileUser.email %></div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">📅</div>
-                            <div class="info-content">
-                                <div class="info-label">Joined</div>
-                                <div class="info-value"><%= new Date(profileUser.createdAt).toLocaleDateString() %></div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">🏫</div>
-                            <div class="info-content">
-                                <div class="info-label">University</div>
-                                <div class="info-value"><%= profileUser.email.split('@')[1] %></div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">✅</div>
-                            <div class="info-content">
-                                <div class="info-label">Status</div>
-                                <div class="info-value">Verified Student</div>
-                            </div>
-                        </div>
-                    </div>
+                <% if (posts && posts.length > 0) { %>
+                    <div class="profile-posts-grid-neo" id="postsGrid">
+                        <% posts.forEach(post => { %>
+                            <div class="profile-post-card-neo" data-post-id="<%= post._id %>">
+                                <input type="checkbox" class="post-checkbox-neo" value="<%= post._id %>">
+                                
+                                <div class="profile-post-header-neo">
+                                    <span class="profile-post-date-neo">
+                                        🕒 <%= new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                                    </span>
+                                    <% if (post.category) { %>
+                                        <span class="profile-post-category-neo"><%= post.category.toUpperCase() %></span>
+                                    <% } %>
+                                </div>
 
-                    <!-- Quick Actions Card -->
-                    <div class="info-card">
-                        <h3 class="section-title">⚡ Quick Actions</h3>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <a href="/users/settings/profile" class="btn btn-outline">⚙️ Edit Profile</a>
-                            <a href="/users/settings/password" class="btn btn-outline">🔒 Change Password</a>
-                            <a href="/users/settings/account" class="btn btn-outline">🛡️ Account Settings</a>
-                            <a href="/users/campus" class="btn btn-outline">👥 Find Campus Friends</a>
-                        </div>
-                    </div>
+                                <% if (post.title) { %>
+                                    <h3 class="profile-post-title-neo"><%= post.title %></h3>
+                                <% } %>
 
-                    <!-- Achievement Card -->
-                    <div class="info-card">
-                        <h3 class="section-title">🏆 Achievements</h3>
-                        <div class="info-item">
-                            <div class="info-icon">🌟</div>
-                            <div class="info-content">
-                                <div class="info-label">Campus Explorer</div>
-                                <div class="info-value">Joined UConnect</div>
+                                <% if (post.content) { %>
+                                    <p class="profile-post-content-neo">
+                                        <%= post.content.substring(0, 150) %><% if (post.content.length > 150) { %>...<% } %>
+                                    </p>
+                                <% } %>
+
+                                <div class="profile-post-stats-neo">
+                                    <span class="profile-post-stat-neo">❤️ <%= post.likes?.length || 0 %></span>
+                                    <span class="profile-post-stat-neo">💬 <%= post.comments?.length || 0 %></span>
+                                    <a href="/posts/<%= post._id %>" class="profile-post-link-neo">📖 VIEW POST</a>
+                                </div>
                             </div>
-                        </div>
-                        <% if (posts.length >= 1) { %>
-                        <div class="info-item">
-                            <div class="info-icon">✍️</div>
-                            <div class="info-content">
-                                <div class="info-label">First Post</div>
-                                <div class="info-value">Shared your voice</div>
-                            </div>
-                        </div>
-                        <% } %>
-                        <% if (posts.length >= 5) { %>
-                        <div class="info-item">
-                            <div class="info-icon">🔥</div>
-                            <div class="info-content">
-                                <div class="info-label">Active Member</div>
-                                <div class="info-value">5+ posts shared</div>
-                            </div>
-                        </div>
-                        <% } %>
+                        <% }) %>
                     </div>
-                </div>
+                <% } else { %>
+                    <div class="profile-empty-state-neo">
+                        <div class="empty-icon-large-neo">📝</div>
+                        <h3 class="empty-title-large-neo">NO POSTS YET</h3>
+                        <p class="empty-text-large-neo">Share your first thought with the campus community!</p>
+                        <a href="/posts/create" class="profile-action-btn-neo primary">✨ CREATE YOUR FIRST POST</a>
+                    </div>
+                <% } %>
             </div>
-        </div>
-    </main>
+
+            <!-- Bulk Actions Bar -->
+            <div class="bulk-actions-bar-neo" id="bulkActionsBar">
+                <span class="bulk-actions-info-neo" id="selectedCount">0 selected</span>
+                <button class="bulk-action-btn-neo cancel" id="cancelDelete">CANCEL</button>
+                <button class="bulk-action-btn-neo delete" id="deleteSelected">🗑️ DELETE SELECTED</button>
+            </div>
+        </main>
+    </div>
 
     <%- include('../partials/footer') %>
+
+    <script>
+        // Delete Mode Functionality
+        const deleteModeToggle = document.getElementById('deleteModeToggle');
+        const postsGrid = document.getElementById('postsGrid');
+        const bulkActionsBar = document.getElementById('bulkActionsBar');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const cancelDeleteBtn = document.getElementById('cancelDelete');
+        const deleteSelectedBtn = document.getElementById('deleteSelected');
+        let deleteMode = false;
+
+        if (deleteModeToggle) {
+            deleteModeToggle.addEventListener('click', function() {
+                deleteMode = !deleteMode;
+                
+                if (deleteMode) {
+                    postsGrid.classList.add('delete-mode');
+                    deleteModeToggle.classList.add('active');
+                    deleteModeToggle.textContent = '✕ CANCEL';
+                } else {
+                    postsGrid.classList.remove('delete-mode');
+                    deleteModeToggle.classList.remove('active');
+                    deleteModeToggle.textContent = '🗑️ DELETE POSTS';
+                    bulkActionsBar.classList.remove('active');
+                    uncheckAll();
+                }
+            });
+        }
+
+        // Handle checkbox changes
+        document.querySelectorAll('.post-checkbox-neo').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.profile-post-card-neo');
+                if (this.checked) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+                updateBulkActionsBar();
+            });
+        });
+
+        // Cancel Delete
+        if (cancelDeleteBtn) {
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteMode = false;
+                postsGrid.classList.remove('delete-mode');
+                deleteModeToggle.classList.remove('active');
+                deleteModeToggle.textContent = '🗑️ DELETE POSTS';
+                bulkActionsBar.classList.remove('active');
+                uncheckAll();
+            });
+        }
+
+        // Delete Selected Posts
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', async function() {
+                const selectedCheckboxes = document.querySelectorAll('.post-checkbox-neo:checked');
+                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+                if (selectedIds.length === 0) {
+                    alert('Please select posts to delete');
+                    return;
+                }
+
+                const confirmation = confirm(`Are you sure you want to delete ${selectedIds.length} post(s)? This action cannot be undone.`);
+                
+                if (confirmation) {
+                    try {
+                        // Delete posts one by one
+                        for (const postId of selectedIds) {
+                            const response = await fetch(`/posts/${postId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`Failed to delete post ${postId}`);
+                            }
+                        }
+
+                        // Refresh page after successful deletion
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                        alert('Failed to delete posts. Please try again.');
+                    }
+                }
+            });
+        }
+
+        function updateBulkActionsBar() {
+            const selectedCount = document.querySelectorAll('.post-checkbox-neo:checked').length;
+            selectedCountSpan.textContent = `${selectedCount} selected`;
+
+            if (selectedCount > 0) {
+                bulkActionsBar.classList.add('active');
+            } else {
+                bulkActionsBar.classList.remove('active');
+            }
+        }
+
+        function uncheckAll() {
+            document.querySelectorAll('.post-checkbox-neo').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('.profile-post-card-neo').classList.remove('selected');
+            });
+        }
+    </script>
     <script src="/js/main.js"></script>
 </body>
 </html>

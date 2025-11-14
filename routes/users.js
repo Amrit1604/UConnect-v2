@@ -383,8 +383,7 @@ router.post('/settings/avatar-api',
         return res.redirect('/users/settings/profile');
       }
 
-      // Generate API avatar URL
-      const avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${avatarSeed}`;
+      console.log('🎲 Setting random avatar with seed:', avatarSeed);
 
       // Update user avatar
       const user = await User.findById(req.user._id);
@@ -394,18 +393,23 @@ router.post('/settings/avatar-api',
         try {
           const oldAvatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
           await fs.unlink(oldAvatarPath);
+          console.log('🗑️ Deleted old uploaded avatar');
         } catch (error) {
           console.log('Old avatar deletion failed:', error.message);
         }
       }
 
-      // Set API avatar
-      user.avatarUrl = avatarUrl;
+      // Set API avatar with PERSISTENT seed
+      user.avatarSeed = avatarSeed; // CRITICAL: Save the seed to database
       user.avatarType = 'api';
       user.avatar = null; // Clear file reference
       await user.save();
 
-      // Update session
+      console.log('✅ Avatar seed saved to database:', user.avatarSeed);
+      console.log('✅ Avatar type:', user.avatarType);
+      console.log('✅ Avatar URL will be:', user.avatarUrl);
+
+      // Update session with new user data
       req.session.user = user.toObject({ virtuals: true });
 
       await new Promise((resolve, reject) => {
@@ -415,7 +419,7 @@ router.post('/settings/avatar-api',
         });
       });
 
-      console.log('🎲 Random avatar set successfully:', avatarUrl);
+      console.log('🎲 Random avatar set successfully with seed:', avatarSeed);
       req.flash('success', 'Random avatar set successfully!');
       res.redirect('/users/settings/profile');
 
@@ -439,17 +443,23 @@ router.post('/settings/remove-avatar',
         try {
           const avatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
           await fs.unlink(avatarPath);
+          console.log('🗑️ Deleted uploaded avatar file');
         } catch (error) {
           console.log('Avatar file deletion failed:', error.message);
         }
       }
 
-      // Set default avatar
-      const defaultAvatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=default`;
-      user.avatarUrl = defaultAvatarUrl;
+      // Generate new random seed for default avatar
+      const defaultSeed = crypto.randomBytes(8).toString('hex');
+      console.log('🎲 Generating new default avatar with seed:', defaultSeed);
+
+      // Set default avatar with new random seed
+      user.avatarSeed = defaultSeed;
       user.avatarType = 'api';
       user.avatar = null;
       await user.save();
+
+      console.log('✅ Default avatar seed saved:', user.avatarSeed);
 
       // Update session
       req.session.user = user.toObject({ virtuals: true });
@@ -461,7 +471,7 @@ router.post('/settings/remove-avatar',
         });
       });
 
-      console.log('🗑️ Avatar removed successfully');
+      console.log('🗑️ Avatar removed successfully, new random avatar generated');
       req.flash('success', 'Avatar removed successfully!');
       res.redirect('/users/settings/profile');
 

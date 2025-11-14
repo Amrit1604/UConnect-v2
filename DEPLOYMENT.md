@@ -6,7 +6,7 @@
 
 ✅ **Files Created:**
 - `vercel.json` - Vercel deployment configuration
-- `.env.production` - Production environment template  
+- `.env.production` - Production environment template
 - `.github/workflows/deploy.yml` - CI/CD pipeline
 - Updated README with portfolio-ready description
 
@@ -69,7 +69,7 @@ UConnect v2 - Full-Stack Social Media Platform
 ### **Key Technical Achievements:**
 - ✅ Full-stack development with MVC architecture
 - ✅ Real-time features using WebSocket (Socket.io)
-- ✅ Secure authentication with JWT and email verification  
+- ✅ Secure authentication with JWT and email verification
 - ✅ RESTful API design with input validation
 - ✅ Responsive design with mobile-first approach
 - ✅ Production deployment with CI/CD automation
@@ -87,6 +87,6 @@ UConnect v2 - Full-Stack Social Media Platform
 
 ---
 
-**Your app will be live at**: `https://your-app-name.vercel.app` 
+**Your app will be live at**: `https://your-app-name.vercel.app`
 
 Perfect for recruiters to see your full-stack skills! 🚀
