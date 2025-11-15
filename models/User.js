@@ -126,17 +126,11 @@ const userSchema = new mongoose.Schema({
     default: null
   },
 
-  // Campus information extracted from email
+  // Campus information - all users belong to Main Campus for now
   campus: {
     type: String,
-    default: function() {
-      if (this.email) {
-        // Extract campus from email (e.g., student@xyz.edu.in -> xyz)
-        const match = this.email.match(/@([^.]+)\.edu\.in$/);
-        return match ? match[1] : null;
-      }
-      return null;
-    }
+    default: 'Main Campus',
+    required: true
   },
 
   // User statistics
@@ -280,35 +274,26 @@ userSchema.statics.getStats = async function() {
 
 // Virtual for avatar URL
 userSchema.virtual('avatarUrl').get(function() {
+  // Priority 1: Uploaded avatar
   if (this.avatar && this.avatarType === 'upload') {
-    // Check if uploaded avatar file exists, fallback to API if not
     const fs = require('fs');
     const path = require('path');
     const uploadPath = path.join(__dirname, '../public/uploads/avatars', this.avatar);
-    console.log(`🔍 Checking avatar file: ${uploadPath}`);
     if (fs.existsSync(uploadPath)) {
-      const url = `/uploads/avatars/${this.avatar}`;
-      console.log(`✅ Avatar file exists, returning URL: ${url}`);
-      return url;
-    } else {
-      // File missing, fallback to API avatar
-      console.log(`⚠️ Avatar file not found: ${uploadPath}, using API fallback`);
-      const seed = this.avatarSeed || this.username || this.email.split('@')[0] || 'default';
-      const apiUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
-      console.log(`🔄 API fallback URL: ${apiUrl}`);
-      return apiUrl;
+      return `/uploads/avatars/${this.avatar}`;
     }
-  } else if (this.avatarSeed && this.avatarType === 'api') {
-    // Return API-generated avatar
-    const apiUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;
-    console.log(`🎨 API avatar URL: ${apiUrl}`);
-    return apiUrl;
+    // If file doesn't exist, fall through to API avatar
+    console.log(`⚠️ Avatar file not found: ${uploadPath}, using API fallback`);
   }
-  // Generate a default API avatar based on username or email
+
+  // Priority 2: API avatar with saved seed
+  if (this.avatarSeed) {
+    return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;
+  }
+
+  // Priority 3: Generate seed from username/email as absolute fallback
   const seed = this.username || this.email.split('@')[0] || 'default';
-  const defaultUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
-  console.log(`🏠 Default avatar URL: ${defaultUrl}`);
-  return defaultUrl;
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
 });
 
 module.exports = mongoose.model('User', userSchema);

@@ -227,6 +227,10 @@
                                     <span class="action-icon">💬</span>
                                     <span class="action-count"><%= post.comments ? post.comments.length : 0 %></span>
                                 </button>
+                                <button class="action-btn-neo share-btn" data-post-id="<%= post._id %>" data-action="share">
+                                    <span class="action-icon">🔗</span>
+                                    <span class="action-text">SHARE</span>
+                                </button>
                                 <a href="/posts/<%= post._id %>" class="action-btn-neo view-btn">
                                     <span class="action-icon">👁️</span>
                                     <span class="action-text">VIEW</span>
@@ -409,6 +413,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Share button functionality
+    document.querySelectorAll('.share-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const postId = this.dataset.postId;
+            const postUrl = `${window.location.origin}/posts/${postId}`;
+
+            try {
+                // Try using Web Share API if available (mobile devices)
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'Share Post',
+                        url: postUrl
+                    });
+                } else {
+                    // Fallback to clipboard copy
+                    await navigator.clipboard.writeText(postUrl);
+
+                    // Visual feedback
+                    const originalText = this.querySelector('.action-text').textContent;
+                    this.querySelector('.action-text').textContent = 'COPIED!';
+                    this.style.background = '#FF0000';
+
+                    setTimeout(() => {
+                        this.querySelector('.action-text').textContent = originalText;
+                        this.style.background = '';
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Share error:', error);
+                alert('Failed to share post');
+            }
+        });
+    });
+
     // Load more posts
     const loadMoreBtn = document.querySelector('.load-more-btn-neo');
     if (loadMoreBtn) {
@@ -475,7 +513,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Footer (Same as index2.ejs) -->
 <footer class="footer-neo">
     <div class="footer-container-neo">
         <div class="footer-content-neo">
