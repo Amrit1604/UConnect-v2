@@ -250,6 +250,14 @@ window.handleAvatarUpload = function(event) {
 // Initialize auth page functionality
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Auth.js loaded and DOM ready');
+  // Attach password toggle buttons (Neo login)
+const toggles = document.querySelectorAll('.password-toggle-neo');
+toggles.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        togglePassword(targetId);
+    });
+});
 
   // Password strength validation
   const passwordField = document.getElementById('password');

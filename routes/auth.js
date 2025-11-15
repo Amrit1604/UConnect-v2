@@ -8,6 +8,8 @@ const { uploadAvatarTemp, saveTempAvatarToDisk } = require('../middleware/upload
 const emailService = require('../services/emailService');
 // const { getSmartBaseUrl } = require('../utils/smartUrl');
 
+
+
 // Simple function to get base URL
 const getSmartBaseUrl = (req) => {
   const protocol = req.protocol;
@@ -592,5 +594,140 @@ router.get('/register-legacy', redirectIfAuthenticated, (req, res) => {
     formData: {}
   });
 });
+
+// ========================================
+// FORGOT PASSWORD + RESET PASSWORD ROUTES
+// ========================================
+
+const bcrypt = require("bcrypt");
+
+// Show forgot password page
+router.get('/forgot-password', (req, res) => {
+  res.render('auth/forgot-password', { 
+    title: 'Forgot Password',
+    errors: [],
+    formData: {},
+    serverError: null   // <-- IMPORTANT FIX
+  });
+});
+
+
+// Handle forgot password request
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      req.flash('error', 'No account found with that email.');
+      return res.redirect('/auth/forgot-password');
+    }
+
+    // Create reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHash = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    // Store hashed token in DB
+    user.resetPasswordToken = resetTokenHash;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 min
+    await user.save();
+
+    // Build URL
+    const resetUrl = `${getSmartBaseUrl(req)}/auth/reset-password/${resetToken}`;
+
+    // Send email
+    await emailService.sendResetPasswordEmail({
+      to: email,
+      name: user.name,
+      resetUrl: resetUrl
+    });
+
+    req.flash("success", "Password reset link sent to your email!");
+    res.redirect("/auth/forgot-password");
+
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    req.flash("error", "Something went wrong.");
+    res.redirect("/auth/forgot-password");
+  }
+});
+
+// Show reset password page
+router.get('/reset-password/:token', async (req, res) => {
+  try {
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: tokenHash,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      req.flash("error", "Invalid or expired reset token.");
+      return res.redirect("/auth/forgot-password");
+    }
+
+    res.render("auth/reset-password", {
+  title: "Reset Password",
+  errors: [],
+  token: req.params.token,
+  serverError: null
+});
+
+
+  } catch (err) {
+    console.error("Reset password page error:", err);
+    req.flash("error", "Something went wrong.");
+    res.redirect("/auth/forgot-password");
+  }
+});
+
+// Handle new password submission
+router.post('/reset-password/:token', async (req, res) => {
+  try {
+    const { password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+      req.flash("error", "Passwords do not match.");
+      return res.redirect("back");
+    }
+
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: tokenHash,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      req.flash("error", "Invalid or expired reset token.");
+      return res.redirect("/auth/forgot-password");
+    }
+
+    // Update password
+    user.password = password; // your model will hash automatically
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    req.flash("success", "Password reset successful! You can now log in.");
+    res.redirect("/auth/login");
+
+  } catch (err) {
+    console.error("Reset password error:", err);
+    req.flash("error", "Something went wrong.");
+    res.redirect("/auth/forgot-password");
+  }
+});
+
 
 module.exports = router;

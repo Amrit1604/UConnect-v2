@@ -84,7 +84,14 @@ class EmailService {
       this.isConfigured = true;
     } catch (error) {
       console.error('❌ Email Service: SMTP connection failed:', error.message);
-      console.error('🔧 Check your Gmail App Password and credentials in .env file');
+      console.error('🔧 Common causes:');
+      console.error('- Invalid Gmail username or App Password (16 chars) in your .env');
+      console.error('- Google account does not have 2-Step Verification enabled (App Passwords require 2FA)');
+      console.error('- Using regular account password (Gmail no longer supports "Less secure apps" access)');
+      console.error('\n→ Recommended fixes:');
+      console.error('- Enable 2-Step Verification for the Gmail account and create an App Password: https://support.google.com/mail/?p=InvalidSecondFactor');
+      console.error('- Or configure OAuth2 for Gmail or use a transactional email provider (SendGrid, Mailgun, SES) for production.');
+      console.error('\n🔧 Check your Gmail App Password and credentials in .env file');
       this.isConfigured = false;
     }
   }
@@ -408,11 +415,27 @@ If you have any questions, please contact our support team.
   /**
    * Send password reset email (for future use)
    */
-  async sendPasswordResetEmail({ to, username, name, resetUrl }) {
-    // Implementation for password reset emails
-    // This is for future enhancement
-    console.log('Password reset email functionality - Coming soon!');
-  }
+  async sendResetPasswordEmail({ to, username, name, resetUrl }) {
+    console.log('📧 Sending password reset email...');
+
+    const html = `
+      <h2>Password Reset Requested</h2>
+      <p>Hello ${name},</p>
+      <p>Click the button below to reset your password:</p>
+      <a href="${resetUrl}" style="padding:10px 20px;background:#6c5ce7;color:white;border-radius:8px;text-decoration:none;">
+          Reset Password
+      </a>
+      <p>If you didn't request this, ignore this email.</p>
+    `;
+
+    return await this.transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to,
+        subject: "🔐 Reset Your UConnect Password",
+        html
+    });
+}
+
 
   /**
    * Send welcome email after successful verification

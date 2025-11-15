@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/posts.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <%- include('../partials/navbar') %>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="form-container">
+                <div class="form-header">
+                    <h1><%= title %></h1>
+                </div>
+
+                <% if (errors.length > 0) { %>
+                    <div class="alert alert-danger">
+                        <ul>
+                            <% errors.forEach(error => { %>
+                                <li><%= error.msg %></li>
+                            <% }) %>
+                        </ul>
+                    </div>
+                <% } %>
+
+                <form action="/posts/create" method="POST">
+                    <div class="form-group">
+                        <label for="content" class="form-label">Your Post</label>
+                        <textarea name="content" id="content" class="form-textarea" rows="6" required><%= formData.content %></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category" class="form-label">Category</label>
+                        <select name="category" id="category" class="form-select" required>
+                            <option value="General" <%= formData.category === 'General' ? 'selected' : '' %>>General</option>
+                            <option value="Academics" <%= formData.category === 'Academics' ? 'selected' : '' %>>Academics</option>
+                            <option value="Events" <%= formData.category === 'Events' ? 'selected' : '' %>>Events</option>
+                            <option value="Sports" <%= formData.category === 'Sports' ? 'selected' : '' %>>Sports</option>
+                            <option value="Clubs" <%= formData.category === 'Clubs' ? 'selected' : '' %>>Clubs</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Post</button>
+                        <a href="/posts" class="btn btn-ghost">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <%- include('../partials/footer') %>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+</body>
+</html>
