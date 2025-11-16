@@ -1,0 +1,19 @@
+<div class="container admin-audit">
+  <div class="terminal-screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h1>uconnect@neo:/admin$ audit</h1>
+      <div class="admin-badge">ADMIN</div>
+    </div>
+
+    <% if (!logs || logs.length === 0) { %>
+      <pre class="terminal-pre">no audit logs available.</pre>
+    <% } else { %>
+      <pre class="terminal-pre"><% logs.forEach(l => { %><%= new Date(l.createdAt).toLocaleString() %> | <%= l.actor ? (l.actor.toString ? l.actor.toString() : l.actor) : 'system' %> | <%= l.actorType %> | <%= l.action %> | <%= JSON.stringify(l.details || {}) %>
+<% }) %></pre>
+    <% } %>
+
+    <div style="margin-top:12px;">
+      <a href="/admin" class="btn small">back</a>
+    </div>
+  </div>
+</div>

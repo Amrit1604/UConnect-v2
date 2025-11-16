@@ -1,0 +1,50 @@
+<div class="chat-inbox">
+  <h2>Messages</h2>
+  <div id="conversationsList">
+    <% if (conversations && conversations.length) { %>
+      <% conversations.forEach(c => { %>
+        <div class="conversation-item" data-other-id="<%= c.otherUser._id %>" onclick="location.href='/chat/<%= c.otherUser._id %>'">
+          <div class="meta">
+            <img src="<%= c.otherUser.avatarUrl %>" alt="avatar" width="40" height="40" style="border-radius:6px" />
+            <div>
+              <div class="username"><%= c.otherUser.username %></div>
+              <div class="last-message"><%= c.lastMessage ? (c.lastMessage.content && c.lastMessage.content.slice(0,60)) : 'No messages yet' %></div>
+            </div>
+          </div>
+          <div>
+            <% if (c.unreadCount && c.unreadCount>0) { %>
+              <div class="unread"><%= c.unreadCount %></div>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="chat-empty">You have no conversations yet. Connect with people to start chatting.</div>
+    <% } %>
+  </div>
+</div>
+
+<script>window.__USER_ID__ = '<%= user._id %>';</script>
+<div class="chat-inbox" data-profile-user-id="<%= user ? user._id : '' %>">
+  <h2>Messages</h2>
+  <div id="conversationsList">
+    <% if (conversations && conversations.length>0) { %>
+      <% conversations.forEach(c => { %>
+        <div class="conversation-item" data-other-id="<%= c.otherUser._id %>">
+          <a href="/chat/<%= c.otherUser._id %>">@<%= c.otherUser.username %></a>
+          <div class="last-message"><%= c.lastMessage ? c.lastMessage.content : '' %></div>
+          <% if (c.unreadCount) { %>
+            <div class="unread"><%= c.unreadCount %></div>
+          <% } %>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div>No conversations yet.</div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // Provide current user id to client chat script
+  window.__USER_ID__ = '<%= user ? user._id : '' %>';
+</script>

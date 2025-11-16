@@ -73,7 +73,8 @@ const requireAuth = async (req, res, next) => {
  */
 const requireAdmin = async (req, res, next) => {
   try {
-    if (!req.user || req.user.role !== 'admin') {
+    // Allow admin if logged-in user has admin role OR if admin session flag is set
+    if ((!req.user || req.user.role !== 'admin') && !req.session?.isAdmin) {
       if (req.session && typeof req.flash === 'function') {
         req.flash('error', 'Access denied. Admin privileges required.');
       }
@@ -86,6 +87,31 @@ const requireAdmin = async (req, res, next) => {
       req.flash('error', 'Authorization error occurred');
     }
     res.redirect('/posts');
+  }
+};
+
+/**
+ * Middleware to allow admin access either as an authenticated admin user OR via an admin session flag
+ * This helps support the special 'ctrl+shift+space' admin unlock flow that uses a password in .env
+ */
+const requireAdminOrSession = (req, res, next) => {
+  try {
+    if (req.user && req.user.role === 'admin') return next();
+    if (req.session && req.session.isAdmin) {
+      // Attach a lightweight admin marker to req.user for compatibility with admin routes/views
+      req.user = req.user || { name: 'Admin', role: 'admin', username: 'admin' };
+      return next();
+    }
+    if (req.session && typeof req.flash === 'function') {
+      req.flash('error', 'Access denied. Admin privileges required.');
+    }
+    return res.redirect('/posts');
+  } catch (error) {
+    console.error('requireAdminOrSession error:', error);
+    if (req.session && typeof req.flash === 'function') {
+      req.flash('error', 'Authorization error occurred');
+    }
+    return res.redirect('/posts');
   }
 };
 
@@ -219,6 +245,7 @@ const logActivity = (action) => {
 module.exports = {
   requireAuth,
   requireAdmin,
+  requireAdminOrSession,
   redirectIfAuthenticated,
   requireOwnership,
   validateEduEmail,

@@ -33,6 +33,8 @@ const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
 const gridfsRoutes = require('./routes/gridfs');
+const chatRoutes = require('./routes/chat');
+const notificationsRoutes = require('./routes/notifications');
 
 // ==========================================
 // MIDDLEWARE
@@ -83,6 +85,8 @@ app.use('/users', userRoutes);
 app.use('/admin', adminRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/gridfs', gridfsRoutes);
+app.use('/chat', chatRoutes);
+app.use('/notifications', notificationsRoutes);
 
 // URL test route for debugging 🔧
 // app.use('/debug', createUrlTestRoute());
@@ -163,12 +167,14 @@ process.on('SIGTERM', () => {
   });
 });
 
-// Start server
-server.listen(PORT, () => {
-  console.log(`🚀 UConnect server running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📱 Access the app at: http://localhost:${PORT}`);
-  console.log(`⚡ Socket.IO enabled for real-time features!`);
-});
+// Start server only when this file is run directly (prevents tests from starting server)
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`🚀 UConnect server running on port ${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📱 Access the app at: http://localhost:${PORT}`);
+    console.log(`⚡ Socket.IO enabled for real-time features!`);
+  });
+}
 
 module.exports = app;

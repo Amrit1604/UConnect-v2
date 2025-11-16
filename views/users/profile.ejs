@@ -41,14 +41,12 @@
             <div class="profile-header-neo">
                 <div class="profile-top-neo">
                     <%
-                    let avatarUrl = '/images/default-avatar.png';
-                    if (profileUser.avatarType === 'upload' && profileUser.avatar) {
-                        avatarUrl = '/uploads/avatars/' + profileUser.avatar;
-                    } else if (profileUser.avatarSeed) {
-                        avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + profileUser.avatarSeed;
-                    }
+                    // Prefer server-side virtual that already resolves GridFS/API/default
+                    let avatarUrl = profileUser.avatarUrl || '/images/default-avatar.png';
+                    // Cache-busting query to avoid stale browser cache after change
+                    const cacheBuster = (profileUser.updatedAt ? new Date(profileUser.updatedAt).getTime() : Date.now());
                     %>
-                    <img src="<%= avatarUrl %>"
+                    <img src="<%= avatarUrl %>?v=<%= cacheBuster %>"
                          alt="<%= profileUser.displayName || profileUser.name || profileUser.username %>"
                          class="profile-avatar-large-neo"
                          onerror="this.src='/images/default-avatar.png'">

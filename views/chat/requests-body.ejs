@@ -1,0 +1,69 @@
+<div class="chat-requests">
+  <h2>Follow Requests</h2>
+
+  <div>
+    <h3>Received</h3>
+    <% if (receivedRequests && receivedRequests.length) { %>
+      <% receivedRequests.forEach(r => { %>
+        <div class="request-item" data-id="<%= r._id %>">
+          <div><strong><%= r.sender.username %></strong> - <%= r.message %></div>
+          <div style="margin-top:8px"><button class="accept-btn" data-id="<%= r._id %>">Accept</button><button class="reject-btn" data-id="<%= r._id %>">Reject</button><button class="block-btn" data-id="<%= r._id %>">Block</button></div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="chat-empty">No received requests</div>
+    <% } %>
+  </div>
+
+  <div style="margin-top:16px">
+    <h3>Sent</h3>
+    <% if (sentRequests && sentRequests.length) { %>
+      <% sentRequests.forEach(r => { %>
+        <div class="request-item" data-id="<%= r._id %>">
+          <div>To: <strong><%= r.receiver.username %></strong> - <%= r.message %></div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="chat-empty">No sent requests</div>
+    <% } %>
+  </div>
+</div>
+
+<script>window.__USER_ID__ = '<%= user._id %>';</script>
+<div class="chat-requests">
+  <h2>Follow Requests</h2>
+  <div id="receivedRequests">
+    <% if (receivedRequests && receivedRequests.length>0) { %>
+      <% receivedRequests.forEach(r => { %>
+        <div class="request-item" data-id="<%= r._id %>">
+          <strong>@<%= r.sender.username %></strong>
+          <p><%= r.message %></p>
+          <button class="accept-btn" data-id="<%= r._id %>">Accept</button>
+          <button class="reject-btn" data-id="<%= r._id %>">Reject</button>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div>No requests.</div>
+    <% } %>
+  </div>
+
+  <script>
+    (function(){
+      document.querySelectorAll('.accept-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
+          if (res.ok) location.reload(); else alert('Failed');
+        });
+      });
+
+      document.querySelectorAll('.reject-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
+          if (res.ok) location.reload(); else alert('Failed');
+        });
+      });
+    })();
+  </script>
+</div>

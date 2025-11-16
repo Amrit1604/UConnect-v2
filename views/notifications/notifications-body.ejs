@@ -1,0 +1,47 @@
+<div class="notifications-page">
+  <h2>Notifications</h2>
+
+  <% if (notifications && notifications.length) { %>
+    <div class="notifications-list">
+      <% notifications.forEach(n => { %>
+        <div class="notification-item" data-id="<%= n._id %>">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong><%= n.title %></strong>
+              <div style="color:var(--muted);font-size:13px;margin-top:4px"><%= n.message %></div>
+              <% if (n.type === 'follow_request' && n.relatedId) { %>
+                <div style="margin-top:8px">
+                  <button class="accept-btn" data-id="<%= n.relatedId %>">Accept</button>
+                  <button class="reject-btn" data-id="<%= n.relatedId %>">Reject</button>
+                </div>
+              <% } %>
+            </div>
+            <div style="font-size:12px;color:var(--muted)"><%= new Date(n.createdAt).toLocaleString() %></div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="chat-empty">No notifications</div>
+  <% } %>
+
+  <script>
+    (function(){
+      document.querySelectorAll('.accept-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
+          if (res.ok) location.reload(); else alert('Failed to accept');
+        });
+      });
+
+      document.querySelectorAll('.reject-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
+          if (res.ok) location.reload(); else alert('Failed to reject');
+        });
+      });
+    })();
+  </script>
+</div>

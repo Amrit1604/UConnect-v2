@@ -1,0 +1,43 @@
+<div class="container admin-analytics">
+  <div class="terminal-screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h1>uconnect@neo:/admin$ analytics<span class="terminal-cursor"></span></h1>
+      <div class="admin-badge">ADMIN</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <div class="card terminal">
+        <h4 class="muted">top.campuses</h4>
+        <pre class="terminal-pre"><% topCampuses.forEach(c => { %><%= c._id %> | users:<%= c.userCount %> | posts:<%= c.totalPosts %>
+<% }) %></pre>
+      </div>
+
+      <div class="card terminal">
+        <h4 class="muted">registrations.last.<%= timeRange %>.days</h4>
+        <div class="admin-chart-card">
+          <canvas id="registrationsChart" width="400" height="160"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <a href="/admin" class="btn small">back</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  (function(){
+    try {
+      const ctx = document.getElementById('registrationsChart').getContext('2d');
+      const labels = <%- JSON.stringify(userRegistrations.map(u => `${u._id.day}-${u._id.month}`)) %>;
+      const data = <%- JSON.stringify(userRegistrations.map(u => u.count)) %>;
+      new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Registrations', data, borderColor: 'rgba(57,255,20,0.9)', backgroundColor: 'rgba(57,255,20,0.08)', fill:true, tension:0.3 }] },
+        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ display:true, ticks:{ color:'var(--accent-green)' } }, y:{ display:true, ticks:{ color:'var(--accent-green)' } } } }
+      });
+    } catch (e) { console.error('Chart init error', e); }
+  })();
+</script>

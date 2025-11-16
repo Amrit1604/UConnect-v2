@@ -1,0 +1,35 @@
+<div class="container admin-posts">
+  <div class="terminal-screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h1>uconnect@neo:/admin$ posts<span class="terminal-cursor"></span></h1>
+      <div class="admin-badge">ADMIN</div>
+    </div>
+
+    <form method="get" action="/admin/posts" style="margin-bottom:14px;">
+      <select name="filter" style="margin-right:8px; padding:6px; border-radius:0; border:2px solid var(--accent-green); background:var(--terminal-bg); color:var(--accent-green); font-family:var(--font-mono);">
+        <option value="all" <%= filter === 'all' ? 'selected' : '' %>>all</option>
+        <option value="reported" <%= filter === 'reported' ? 'selected' : '' %>>reported</option>
+        <option value="active" <%= filter === 'active' ? 'selected' : '' %>>active</option>
+        <option value="inactive" <%= filter === 'inactive' ? 'selected' : '' %>>inactive</option>
+      </select>
+      <button class="btn small">filter</button>
+    </form>
+
+    <pre class="terminal-pre"><% posts.forEach(p => { %>@<%= p.author?.username %>: <%= p.content ? (p.content.replace(/\n/g, ' ').slice(0,140)) : '[media]' %> | reports:<%= p.reportCount || 0 %> | active:<%= p.isActive ? 'yes' : 'no' %> | <form method="post" action="/admin/posts/<%= p._id %>/toggle-status" style="display:inline"><button class="btn small"><%= p.isActive ? 'deactivate' : 'activate' %></button></form> <form method="post" action="/admin/posts/<%= p._id %>/clear-reports" style="display:inline"><button class="btn small">clear reports</button></form> <form method="post" action="/admin/posts/<%= p._id %>/delete" style="display:inline" onsubmit="return confirm('Delete this post?')"><button class="btn small danger">delete</button></form>
+<% }) %></pre>
+
+    <div style="display:flex; gap:8px; align-items:center; margin-top:12px;">
+      <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>&filter=<%= filter %>" class="btn small">prev</a>
+      <% } %>
+      <span>page <%= currentPage %> of <%= totalPages %></span>
+      <% if (hasNextPage) { %>
+        <a href="?page=<%= currentPage + 1 %>&filter=<%= filter %>" class="btn small">next</a>
+      <% } %>
+    </div>
+
+    <div style="margin-top:12px;">
+      <a href="/admin" class="btn small">back</a>
+    </div>
+  </div>
+</div>

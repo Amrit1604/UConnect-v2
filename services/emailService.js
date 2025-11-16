@@ -44,8 +44,13 @@ class EmailService {
 
       console.log('📧 SMTP Transporter created successfully');
 
-      // Try to verify connection immediately
-      this.verifyConnectionSync();
+      // Try to verify connection immediately unless running tests or explicitly disabled
+      if (process.env.NODE_ENV !== 'test' && process.env.SKIP_EMAIL_VERIFY !== 'true') {
+        this.verifyConnectionSync();
+      } else {
+        console.log('ℹ️ Skipping SMTP verification in test/disabled mode');
+        this.isConfigured = true;
+      }
 
     } catch (error) {
       console.error('❌ Email Service initialization failed:', error.message);

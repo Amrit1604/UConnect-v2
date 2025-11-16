@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { redirectIfAuthenticated, validateEduEmail, sensitiveOperationLimit } = require('../middleware/auth');
-const { uploadAvatarTemp, saveTempAvatarToDisk } = require('../middleware/upload');
+const { uploadAvatarTemp } = require('../middleware/upload');
 const emailService = require('../services/emailService');
 // const { getSmartBaseUrl } = require('../utils/smartUrl');
 

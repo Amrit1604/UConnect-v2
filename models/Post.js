@@ -291,6 +291,27 @@ postSchema.pre('save', function(next) {
   next();
 });
 
+// Ensure likes array always matches schema even if legacy ObjectIds/strings exist
+postSchema.pre('validate', function(next) {
+  if (Array.isArray(this.likes)) {
+    this.likes = this.likes
+      .map((entry) => {
+        if (entry && entry.user) return entry;
+        const candidate = entry && entry._id ? entry._id : entry;
+        const strId = typeof candidate === 'string' ? candidate : candidate?.toString();
+        if (strId && mongoose.Types.ObjectId.isValid(strId)) {
+          return {
+            user: new mongoose.Types.ObjectId(strId),
+            createdAt: entry?.createdAt || new Date()
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+  }
+  next();
+});
+
 // Instance method to check if user has liked the post
 postSchema.methods.isLikedBy = function(userId) {
   return this.likes.some(like => like.user.toString() === userId.toString());

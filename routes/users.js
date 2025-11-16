@@ -5,49 +5,132 @@
 
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const User = require('../models/User');
 const Post = require('../models/Post');
 const { requireAuth, sensitiveOperationLimit, logActivity } = require('../middleware/auth');
+const { uploadAvatar, deleteFile } = require('../utils/gridfs');
 
 const router = express.Router();
 
 // 🔒 APPLY AUTHENTICATION TO ALL USER ROUTES
 router.use(requireAuth);
 
-// Configure multer for avatar uploads
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '../public/uploads/avatars');
-    try {
-      await fs.mkdir(uploadPath, { recursive: true });
-      cb(null, uploadPath);
-    } catch (error) {
-      cb(error);
-    }
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `avatar-${req.user._id}-${uniqueSuffix}${path.extname(file.originalname)}`);
+// Use GridFS-based multer for avatar uploads
+// uploadAvatar is a multer middleware from utils/gridfs that stores files in the 'avatars' bucket
+
+// GET /users/search - Search users by username or name (same campus)
+router.get('/search', async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json({ success: true, results: [] });
+
+    const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+
+    const users = await User.find({
+      campus: req.user.campus,
+      isActive: true,
+      isVerified: true,
+      $or: [
+        { username: regex },
+        { name: regex }
+      ]
+    })
+    .select('username name avatarSeed avatarType avatarGridFSId stats createdAt')
+    .limit(10);
+
+    const results = users.map(u => ({ id: u._id, username: u.username, name: u.name, avatarUrl: u.avatarUrl }));
+    return res.json({ success: true, results });
+  } catch (error) {
+    console.error('User search error:', error);
+    return res.status(500).json({ success: false, message: 'Search failed' });
   }
 });
 
+// GET /users/explore - Explore users (recommendations)
+router.get('/explore', async (req, res) => {
+  try {
+    const me = await User.findById(req.user._id).select('following');
+    const excludeIds = new Set([req.user._id.toString(), ...(me?.following || []).map(id => id.toString())]);
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Check file type
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'), false);
-    }
+    const sort = (req.query.sort || 'popular').toLowerCase();
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = 24;
+    const skip = (page - 1) * limit;
+
+    const baseQuery = {
+      campus: req.user.campus,
+      isActive: true,
+      isVerified: true,
+      _id: { $nin: Array.from(excludeIds) }
+    };
+
+    let sortSpec;
+    if (sort === 'new') sortSpec = { createdAt: -1 };
+    else if (sort === 'suggested') sortSpec = { 'stats.followersCount': -1, createdAt: -1 };
+    else sortSpec = { 'stats.followersCount': -1, createdAt: -1 }; // popular default
+
+    const [candidates, total] = await Promise.all([
+      User.find(baseQuery)
+        .select('username name avatarSeed avatarType avatarGridFSId stats createdAt updatedAt')
+        .sort(sortSpec)
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(baseQuery)
+    ]);
+
+    res.render('layout', {
+      title: 'Explore Users',
+      bodyTemplate: 'users/explore-body',
+      additionalCSS: ['/css/feed-neo.css', '/css/profile-neo.css'],
+      users: candidates.map(u => u.toObject({ virtuals: true })),
+      user: req.user,
+      exploreSort: sort,
+      page,
+      hasNextPage: (skip + candidates.length) < total
+    });
+  } catch (error) {
+    console.error('Explore users error:', error);
+    req.flash('error', 'Failed to load explore users');
+    res.redirect('/posts');
+  }
+});
+
+// GET /users/suggestions - Sidebar follow suggestions (JSON)
+router.get('/suggestions', async (req, res) => {
+  try {
+    const me = await User.findById(req.user._id).select('following');
+    const excludeIds = new Set([req.user._id.toString(), ...(me?.following || []).map(id => id.toString())]);
+
+    const suggestions = await User.find({
+      campus: req.user.campus,
+      isActive: true,
+      isVerified: true,
+      _id: { $nin: Array.from(excludeIds) }
+    })
+      .select('username name avatarSeed avatarType avatarGridFSId stats createdAt')
+      .sort({ createdAt: -1 })
+      .limit(6);
+
+    const results = suggestions.map(u => ({ id: u._id, username: u.username, name: u.name, avatarUrl: u.avatarUrl }));
+    res.json({ success: true, results });
+  } catch (error) {
+    console.error('Suggestions error:', error);
+    res.status(500).json({ success: false, message: 'Failed to load suggestions' });
+  }
+});
+
+// GET /users/:username/card - Mini user card data (JSON)
+router.get('/:username/card', async (req, res) => {
+  try {
+    const u = await User.findOne({ username: req.params.username.toLowerCase(), isActive: true, isVerified: true })
+      .select('username name stats avatarSeed avatarType avatarGridFSId createdAt');
+    if (!u) return res.status(404).json({ success: false });
+    res.json({ success: true, user: { username: u.username, name: u.name, avatarUrl: u.avatarUrl, stats: u.stats } });
+  } catch (e) {
+    res.status(500).json({ success: false });
   }
 });
 
@@ -107,11 +190,18 @@ router.get('/profile', async (req, res) => {
 
     const userPosts = await Post.getByUser(req.user._id, 10, 0);
 
-    res.render('users/profile', {
+    // Use shared layout with body template
+    res.render('layout', {
       title: 'My Profile',
+      bodyTemplate: 'users/profile-body',
+      additionalCSS: ['/css/profile-neo.css'],
+      additionalJS: ['/js/main.js'],
       profileUser: user,
       posts: userPosts,
       isOwnProfile: true,
+      isFollowing: false,
+      followersCount: user.followers ? user.followers.length : (user.stats?.followersCount || 0),
+      followingCount: user.following ? user.following.length : (user.stats?.followingCount || 0),
       user: req.user
     });
 
@@ -119,6 +209,107 @@ router.get('/profile', async (req, res) => {
     console.error('Profile error:', error);
     req.flash('error', 'Failed to load profile');
     res.redirect('/posts');
+  }
+});
+
+// POST /users/:id/follow - Follow a user
+router.post('/:id/follow', logActivity('follow user'), async (req, res) => {
+  try {
+    const targetId = req.params.id;
+    if (targetId === req.user._id.toString()) {
+      return res.status(400).json({ success: false, message: "You can't follow yourself" });
+    }
+
+    const [me, target] = await Promise.all([
+      User.findById(req.user._id).select('following stats'),
+      User.findById(targetId).select('followers stats')
+    ]);
+
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const alreadyFollowing = me.following.some(id => id.toString() === target._id.toString());
+    if (alreadyFollowing) {
+      return res.json({ success: true, message: 'Already following' });
+    }
+
+    me.following.push(target._id);
+    target.followers.push(me._id);
+    me.stats.followingCount = (me.stats.followingCount || 0) + 1;
+    target.stats.followersCount = (target.stats.followersCount || 0) + 1;
+
+    await Promise.all([me.save(), target.save()]);
+
+    // Emit socket event for realtime updates
+    try {
+      const io = req.app.get && req.app.get('io');
+      if (io) {
+        io.emit('user:follow_update', {
+          type: 'follow',
+          followerId: me._id,
+          targetId: target._id,
+          followersCount: target.stats.followersCount,
+          followingCount: me.stats.followingCount
+        });
+      }
+    } catch (e) {}
+
+    return res.json({ success: true, following: true, followersCount: target.stats.followersCount, followingCount: me.stats.followingCount });
+  } catch (error) {
+    console.error('Follow error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to follow user' });
+  }
+});
+
+// POST /users/:id/unfollow - Unfollow a user
+router.post('/:id/unfollow', logActivity('unfollow user'), async (req, res) => {
+  try {
+    const targetId = req.params.id;
+    if (targetId === req.user._id.toString()) {
+      return res.status(400).json({ success: false, message: "You can't unfollow yourself" });
+    }
+
+    const [me, target] = await Promise.all([
+      User.findById(req.user._id).select('following stats'),
+      User.findById(targetId).select('followers stats')
+    ]);
+
+    if (!target || !target.isActive) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const wasFollowingIndex = me.following.findIndex(id => id.toString() === target._id.toString());
+    if (wasFollowingIndex === -1) {
+      return res.json({ success: true, message: 'Not following' });
+    }
+
+    me.following.splice(wasFollowingIndex, 1);
+    const followerIndex = target.followers.findIndex(id => id.toString() === me._id.toString());
+    if (followerIndex !== -1) target.followers.splice(followerIndex, 1);
+    me.stats.followingCount = Math.max(0, (me.stats.followingCount || 0) - 1);
+    target.stats.followersCount = Math.max(0, (target.stats.followersCount || 0) - 1);
+
+    await Promise.all([me.save(), target.save()]);
+
+    // Emit socket event for realtime updates
+    try {
+      const io = req.app.get && req.app.get('io');
+      if (io) {
+        io.emit('user:follow_update', {
+          type: 'unfollow',
+          followerId: me._id,
+          targetId: target._id,
+          followersCount: target.stats.followersCount,
+          followingCount: me.stats.followingCount
+        });
+      }
+    } catch (e) {}
+
+    return res.json({ success: true, following: false, followersCount: target.stats.followersCount, followingCount: me.stats.followingCount });
+  } catch (error) {
+    console.error('Unfollow error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to unfollow user' });
   }
 });
 
@@ -142,7 +333,7 @@ router.get('/:id', async (req, res) => {
       user = await User.findById(userIdentifier);
     } else {
       console.log('🔍 Searching by username:', userIdentifier);
-      user = await User.findOne({ username: userIdentifier });
+      user = await User.findOne({ username: userIdentifier.toLowerCase() });
     }
 
     if (!user || !user.isActive) {
@@ -162,13 +353,30 @@ router.get('/:id', async (req, res) => {
 
     const userPosts = await Post.getByUser(user._id, 10, 0);
 
+    // Determine follow status (query current user's following to be accurate)
+    let isFollowing = false;
+    try {
+      const me = await User.findById(req.user._id).select('following');
+      if (me && Array.isArray(me.following)) {
+        isFollowing = me.following.some(id => id.toString() === user._id.toString());
+      }
+    } catch (e) {
+      console.log('Follow status check failed:', e.message);
+    }
+
     console.log('✅ Rendering profile for user:', user.username);
 
-    res.render('users/profile', {
+    res.render('layout', {
       title: `${user.name || user.displayName || user.username}'s Profile`,
+      bodyTemplate: 'users/profile-body',
+      additionalCSS: ['/css/profile-neo.css'],
+      additionalJS: ['/js/main.js'],
       profileUser: user,
       posts: userPosts,
       isOwnProfile: false,
+      isFollowing,
+      followersCount: user.followers ? user.followers.length : (user.stats?.followersCount || 0),
+      followingCount: user.following ? user.following.length : (user.stats?.followingCount || 0),
       user: req.user
     });
 
@@ -186,8 +394,10 @@ router.get('/settings/profile', (req, res) => {
     console.log('🔍 SETTINGS ROUTE: User name:', req.user.name);
     console.log('🔍 SETTINGS ROUTE: User displayName:', req.user.displayName);
 
-    res.render('users/settings/profile', {
+    res.render('layout', {
       title: 'Profile Settings',
+      bodyTemplate: 'users/settings/profile-body',
+      additionalCSS: ['/css/feed-neo.css', '/css/settings-neo.css'],
       errors: [],
       formData: {
         displayName: req.user.name || req.user.displayName || req.user.username || ''
@@ -303,7 +513,7 @@ router.post('/settings/profile',
 
 // POST /users/settings/avatar - Update avatar
 router.post('/settings/avatar',
-  upload.single('avatar'),
+  uploadAvatar,
   logActivity('update avatar'),
   async (req, res) => {
     try {
@@ -314,39 +524,23 @@ router.post('/settings/avatar',
 
       const user = await User.findById(req.user._id);
 
-      // Delete old uploaded avatar if exists
-      if (user.avatar && user.avatarType === 'upload') {
+      // If user had a previous GridFS avatar, delete it
+      if (user.avatarGridFSId && user.avatarType === 'gridfs') {
         try {
-          const oldAvatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
-          await fs.unlink(oldAvatarPath);
-          console.log('🗑️ Deleted old avatar:', user.avatar);
-        } catch (error) {
-          console.log('Old avatar deletion failed:', error.message);
+          await deleteFile(user.avatarGridFSId);
+          console.log('🗑️ Deleted old GridFS avatar:', user.avatarGridFSId);
+        } catch (e) {
+          console.log('Old GridFS avatar deletion failed:', e.message);
         }
       }
 
-      // Create final avatar filename
-      const fileExtension = path.extname(req.file.originalname);
-      const avatarFilename = `avatar-${user._id}-${Date.now()}${fileExtension}`;
-      const finalAvatarPath = path.join(__dirname, '../public/uploads/avatars', avatarFilename);
-
-      // Ensure avatars directory exists
-      const avatarsDir = path.join(__dirname, '../public/uploads/avatars');
-      try {
-        await fs.mkdir(avatarsDir, { recursive: true });
-      } catch (error) {
-        console.log('Avatars directory already exists');
-      }
-
-      // Move uploaded file to final location
-      await fs.rename(req.file.path, finalAvatarPath);
-
-      // Update user with avatar filename (NOT binary data!)
-      user.avatar = avatarFilename;
-      user.avatarType = 'upload';
+      // Set new GridFS avatar info from multer-gridfs-storage result
+      user.avatarGridFSId = req.file.id;
+      user.avatar = null; // clear any legacy filename
+      user.avatarType = 'gridfs';
       await user.save();
 
-      console.log('✅ Avatar uploaded successfully:', avatarFilename);
+      console.log('✅ Avatar uploaded to GridFS:', req.file.id);
       console.log('📂 Avatar URL will be:', user.avatarUrl);
 
       // Update session with new avatar info
@@ -359,7 +553,6 @@ router.post('/settings/avatar',
         });
       });
 
-      console.log('📁 Avatar uploaded successfully');
       req.flash('success', 'Avatar updated successfully!');
       res.redirect('/users/settings/profile');
 
@@ -389,10 +582,9 @@ router.post('/settings/avatar-api',
       const user = await User.findById(req.user._id);
 
       // Clear any existing uploaded avatar file
-      if (user.avatar && user.avatarType === 'upload') {
+      if (user.avatarGridFSId && user.avatarType === 'gridfs') {
         try {
-          const oldAvatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
-          await fs.unlink(oldAvatarPath);
+          await deleteFile(user.avatarGridFSId);
           console.log('🗑️ Deleted old uploaded avatar');
         } catch (error) {
           console.log('Old avatar deletion failed:', error.message);
@@ -438,14 +630,13 @@ router.post('/settings/remove-avatar',
     try {
       const user = await User.findById(req.user._id);
 
-      // Delete uploaded avatar file if exists
-      if (user.avatar && user.avatarType === 'upload') {
+      // Delete GridFS avatar if exists
+      if (user.avatarGridFSId && user.avatarType === 'gridfs') {
         try {
-          const avatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
-          await fs.unlink(avatarPath);
-          console.log('🗑️ Deleted uploaded avatar file');
+          await deleteFile(user.avatarGridFSId);
+          console.log('🗑️ Deleted GridFS avatar file');
         } catch (error) {
-          console.log('Avatar file deletion failed:', error.message);
+          console.log('GridFS avatar deletion failed:', error.message);
         }
       }
 
@@ -485,8 +676,10 @@ router.post('/settings/remove-avatar',
 
 // GET /users/settings/password - Show password change form
 router.get('/settings/password', (req, res) => {
-  res.render('users/settings/password', {
+  res.render('layout', {
     title: 'Change Password',
+    bodyTemplate: 'users/settings/password-body',
+    additionalCSS: ['/css/feed-neo.css', '/css/settings-neo.css'],
     errors: [],
     user: req.user
   });
@@ -541,8 +734,10 @@ router.post('/settings/password',
 
 // GET /users/settings/account - Show account settings
 router.get('/settings/account', (req, res) => {
-  res.render('users/settings/account', {
+  res.render('layout', {
     title: 'Account Settings',
+    bodyTemplate: 'users/settings/account-body',
+    additionalCSS: ['/css/feed-neo.css', '/css/settings-neo.css'],
     user: req.user
   });
 });
@@ -680,13 +875,12 @@ router.post('/settings/delete-account',
       // Delete user's posts
       await Post.deleteMany({ author: req.user._id });
 
-      // Delete user's avatar if exists
-      if (user.avatar) {
+      // Delete user's GridFS avatar if exists
+      if (user.avatarGridFSId && user.avatarType === 'gridfs') {
         try {
-          const avatarPath = path.join(__dirname, '../public/uploads/avatars', user.avatar);
-          await fs.unlink(avatarPath);
+          await deleteFile(user.avatarGridFSId);
         } catch (error) {
-          console.log('Avatar deletion failed:', error.message);
+          console.log('GridFS avatar deletion failed:', error.message);
         }
       }
 
@@ -752,47 +946,6 @@ router.get('/campus', async (req, res) => {
   }
 });
 
-// GET /users/:username - 🔥 INSTAGRAM-LIKE PROFILE BY USERNAME
-router.get('/:username', async (req, res) => {
-  try {
-    const { username } = req.params;
-
-    // Find user by username
-    const user = await User.findOne({ username: username.toLowerCase() }).populate('avatar');
-
-    if (!user) {
-      req.flash('error', 'User not found');
-      return res.redirect('/posts');
-    }
-
-    // Check if it's the user's own profile
-    if (req.user && req.user._id.toString() === user._id.toString()) {
-      return res.redirect('/users/profile');
-    }
-
-    // Get user's posts for their profile
-    const userPosts = await Post.find({ author: user._id })
-      .populate('author', 'username name avatar campus')
-      .sort({ createdAt: -1 })
-      .limit(20);
-
-    // Get user stats
-    const postCount = await Post.countDocuments({ author: user._id });
-
-    res.render('users/profile', {
-      title: `@${user.username} | UConnect`,
-      profileUser: user,
-      posts: userPosts,
-      postCount: postCount,
-      isOwnProfile: false,
-      currentUser: req.user
-    });
-
-  } catch (error) {
-    console.error('Username profile error:', error);
-    req.flash('error', 'Failed to load user profile');
-    res.redirect('/posts');
-  }
-});
+// (Legacy username route removed; unified handler is router.get('/:id') above)
 
 module.exports = router;

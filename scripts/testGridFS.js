@@ -3,30 +3,33 @@
  * Tests GridFS upload functionality and verifies all components work
  */
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 const mongoose = require('mongoose');
 
 async function testGridFS() {
   try {
     console.log('🔌 Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGODB_URI);
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/campus_connect';
+    if (!process.env.MONGODB_URI) console.warn('⚠️ MONGODB_URI not set — using fallback localhost URI');
+    await mongoose.connect(mongoUri);
     console.log('✅ Connected to database\n');
 
     // Test 1: Check GridFS buckets
     console.log('📊 Test 1: Checking GridFS buckets...');
     const db = mongoose.connection.db;
     const collections = await db.listCollections().toArray();
-    const gridFSCollections = collections.filter(c => 
+    const gridFSCollections = collections.filter(c =>
       c.name.includes('.files') || c.name.includes('.chunks')
     );
-    
+
     console.log('GridFS Collections found:');
     gridFSCollections.forEach(c => console.log(`  - ${c.name}`));
-    
+
     // Test 2: Count files in each bucket
     console.log('\n📊 Test 2: Counting files in buckets...');
     const buckets = ['uploads', 'avatars', 'posts', 'videos'];
-    
+
     for (const bucket of buckets) {
       try {
         const count = await db.collection(`${bucket}.files`).countDocuments();
@@ -43,7 +46,7 @@ async function testGridFS() {
     const gridfsUsers = await User.countDocuments({ avatarType: 'gridfs' });
     const apiUsers = await User.countDocuments({ avatarType: 'api' });
     const uploadUsers = await User.countDocuments({ avatarType: 'upload' });
-    
+
     console.log(`  Total users: ${totalUsers}`);
     console.log(`  GridFS avatars: ${gridfsUsers}`);
     console.log(`  API avatars: ${apiUsers}`);
@@ -55,7 +58,7 @@ async function testGridFS() {
     const totalPosts = await Post.countDocuments();
     const gridfsPostsCount = await Post.countDocuments({ 'images.storageType': 'gridfs' });
     const localPostsCount = await Post.countDocuments({ 'images.storageType': 'local' });
-    
+
     console.log(`  Total posts: ${totalPosts}`);
     console.log(`  Posts with GridFS images: ${gridfsPostsCount}`);
     console.log(`  Posts with local images: ${localPostsCount}`);
@@ -67,7 +70,7 @@ async function testGridFS() {
         .find({})
         .limit(3)
         .toArray();
-      
+
       if (sampleFiles.length > 0) {
         console.log('Sample post images:');
         sampleFiles.forEach(f => {

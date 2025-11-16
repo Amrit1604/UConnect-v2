@@ -52,7 +52,7 @@ const storage = new GridFsStorage({
           return reject(err);
         }
         const filename = buf.toString('hex') + path.extname(file.originalname);
-        
+
         // Determine bucket based on file type
         let bucketName = 'uploads';
         if (file.fieldname === 'avatar') {
@@ -62,7 +62,7 @@ const storage = new GridFsStorage({
         } else if (file.fieldname === 'videos' || file.fieldname === 'video') {
           bucketName = 'videos';
         }
-        
+
         const fileInfo = {
           filename: filename,
           bucketName: bucketName,
@@ -138,6 +138,36 @@ const uploadPostMedia = multer({
   { name: 'videos', maxCount: 1 }
 ]);
 
+// Chat media upload (voice, images, videos, files)
+const uploadChatMedia = multer({
+  storage: storage,
+  limits: {
+    fileSize: 25 * 1024 * 1024 // 25MB max for chat files
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow images, videos, audio, and common file types
+    const allowedMimeTypes = [
+      'image/',
+      'video/',
+      'audio/',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument',
+      'text/plain',
+      'application/zip',
+      'application/x-rar'
+    ];
+
+    const isAllowed = allowedMimeTypes.some(type => file.mimetype.startsWith(type));
+    
+    if (isAllowed) {
+      cb(null, true);
+    } else {
+      cb(new Error('File type not allowed for chat'), false);
+    }
+  }
+}).single('file');
+
 /**
  * Delete a file from GridFS by ID
  * @param {string} fileId - The GridFS file ID
@@ -195,14 +225,14 @@ async function getFileInfo(fileId) {
     });
 
     const objectId = typeof fileId === 'string' ? new mongoose.Types.ObjectId(fileId) : fileId;
-    
+
     // Find the file in the uploads.files collection
     const files = await db.collection('uploads.files').find({ _id: objectId }).toArray();
-    
+
     if (files.length === 0) {
       throw new Error('File not found');
     }
-    
+
     return files[0];
   } catch (error) {
     console.error('❌ Error getting file info:', error);
@@ -257,6 +287,7 @@ module.exports = {
   uploadPostImages,
   uploadPostImage,
   uploadPostMedia,
+  uploadChatMedia,
   deleteFile,
   getFileStream,
   getFileInfo,

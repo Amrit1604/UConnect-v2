@@ -1,0 +1,58 @@
+<div class="chat-conversation" data-other-id="<%= otherUser._id %>">
+  <h2>Chat with <%= otherUser.username %> <span id="presenceBadge" class="presence-badge offline" style="font-size:0.8rem;margin-left:8px;color:var(--muted)">Offline</span></h2>
+
+  <div id="conversationMessages" style="max-height:60vh; overflow:auto; padding:8px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px">
+    <% if (messages && messages.length) { %>
+      <% messages.forEach(m => { %>
+        <div class="chat-message-item <%= (m.sender && m.sender._id && m.sender._id.toString() === user._id.toString()) ? 'me' : '' %>" data-msg-id="<%= m._id %>">
+          <div style="font-size:13px;color:var(--muted)">
+            <strong><%= m.sender && m.sender.username ? m.sender.username : (m.sender && m.sender._id && m.sender._id.toString()===user._id.toString() ? 'You' : '') %></strong>
+            <span style="margin-left:8px"><%= new Date(m.sentAt).toLocaleString() %></span>
+            <span class="read-receipt" style="float:right;color:var(--muted);font-size:11px"></span>
+          </div>
+          <div><%= m.content %></div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="chat-empty">No messages yet. Say hi!</div>
+    <% } %>
+  </div>
+
+  <div class="typing-indicator" id="typingIndicator"></div>
+
+  <div class="chat-input">
+    <form id="chatSendForm">
+      <input type="text" id="chatMessageInput" placeholder="Type a message..." style="width:70%;padding:8px;" autocomplete="off" />
+      <button type="submit" style="padding:8px 12px;">Send</button>
+    </form>
+  </div>
+
+  <script>
+    window.__USER_ID__ = '<%= user ? user._id : '' %>';
+    // Auto-join conversation and wire UI
+    (function(){
+      const otherId = '<%= otherUser._id %>';
+      if (window.chatJoinConversation) window.chatJoinConversation(otherId);
+
+      const form = document.getElementById('chatSendForm');
+      const input = document.getElementById('chatMessageInput');
+      const typingIndicator = document.getElementById('typingIndicator');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        try {
+          await window.chatSendMessage(otherId, text);
+          input.value = '';
+        } catch (err) {
+          alert('Failed to send');
+        }
+      });
+
+      input.addEventListener('input', ()=>{ window.chatTyping(otherId, true); });
+
+      // Typing indicator will be handled by global socket handler in chat.js
+    })();
+  </script>
+</div>

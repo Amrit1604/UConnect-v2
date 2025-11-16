@@ -8,6 +8,16 @@
     "dev": "nodemon app.js",
     "smoke:test": "node scripts/smokePostsTest.js",
     "test": "jest --coverage",
+    "test:quick": "jest tests/basic.sanity.test.js --runInBand",
+    "test:student": "jest tests/simple.studentChecks.test.js --runInBand",
+    "test:student:exists": "jest tests/student.exists.test.js --runInBand",
+    "test:student:password:presence": "jest tests/password.presence.test.js --runInBand",
+    "test:student:password:hash": "jest tests/password.hash.test.js --runInBand",
+    "test:student:username": "jest tests/username.format.test.js --runInBand",
+    "test:student:email": "jest tests/email.domain.test.js --runInBand",
+    "test:student:auth": "jest tests/auth.endpoints.test.js --runInBand",
+    "test:student:db": "jest tests/db.completeness.test.js --runInBand",
+    "test:student:all": "jest tests/student.exists.test.js tests/password.presence.test.js tests/password.hash.test.js tests/email.domain.test.js tests/username.format.test.js tests/auth.endpoints.test.js tests/db.completeness.test.js --runInBand",
     "lint": "eslint .",
     "seed": "node scripts/seedDatabase.js",
     "agent": "node scripts/agent.js"
@@ -23,6 +33,7 @@
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "chart.js": "^4.4.0",
     "compression": "^1.7.4",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^5.0.0",
@@ -46,11 +57,12 @@
     "sanitize-html": "^2.11.0",
     "sharp": "^0.34.3",
     "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "uuid": "^12.0.0"
   },
   "devDependencies": {
     "eslint": "^8.47.0",
-    "jest": "^29.6.2",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.1",
     "supertest": "^6.3.3"
   },

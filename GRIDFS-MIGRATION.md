@@ -4,7 +4,7 @@
 
 ### ✅ All uploads now stored in MongoDB GridFS (no local files)
 
-**Before:** Files stored in `public/uploads/avatars/` and `public/uploads/posts/`  
+**Before:** Files stored in `public/uploads/avatars/` and `public/uploads/posts/`
 **After:** All files stored in MongoDB Atlas using GridFS buckets
 
 ---
@@ -238,7 +238,7 @@ node scripts/testGridFS.js     # Verify GridFS setup
 ```
 Total users: 3
   - GridFS avatars: 0
-  - API avatars: 1  
+  - API avatars: 1
   - Local upload avatars: 2
 
 Total posts: 5

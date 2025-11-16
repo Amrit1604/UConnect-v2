@@ -31,11 +31,12 @@ const configureAppMiddleware = (app) => {
 
   // Static files
   app.use(require('express').static(path.join(__dirname, '../public')));
-  app.use('/uploads', require('express').static(path.join(__dirname, '../public/uploads')));
+  // Note: Local uploads are no longer served; files are streamed via /gridfs routes
 
   // Global middleware to pass user data to all views
   app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
+    res.locals.isAdminSession = req.session && req.session.isAdmin;
     res.locals.messages = {
       success: req.flash('success'),
       error: req.flash('error'),

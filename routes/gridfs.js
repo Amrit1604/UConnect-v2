@@ -15,7 +15,7 @@ const { getGridFSBucket } = require('../utils/gridfs');
 router.get('/file/:fileId', async (req, res) => {
   try {
     const fileId = req.params.fileId;
-    
+
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(fileId)) {
       return res.status(400).json({ error: 'Invalid file ID' });
@@ -37,7 +37,7 @@ router.get('/file/:fileId', async (req, res) => {
         break;
       }
     }
-    
+
     if (!file) {
       return res.status(404).json({ error: 'File not found' });
     }
@@ -51,9 +51,9 @@ router.get('/file/:fileId', async (req, res) => {
     const bucket = new mongoose.mongo.GridFSBucket(db, {
       bucketName: bucketName
     });
-    
+
     const downloadStream = bucket.openDownloadStream(objectId);
-    
+
     downloadStream.on('error', (error) => {
       console.error('❌ GridFS stream error:', error);
       if (!res.headersSent) {
@@ -88,7 +88,7 @@ router.get('/avatar/:fileId', async (req, res) => {
 router.get('/info/:fileId', async (req, res) => {
   try {
     const fileId = req.params.fileId;
-    
+
     if (!mongoose.Types.ObjectId.isValid(fileId)) {
       return res.status(400).json({ error: 'Invalid file ID' });
     }
@@ -96,7 +96,7 @@ router.get('/info/:fileId', async (req, res) => {
     const objectId = new mongoose.Types.ObjectId(fileId);
     const db = mongoose.connection.db;
     const files = await db.collection('uploads.files').find({ _id: objectId }).toArray();
-    
+
     if (files.length === 0) {
       return res.status(404).json({ error: 'File not found' });
     }

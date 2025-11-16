@@ -3,81 +3,131 @@
 // Designed to work with the existing server endpoints under /posts
 
 (function () {
-	'use strict';
+    'use strict';
 
-	// Helper: fetch wrapper that returns JSON or throws
-	async function requestJson(url, opts = {}) {
-		const defaultOpts = {
-			credentials: 'same-origin', // Include cookies for session
-			headers: {
-				'X-Requested-With': 'XMLHttpRequest' // Mark as AJAX request
-			}
-		};
+    // Helper: fetch wrapper that returns JSON or throws
+    async function requestJson(url, opts = {}) {
+        const defaultOpts = {
+            credentials: 'same-origin', // Include cookies for session
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest' // Mark as AJAX request
+            }
+        };
 
-		const finalOpts = { ...defaultOpts, ...opts };
-		if (opts.headers) {
-			finalOpts.headers = { ...defaultOpts.headers, ...opts.headers };
-		}
+        const finalOpts = { ...defaultOpts, ...opts };
+        if (opts.headers) {
+            finalOpts.headers = { ...defaultOpts.headers, ...opts.headers };
+        }
 
-		const res = await fetch(url, finalOpts);
-		if (!res.ok) {
-			let errorMessage = `Request failed: ${res.status} ${res.statusText}`;
-			try {
-				const errorData = await res.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch (e) {
-				// If not JSON, try text
-				try {
-					const errorText = await res.text();
-					if (errorText) errorMessage = errorText;
-				} catch (e2) {
-					// Keep default error message
-				}
-			}
-			const err = new Error(errorMessage);
-			err.status = res.status;
-			err.body = errorMessage;
-			throw err;
-		}
-		// Try JSON, fallback to text
-		const contentType = res.headers.get('content-type') || '';
-		if (contentType.includes('application/json')) return res.json();
-		return res.text();
-	}
+        const res = await fetch(url, finalOpts);
+        if (!res.ok) {
+            let errorMessage = `Request failed: ${res.status} ${res.statusText}`;
+            try {
+                const errorData = await res.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+                try {
+                    const errorText = await res.text();
+                    if (errorText) errorMessage = errorText;
+                } catch (e2) {}
+            }
+            const err = new Error(errorMessage);
+            err.status = res.status;
+            err.body = errorMessage;
+            throw err;
+        }
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) return res.json();
+        return res.text();
+    }
 
-	// Toggle Like: sends POST /posts/:id/like and updates UI
-	async function toggleLike(postId) {
-		try {
-			const btn = document.querySelector(`[data-post-id="${postId}"] .like-btn`);
-			// optimistic UI: toggle local state
-			if (btn) btn.classList.toggle('liked');
+    // Quick comment submit with loader (no reload)
+    async function addQuickComment(postId, inputEl) {
+        const content = (inputEl && inputEl.value ? inputEl.value.trim() : '');
+        if (!content) return;
+        const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+        if (!postEl) return;
 
-			const data = await requestJson(`/posts/${postId}/like`, { method: 'POST' });
+        // Ensure there is a container to render comments into
+        let list = postEl.querySelector('.quick-comments-list');
+        if (!list) {
+            const section = postEl.querySelector('.quick-comment-section');
+            if (section) {
+                list = document.createElement('div');
+                list.className = 'quick-comments-list';
+                section.appendChild(list);
+            }
+        }
 
-			// update counts & classes
-			const postEl = document.querySelector(`[data-post-id="${postId}"]`);
-			if (postEl) {
-				const likeCount = postEl.querySelector('.like-count') || postEl.querySelector('.action-btn .count');
-				if (likeCount) likeCount.textContent = data.likeCount || data.likes || 0;
+        // Optimistic UI: clear input and show a tiny loader row
+        if (inputEl) inputEl.value = '';
+        let loaderRow = null;
+        if (list) {
+            loaderRow = document.createElement('div');
+            loaderRow.className = 'quick-comment-item';
+            loaderRow.innerHTML = '<div class="spinner" style="width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+            list.prepend(loaderRow);
+        }
+        try {
+            const data = await requestJson(`/posts/${postId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+            // Do NOT bump comment count here; Socket.IO 'new-comment' handler will update
+            // Replace loader with actual comment
+            if (list && data && data.comment) {
+                const c = data.comment;
+                const avatar = (c.author && c.author.avatarUrl) ? c.author.avatarUrl : '/images/default-avatar.png';
+                const row = document.createElement('div');
+                row.className = 'quick-comment-item new-comment';
+                row.innerHTML = `
+                    <a href="/users/${c.author.username}" class="author-link-neo" data-username="${c.author.username}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
+                        <img src="${avatar}" alt="${c.author.username}" class="quick-comment-avatar" onerror="this.src='/images/default-avatar.png'">
+                    </a>
+                    <div class="quick-comment-content">
+                        <a href="/users/${c.author.username}" class="author-link-neo" data-username="${c.author.username}" style="font-weight:600;color:inherit;text-decoration:none;">@${c.author.username}</a>
+                        <p></p>
+                    </div>`;
+                const p = row.querySelector('p');
+                if (p) p.textContent = c.content || '';
+                if (loaderRow && loaderRow.parentNode) loaderRow.replaceWith(row); else list.prepend(row);
+            }
+        } catch (err) {
+            if (loaderRow && loaderRow.parentNode) loaderRow.remove();
+            console.error('Quick comment error', err);
+            alert(err.body || 'Failed to add comment');
+        }
+    }
 
-				const likeBtn = postEl.querySelector('.like-btn');
-				if (likeBtn) {
-					likeBtn.classList.toggle('liked', data.isLiked);
-					const icon = likeBtn.querySelector('i');
-					if (icon) {
-						icon.classList.toggle('fas', data.isLiked);
-						icon.classList.toggle('far', !data.isLiked);
-					}
-				}
-			}
-		} catch (err) {
-			console.error('Like error', err);
-			// revert optimistic UI
-			const btn = document.querySelector(`[data-post-id="${postId}"] .like-btn`);
-			if (btn) btn.classList.toggle('liked');
-			alert('Failed to update like. Please try again.');
-		}
-	}
+    // Toggle Like: sends POST /posts/:id/like and updates UI deterministically
+    async function toggleLike(postId) {
+        try {
+            const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+            if (!postEl) return;
+            const likeBtn = postEl.querySelector('.like-btn');
+            if (likeBtn) {
+                if (likeBtn.dataset.busy === '1') return; // prevent double-taps
+                likeBtn.dataset.busy = '1';
+            }
+
+            const data = await requestJson(`/posts/${postId}/like`, { method: 'POST' });
+            const countSpan = postEl.querySelector('.action-count');
+            if (countSpan && typeof data.likesCount === 'number') {
+                countSpan.textContent = data.likesCount;
+            }
+            if (likeBtn) {
+                likeBtn.classList.toggle('liked', !!data.isLiked);
+                likeBtn.dataset.busy = '0';
+            }
+        } catch (err) {
+            console.error('Like error', err);
+            alert('Failed to update like. Please try again.');
+            const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+            const likeBtn = postEl ? postEl.querySelector('.like-btn') : null;
+            if (likeBtn) likeBtn.dataset.busy = '0';
+        }
+    }
 
 	// Add comment: POST /posts/:id/comment
 	async function addComment(postId, textarea) {
@@ -262,29 +312,32 @@
 			}
 		});
 
-		// Attach comment form submissions
-		document.querySelectorAll('.comment-form').forEach(form => {
-			form.addEventListener('submit', function (ev) {
-				ev.preventDefault();
-				const postId = this.dataset.postId;
-				const textarea = this.querySelector('.comment-input');
-				console.log('Form submitted for postId:', postId, 'textarea found:', !!textarea);
-				if (postId && textarea) {
-					addComment(postId, textarea);
-				} else {
-					console.error('Missing postId or textarea:', { postId, textarea });
-				}
-			});
+		// Delegate classic comment form submissions (no duplicates)
+		document.body.addEventListener('submit', function (ev) {
+			const form = ev.target.closest('.comment-form');
+			if (!form) return;
+			ev.preventDefault();
+			const postId = form.dataset.postId;
+			const textarea = form.querySelector('.comment-input');
+			if (postId && textarea) addComment(postId, textarea);
 		});
 
-		// Character counters for comment inputs
+		// Delegate quick comment submissions
+		document.body.addEventListener('submit', function (ev) {
+			const qForm = ev.target.closest('.quick-comment-form');
+			if (!qForm) return;
+			ev.preventDefault();
+			const postId = qForm.dataset.postId;
+			const input = qForm.querySelector('.quick-comment-input');
+			if (postId && input) addQuickComment(postId, input);
+		});
+
+		// Character counters for classic comment inputs
 		document.querySelectorAll('.comment-input').forEach(inp => {
 			const postEl = inp.closest('[data-post-id]');
 			const counter = postEl ? postEl.querySelector(`#comment-char-${postEl.dataset.postId}`) : null;
 			if (!counter) return;
-			inp.addEventListener('input', () => {
-				counter.textContent = inp.value.length;
-			});
+			inp.addEventListener('input', () => { counter.textContent = inp.value.length; });
 		});
 	});
 

@@ -1,5 +1,6 @@
 const http = require('http');
 const socketIo = require('socket.io');
+const { initializeChatHandlers } = require('../sockets/chatHandlers');
 
 /**
  * Server and Socket.IO Configuration
@@ -13,6 +14,9 @@ const configureServer = (app) => {
       methods: ["GET", "POST"]
     }
   });
+
+  // Initialize chat handlers for real-time messaging
+  initializeChatHandlers(io);
 
   // Socket.IO event handlers
   io.on('connection', (socket) => {

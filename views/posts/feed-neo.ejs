@@ -67,6 +67,14 @@
                     ✨ CREATE POST
                 </a>
             </div>
+
+            <!-- Who to Follow -->
+            <div class="trending-card-neo" id="whoToFollow" style="margin-top:16px;">
+              <h3 class="card-title-neo">👥 WHO TO FOLLOW</h3>
+              <div id="followSuggestions" class="trending-list-neo">
+                <p class="trending-empty">Loading...</p>
+              </div>
+            </div>
         </aside>
 
         <!-- Main Feed -->
@@ -106,28 +114,24 @@
                         <article class="post-card-neo" data-post-id="<%= post._id %>">
                             <!-- Post Header -->
                             <header class="post-header-neo">
-                                <div class="post-author-neo">
+                                <a href="/users/<%= post.author.username %>" class="post-author-neo" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;">
                                     <%
-                                    let postAuthorAvatar = '/images/default-avatar.png';
-                                    if (post.author.avatarType === 'upload' && post.author.avatar) {
-                                        postAuthorAvatar = '/uploads/avatars/' + post.author.avatar;
-                                    } else if (post.author.avatarUrl) {
-                                        postAuthorAvatar = post.author.avatarUrl;
-                                    } else if (post.author.avatarSeed) {
-                                        postAuthorAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + post.author.avatarSeed;
-                                    }
+                                    let postAuthorAvatar = post.author.avatarUrl || (post.author.avatarSeed ? ('https://api.dicebear.com/9.x/adventurer/svg?seed=' + post.author.avatarSeed) : '/images/default-avatar.png');
+                                    const authorCacheKey = post.author.updatedAt ? new Date(post.author.updatedAt).getTime() : '';
                                     %>
-                                    <img src="<%= postAuthorAvatar %>"
-                                         alt="<%= post.author.username %>"
-                                         class="author-avatar-neo"
-                                         onerror="this.src='/images/default-avatar.png'">
+                                    <span class="author-link-neo" data-username="<%= post.author.username %>" title="View @<%= post.author.username %>'s profile">
+                                      <img src="<%= postAuthorAvatar %><%= authorCacheKey ? ('?v=' + authorCacheKey) : '' %>"
+                                           alt="<%= post.author.username %>"
+                                           class="author-avatar-neo"
+                                           onerror="this.src='/images/default-avatar.png'">
+                                    </span>
                                     <div class="author-info-neo">
-                                        <span class="author-name-neo"><%= post.author.username %></span>
+                                        <a href="/users/<%= post.author.username %>" class="author-name-neo author-link-neo" data-username="<%= post.author.username %>">@<%= post.author.username %></a>
                                         <span class="post-time-neo">
                                             <%= new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
                                         </span>
                                     </div>
-                                </div>
+                                </a>
                                 <% if (post.category) { %>
                                     <span class="post-category-badge-neo"><%= post.category.toUpperCase() %></span>
                                 <% } %>
@@ -252,11 +256,13 @@
                                         <% post.comments.slice(0, 2).forEach(comment => { %>
                                             <% if (comment && comment.author) { %>
                                                 <div class="quick-comment-item">
-                                                    <img src="<%= comment.author.avatarUrl || '/images/default-avatar.png' %>"
-                                                         alt="<%= comment.author.username %>"
-                                                         class="quick-comment-avatar">
+                                                    <a href="/users/<%= comment.author.username %>" class="author-link-neo" data-username="<%= comment.author.username %>" title="View @<%= comment.author.username %>" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
+                                                      <img src="<%= (comment.author.avatarUrl || (comment.author.avatarSeed ? ('https://api.dicebear.com/9.x/adventurer/svg?seed=' + comment.author.avatarSeed) : '/images/default-avatar.png')) %><%= comment.author.updatedAt ? ('?v=' + new Date(comment.author.updatedAt).getTime()) : '' %>"
+                                                           alt="<%= comment.author.username %>"
+                                                           class="quick-comment-avatar">
+                                                    </a>
                                                     <div class="quick-comment-content">
-                                                        <strong><%= comment.author.username %></strong>
+                                                        <a href="/users/<%= comment.author.username %>" class="author-link-neo" data-username="<%= comment.author.username %>" style="font-weight:600;color:inherit;text-decoration:none;">@<%= comment.author.username %></a>
                                                         <p><%= comment.content %></p>
                                                     </div>
                                                 </div>
@@ -316,6 +322,8 @@
                 </div>
             </div>
 
+            
+
             <!-- Quick Links -->
             <div class="links-card-neo">
                 <h3 class="card-title-neo">⚡ QUICK LINKS</h3>
@@ -348,29 +356,7 @@
 <!-- Inline JavaScript for Quick Interactions -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Like button functionality
-    document.querySelectorAll('.like-btn').forEach(btn => {
-        btn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const postId = this.dataset.postId;
-            const countSpan = this.querySelector('.action-count');
-
-            try {
-                const response = await fetch(`/posts/${postId}/like`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    this.classList.toggle('liked');
-                    countSpan.textContent = data.likesCount || 0;
-                }
-            } catch (error) {
-                console.error('Like error:', error);
-            }
-        });
-    });
+    // Like button handled by public/js/posts.js (delegated). Removing inline handler to avoid double POSTs.
 
     // Comment toggle
     document.querySelectorAll('.comment-btn').forEach(btn => {
@@ -386,32 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Quick comment submit
-    document.querySelectorAll('.quick-comment-form').forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const postId = this.dataset.postId;
-            const input = this.querySelector('.quick-comment-input');
-            const content = input.value.trim();
-
-            if (!content) return;
-
-            try {
-                const response = await fetch(`/posts/${postId}/comments`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content })
-                });
-
-                if (response.ok) {
-                    input.value = '';
-                    location.reload(); // Simple reload for now
-                }
-            } catch (error) {
-                console.error('Comment error:', error);
-            }
-        });
-    });
+    // Quick comment submit handled by public/js/posts.js (delegated). Removing inline reload-based handler.
 
     // Share button functionality
     document.querySelectorAll('.share-btn').forEach(btn => {
@@ -511,6 +472,134 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Overlay listener added');
     }
 });
+</script>
+
+<!-- Suggestions and Hover Card Scripts -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fetch follow suggestions
+    (async function loadSuggestions(){
+      try {
+        const res = await fetch('/users/suggestions');
+        const data = await res.json();
+        const box = document.getElementById('followSuggestions');
+        if (!box) return;
+        if (!data.success || !data.results || data.results.length === 0) {
+          box.innerHTML = '<p class="trending-empty">No suggestions right now</p>';
+          return;
+        }
+        box.innerHTML = data.results.map(u => {
+          const avatar = (u.avatarUrl || '/images/default-avatar.png') + '?v=' + Date.now();
+          return `
+            <div class="suggestion-item" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+              <a href="/users/${u.username}" class="author-link-neo" data-username="${u.username}" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
+                <img src="${avatar}" alt="@${u.username}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.src='/images/default-avatar.png'">
+                <div style="display:flex;flex-direction:column;line-height:1.1;">
+                  <strong>@${u.username}</strong>
+                  <span style="font-size:12px;opacity:0.7;">${u.name || ''}</span>
+                </div>
+              </a>
+              <button class="follow-suggest-btn" data-user-id="${u.id}" style="padding:6px 10px;border-radius:10px;background:#ff3366;border:none;color:#fff;font-weight:700;">+ FOLLOW</button>
+            </div>`
+        }).join('');
+      } catch (e) {
+        const box = document.getElementById('followSuggestions');
+        if (box) box.innerHTML = '<p class="trending-empty">Failed to load suggestions</p>';
+      }
+    })();
+
+    // Follow button in suggestions
+    document.getElementById('quickLinksPanel')?.addEventListener('click', async function(e){
+      const btn = e.target.closest('.follow-suggest-btn');
+      if (!btn) return;
+      const id = btn.getAttribute('data-user-id');
+      try {
+        const action = btn.textContent.includes('FOLLOWING') ? 'unfollow' : 'follow';
+        const res = await fetch(`/users/${id}/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
+        btn.textContent = data.following ? '✓ FOLLOWING' : '+ FOLLOW';
+      } catch (err) {
+        alert(err.message || 'Failed to update follow');
+      }
+    });
+
+    // Hover mini card
+    const tooltip = document.createElement('div');
+    tooltip.id = 'userHoverCard';
+    tooltip.style.cssText = 'position:fixed;display:none;background:rgba(10,10,10,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;z-index:10000;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,0.4)';
+    document.body.appendChild(tooltip);
+
+    let hoverTimer = null;
+    let hideTimer = null;
+
+    function positionTooltip(x, y) {
+      const margin = 12;
+      const width = tooltip.offsetWidth;
+      const height = tooltip.offsetHeight;
+      let left = x + margin;
+      let top = y + margin;
+      if (left + width > window.innerWidth) left = x - width - margin;
+      if (top + height > window.innerHeight) top = y - height - margin;
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = top + 'px';
+    }
+
+    async function showCard(el, evt) {
+      const username = el.getAttribute('data-username');
+      if (!username) return;
+      positionTooltip(evt.clientX, evt.clientY);
+      tooltip.style.display = 'block';
+      tooltip.innerHTML = '<div style="color:rgba(255,255,255,0.6);">Loading...</div>';
+      try {
+        const res = await fetch(`/users/${encodeURIComponent(username)}/card`);
+        const data = await res.json();
+        if (!data.success) throw new Error('Not found');
+        const u = data.user;
+        const avatar = (u.avatarUrl || '/images/default-avatar.png') + '?v=' + Date.now();
+        tooltip.innerHTML = `
+          <div style="display:flex;gap:10px;align-items:center;">
+            <img src="${avatar}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;" onerror="this.src='/images/default-avatar.png'">
+            <div style="display:flex;flex-direction:column;">
+              <strong>@${u.username}</strong>
+              <span style="font-size:12px;opacity:0.7;">${u.name || ''}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;opacity:0.8;">
+            <span>Followers: ${u.stats?.followersCount || 0}</span>
+            <span>Following: ${u.stats?.followingCount || 0}</span>
+          </div>
+          <div style="margin-top:10px;">
+            <a href="/users/${u.username}" class="profile-action-btn-neo" style="padding:6px 10px;">View Profile →</a>
+          </div>`;
+      } catch (e) {
+        tooltip.innerHTML = '<div style="color:rgba(255,255,255,0.6);">Failed to load</div>';
+      }
+    }
+
+    function hideCardSoon() {
+      hideTimer && clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => { tooltip.style.display = 'none'; }, 150);
+    }
+
+    document.body.addEventListener('mouseover', function(e){
+      const link = e.target.closest('.author-link-neo');
+      if (!link) return;
+      hoverTimer && clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => showCard(link, e), 300);
+    });
+    document.body.addEventListener('mousemove', function(e){
+      if (tooltip.style.display === 'block') positionTooltip(e.clientX, e.clientY);
+    });
+    document.body.addEventListener('mouseout', function(e){
+      const link = e.target.closest('.author-link-neo');
+      if (!link) return;
+      hoverTimer && clearTimeout(hoverTimer);
+      hideCardSoon();
+    });
+    tooltip.addEventListener('mouseenter', () => { hideTimer && clearTimeout(hideTimer); });
+    tooltip.addEventListener('mouseleave', hideCardSoon);
+  });
 </script>
 
 <footer class="footer-neo">

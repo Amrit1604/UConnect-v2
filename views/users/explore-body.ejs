@@ -1,0 +1,81 @@
+<!-- Explore Users (Neo) -->
+<div class="explore-page">
+  <div class="parallax-bg">
+    <div class="parallax-layer layer-1"></div>
+    <div class="parallax-layer layer-2"></div>
+    <div class="blob-container">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+  </div>
+
+  <main class="profile-layout-neo" style="padding-top: 40px;">
+    <div class="profile-header-neo" style="margin-bottom: 16px;">
+      <h1 class="profile-name-large-neo">✨ Explore Users</h1>
+      <p class="profile-username-large-neo">Discover students from <strong><%= user.campus %></strong></p>
+    </div>
+
+    <!-- Sort Tabs -->
+    <div class="categories-bar-neo" style="margin-bottom:16px;">
+      <% const currentSort = (typeof exploreSort !== 'undefined' ? exploreSort : 'popular'); %>
+      <a href="/users/explore?sort=popular" class="category-chip-neo <%= currentSort==='popular'?'active':'' %>">🔥 POPULAR</a>
+      <a href="/users/explore?sort=new" class="category-chip-neo <%= currentSort==='new'?'active':'' %>">🆕 NEW</a>
+      <a href="/users/explore?sort=suggested" class="category-chip-neo <%= currentSort==='suggested'?'active':'' %>">🎯 SUGGESTED</a>
+    </div>
+
+    <div class="posts-grid-neo" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
+      <% if (users && users.length) { %>
+        <% users.forEach(u => { %>
+          <div class="post-card-neo" style="padding:16px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+            <% const avatar = (u.avatarUrl || '/images/default-avatar.png') + (u.updatedAt ? ('?v=' + new Date(u.updatedAt).getTime()) : ''); %>
+            <a href="/users/<%= u.username %>" style="text-decoration:none;">
+              <img src="<%= avatar %>" alt="@<%= u.username %>" class="author-avatar-neo" style="width:88px;height:88px;border-radius:50%;object-fit:cover;" onerror="this.src='/images/default-avatar.png'">
+            </a>
+            <div style="margin-top:10px;">
+              <a href="/users/<%= u.username %>" class="author-name-neo" style="text-decoration:none;">@<%= u.username %></a>
+              <div class="profile-username-large-neo" style="opacity:0.8;"><%= u.name %></div>
+            </div>
+            <button class="profile-action-btn-neo primary follow-inline-btn" data-user-id="<%= u._id %>" style="margin-top:12px;">+ FOLLOW</button>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="profile-empty-state-neo" style="grid-column:1/-1;">
+          <div class="empty-icon-large-neo">🔍</div>
+          <h3 class="empty-title-large-neo">No suggestions</h3>
+          <p class="empty-text-large-neo">Try searching users from the navbar.</p>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Pagination -->
+    <% if (typeof page !== 'undefined') { %>
+      <div class="load-more-container" style="margin-top:16px;">
+        <% if (page > 1) { %>
+          <a class="load-more-btn-neo" href="/users/explore?sort=<%= currentSort %>&page=<%= page - 1 %>">← PREV</a>
+        <% } %>
+        <% if (hasNextPage) { %>
+          <a class="load-more-btn-neo" href="/users/explore?sort=<%= currentSort %>&page=<%= page + 1 %>" style="margin-left:8px;">NEXT →</a>
+        <% } %>
+      </div>
+    <% } %>
+  </main>
+</div>
+
+<script>
+  // Follow from Explore grid
+  document.addEventListener('click', async function(e){
+    const btn = e.target.closest('.follow-inline-btn');
+    if (!btn) return;
+    const id = btn.getAttribute('data-user-id');
+    try {
+      const action = btn.textContent.includes('FOLLOWING') ? 'unfollow' : 'follow';
+      const res = await fetch(`/users/${id}/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }});
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
+      btn.textContent = data.following ? '✓ FOLLOWING' : '+ FOLLOW';
+    } catch (err) {
+      alert(err.message || 'Failed to update follow');
+    }
+  });
+</script>

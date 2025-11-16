@@ -4,6 +4,7 @@
  */
 
 const express = require('express');
+const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const Post = require('../models/Post');
 const User = require('../models/User');
@@ -82,11 +83,20 @@ router.get('/', requireAuth, async (req, res) => {
       posts = await Post.getRecent(req.user.campus, limit, skip);
     }
 
-    // �️ Filter out posts with missing authors to prevent errors
+    // Ensure authors have the fields required by avatarUrl virtual
+    await Post.populate(posts, [
+      { path: 'author', select: 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt' },
+      { path: 'comments.author', select: 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt' }
+    ]);
+
+    // Filter out posts with missing authors to prevent errors
     posts = posts.filter(post => post.author && post.author._id);
     console.log(`📊 Filtered posts: ${posts.length} posts with valid authors`);
 
-    // �📊 Get category statistics
+    // Convert to plain objects with virtuals so templates get avatarUrl reliably
+    posts = posts.map(p => p.toObject({ virtuals: true }));
+
+    // 📊 Get category statistics
     const categoryStats = await Post.getCategoryStats(req.user.campus);
     const categoryStatsObj = {};
     categoryStats.forEach(stat => {
@@ -471,67 +481,56 @@ router.post('/:id/like',
   logActivity('like/unlike post'),
   async (req, res) => {
     try {
-      const post = await Post.findById(req.params.id);
-
-      if (!post || !post.isActive) {
+      const postId = req.params.id;
+      const userId = req.user._id;
+      const base = await Post.findById(postId).select('campus author isActive');
+      if (!base || !base.isActive) {
         return res.status(404).json({ success: false, message: 'Post not found' });
       }
-
-      // Check campus access
-      if (post.campus !== req.user.campus) {
+      if (base.campus !== req.user.campus) {
         return res.status(403).json({ success: false, message: 'Access denied' });
       }
 
-      let liked;
-      if (post.isLikedBy(req.user._id)) {
-        post.removeLike(req.user._id);
-        liked = false;
-      } else {
-        post.addLike(req.user._id);
-        liked = true;
+      // 1) Try UNLIKE: remove if exists
+      const unliked = await Post.updateOne(
+        { _id: postId, 'likes.user': userId },
+        { $pull: { likes: { user: userId } } }
+      );
 
-        // Update author's like count
-        if (post.author.toString() !== req.user._id.toString()) {
-          await User.findByIdAndUpdate(post.author, {
-            $inc: { 'stats.likesReceived': 1 }
-          });
-        }
+      let likedNow = false;
+
+      // 2) If not removed, LIKE once
+      if (!unliked.modifiedCount) {
+        const liked = await Post.updateOne(
+          { _id: postId, 'likes.user': { $ne: userId } },
+          { $push: { likes: { user: userId, createdAt: new Date() } } }
+        );
+        likedNow = !!liked.modifiedCount;
       }
 
-      await post.save();
+      // Re-read count
+      const updatedDoc = await Post.findById(postId).select('likes');
+      const likesCount = updatedDoc?.likes?.length || 0;
 
-      // 🚀 REAL-TIME SOCKET.IO BROADCAST
+      // Optional stat bump only when liked
+      if (likedNow && base.author.toString() !== userId.toString()) {
+        await User.findByIdAndUpdate(base.author, { $inc: { 'stats.likesReceived': 1 } });
+      }
+
       const io = req.app.get('io');
       if (io) {
-        io.to(post.campus).emit('post-liked', {
-          postId: post._id,
-          likes: post.likeCount,
-          isLiked: liked,
+        io.emit('post-liked', {
+          postId,
+          likes: likesCount,
+          isLiked: likedNow,
           likedBy: req.user.username
         });
-        console.log(`⚡ Real-time broadcast: Post ${liked ? 'liked' : 'unliked'} by ${req.user.username}`);
       }
 
-      // Return JSON for AJAX requests
-      if (req.xhr || req.headers.accept?.includes('application/json')) {
-        return res.json({
-          success: true,
-          liked,
-          likesCount: post.likeCount,
-          likes: post.likes,
-          isLiked: liked
-        });
-      }
-
-      res.redirect('back');
-
+      return res.json({ success: true, liked: likedNow, likesCount, isLiked: likedNow });
     } catch (error) {
       console.error('Like error:', error);
-      if (req.xhr || req.headers.accept?.includes('application/json')) {
-        return res.status(500).json({ success: false, message: 'Failed to update like' });
-      }
-      req.flash('error', 'Failed to update like');
-      res.redirect('back');
+      return res.status(500).json({ success: false, message: 'Failed to update like' });
     }
   }
 );
@@ -572,16 +571,16 @@ router.post('/:id/comment',
         $inc: { 'stats.commentsCount': 1 }
       });
 
-      // Get the newly added comment with populated author
+      // Get the newly added comment with populated author including avatar fields for avatarUrl virtual
       const populatedPost = await Post.findById(post._id)
-        .populate('comments.author', 'username avatar avatarType avatarSeed');
+        .populate('comments.author', 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt');
 
       const newComment = populatedPost.comments[populatedPost.comments.length - 1];
 
       // 🚀 REAL-TIME SOCKET.IO BROADCAST FOR NEW COMMENT
       const io = req.app.get('io');
       if (io) {
-        io.to(post.campus).emit('new-comment', {
+        io.emit('new-comment', {
           postId: post._id,
           comment: {
             _id: newComment._id,
@@ -667,7 +666,7 @@ router.post('/:id/comments',
       post.comments.push(newComment);
       await post.save();
 
-      await post.populate('comments.author', 'username avatarUrl avatarSeed');
+      await post.populate('comments.author', 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt');
       const addedComment = post.comments[post.comments.length - 1];
 
       // Real-time broadcast
