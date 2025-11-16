@@ -264,6 +264,85 @@
 .quick-actions-card-neo {
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.15);
+
+/* Suggestions (Who to Follow) */
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* keep content grouped left, push button with auto margin */
+    gap: 12px;
+    padding: 8px 12px; /* add right padding so button sits a bit inward from edge */
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+.suggestion-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+.suggestion-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.06);
+}
+.suggestion-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+.suggestion-info strong {
+    color: var(--white);
+    font-weight: 800;
+    font-size: 13px;
+}
+.suggestion-name {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+}
+.follow-suggest-btn {
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: var(--red);
+    border: 2px solid var(--red);
+    color: var(--white);
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    margin-left: auto; /* push button to right edge of the item */
+}
+.follow-suggest-btn:hover {
+    background: var(--white);
+    color: var(--red);
+    transform: translateY(-2px);
+}
+
+.follow-suggest-btn.following {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255,255,255,0.08);
+    font-weight: 700;
+}
+
+/* Hover card (user mini card) styling override */
+#userHoverCard {
+    position: fixed;
+    display: none;
+    background: rgba(10,10,10,0.98);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 10000;
+    min-width: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    color: var(--white);
+}
+
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;

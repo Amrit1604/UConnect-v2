@@ -1,16 +1,28 @@
-<div class="chat-conversation" data-other-id="<%= otherUser._id %>">
-  <h2>Chat with <%= otherUser.username %> <span id="presenceBadge" class="presence-badge offline" style="font-size:0.8rem;margin-left:8px;color:var(--muted)">Offline</span></h2>
+<link rel="stylesheet" href="/css/chat-neo.css">
+<div class="chat-window chat-conversation" data-other-id="<%= otherUser._id %>">
+  <div class="chat-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="presence-dot" id="presenceDot"></div>
+      <div class="title">Chat with <%= otherUser.username %></div>
+    </div>
+    <div style="margin-left:auto">
+      <span id="presenceBadge" class="presence-badge offline">Offline</span>
+    </div>
+  </div>
 
-  <div id="conversationMessages" style="max-height:60vh; overflow:auto; padding:8px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px">
+  <div id="conversationMessages" class="chat-messages" role="log" aria-live="polite">
     <% if (messages && messages.length) { %>
       <% messages.forEach(m => { %>
-        <div class="chat-message-item <%= (m.sender && m.sender._id && m.sender._id.toString() === user._id.toString()) ? 'me' : '' %>" data-msg-id="<%= m._id %>">
-          <div style="font-size:13px;color:var(--muted)">
-            <strong><%= m.sender && m.sender.username ? m.sender.username : (m.sender && m.sender._id && m.sender._id.toString()===user._id.toString() ? 'You' : '') %></strong>
-            <span style="margin-left:8px"><%= new Date(m.sentAt).toLocaleString() %></span>
-            <span class="read-receipt" style="float:right;color:var(--muted);font-size:11px"></span>
+        <% const isMe = (m.sender && m.sender._id && m.sender._id.toString() === user._id.toString()); %>
+        <div class="msg <%= isMe ? 'msg--sent' : 'msg--received' %>" data-msg-id="<%= m._id %>">
+          <div class="bubble">
+            <div class="bubble-meta">
+              <span class="bubble-username"><%= m.sender && m.sender.username ? (isMe ? 'You' : m.sender.username) : '' %></span>
+              <span class="bubble-time"><%= new Date(m.sentAt).toLocaleString() %></span>
+              <span class="read-receipt" style="float:right;"></span>
+            </div>
+            <div class="bubble-content"><%= m.content %></div>
           </div>
-          <div><%= m.content %></div>
         </div>
       <% }) %>
     <% } else { %>
@@ -18,12 +30,18 @@
     <% } %>
   </div>
 
-  <div class="typing-indicator" id="typingIndicator"></div>
+  <div class="chat-typing" id="typingIndicator" aria-hidden="true">
+    <div class="typing-indicator" aria-hidden="true">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
 
   <div class="chat-input">
     <form id="chatSendForm">
-      <input type="text" id="chatMessageInput" placeholder="Type a message..." style="width:70%;padding:8px;" autocomplete="off" />
-      <button type="submit" style="padding:8px 12px;">Send</button>
+      <input type="text" id="chatMessageInput" class="chat-text-input" placeholder="Type a message..." autocomplete="off" aria-label="Message input" />
+      <button type="submit" class="send-btn">Send</button>
     </form>
   </div>
 
@@ -53,6 +71,10 @@
       input.addEventListener('input', ()=>{ window.chatTyping(otherId, true); });
 
       // Typing indicator will be handled by global socket handler in chat.js
+      // Scroll to bottom on load and focus input
+      const msgs = document.getElementById('conversationMessages');
+      if (msgs) { msgs.scrollTop = msgs.scrollHeight; }
+      input.focus();
     })();
   </script>
 </div>

@@ -35,9 +35,9 @@
     <% } %>
 </head>
 <body class="<%= (typeof bodyClass !== 'undefined' ? bodyClass : '') + (isAdminSession ? ' admin-mode' : '') %>">
-    <!-- Navigation (hide in admin mode) -->
-    <% if (!isAdminSession) { %>
-    <nav class="navbar-neo">
+    <!-- Navigation (render for logged-in users; admin pages may still have a compact nav) -->
+    <% if (user) { %>
+    <nav class="navbar-neo <%= isAdminSession ? 'admin-mode-nav' : '' %>">
         <div class="nav-container-neo">
             <!-- Left: Logo -->
             <div class="nav-brand-neo">
@@ -56,17 +56,30 @@
                     <a href="/users/explore" class="nav-link-neo <%= currentPath === '/users/explore' ? 'active' : '' %>">EXPLORE</a>
                     <!-- User Search -->
                     <div class="nav-search-neo" style="position: relative; margin-left: 16px;">
-                        <input type="text" id="userSearchInput" placeholder="Search users" aria-label="Search users" class="nav-search-input" style="padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.3);color:#fff;min-width:220px;">
+                        <input type="text" id="userSearchInput" placeholder="Search users" aria-label="Search users" class="nav-search-input" style="padding:8px 12px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.3);color:var(--white);min-width:220px;">
                         <div id="userSearchResults" class="nav-search-results" style="position:absolute;top:42px;left:0;right:0;background:rgba(10,10,10,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;display:none;z-index:1000;"></div>
                     </div>
                 </div>
 
                 <!-- Right: Action Buttons -->
                 <div class="nav-actions-neo">
+                    <!-- External apps dropdown (compact to avoid crowding) -->
+                    <div class="nav-external-cta">
+                      <button class="nav-external-toggle" aria-expanded="false" title="External apps">🌐</button>
+                      <div class="nav-external-menu" aria-hidden="true">
+                        <a href="https://key-vora.vercel.app/" class="nav-external-link" target="_blank" rel="noopener noreferrer">KeyVora</a>
+                        <a href="https://recrutix-v1.onrender.com/" class="nav-external-link" target="_blank" rel="noopener noreferrer">Recrutix</a>
+                        <a href="https://amrit1604.github.io/THE-NINE-TAILS-KITCHEN/" class="nav-external-link" target="_blank" rel="noopener noreferrer">Hungry ?</a>
+                      </div>
+                    </div>
                     <!-- Notifications bell -->
                     <a href="/notifications" class="nav-link-neo" style="position:relative;margin-right:8px" id="navNotificationsLink">
-                      🔔 <span id="navNotificationsCount" style="background:#ff4d4f;color:#fff;border-radius:999px;padding:2px 6px;font-size:12px;margin-left:6px;display:none">0</span>
+                      🔔 <span id="navNotificationsCount" style="background:var(--red);color:var(--white);border-radius:999px;padding:2px 6px;font-size:12px;margin-left:6px;display:none">0</span>
                     </a>
+                    <!-- Popup container will be injected by /js/notifications.js -->
+
+                    <!-- Chat toggle (open friends/inbox sidebar) -->
+                    <a href="#" class="nav-link-neo" id="navChatToggle" style="margin-right:6px">💬</a>
                     <!-- Theme Toggle Button -->
                     <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
                         <span class="theme-icon moon">🌙</span>
@@ -102,7 +115,16 @@
 
                 <!-- Right: Action Buttons (Guest) -->
                 <div class="nav-actions-neo">
-                    <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
+                    <!-- External apps dropdown (guest) -->
+                    <div class="nav-external-cta">
+                      <button class="nav-external-toggle" aria-expanded="false" title="External apps">🌐</button>
+                      <div class="nav-external-menu" aria-hidden="true">
+                        <a href="https://key-vora.vercel.app/" class="nav-external-link" target="_blank" rel="noopener noreferrer">KeyVora</a>
+                        <a href="https://recrutix-v1.onrender.com/" class="nav-external-link" target="_blank" rel="noopener noreferrer">Recrutix</a>
+                        <a href="https://amrit1604.github.io/THE-NINE-TAILS-KITCHEN/" class="nav-external-link" target="_blank" rel="noopener noreferrer">Hungry ?</a>
+                      </div>
+                    </div>
+                  <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
                         <span class="theme-icon moon">🌙</span>
                         <span class="theme-icon sun">☀️</span>
                     </button>
@@ -183,6 +205,8 @@
     <script src="/js/main.js"></script>
     <script src="/js/landing-neo.js"></script>
     <script src="/js/admin.js"></script>
+    <script src="/js/notifications.js"></script>
+    <script src="/js/chat-navbar.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 
     <script>

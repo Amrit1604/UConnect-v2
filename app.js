@@ -35,6 +35,7 @@ const settingsRoutes = require('./routes/settings');
 const gridfsRoutes = require('./routes/gridfs');
 const chatRoutes = require('./routes/chat');
 const notificationsRoutes = require('./routes/notifications');
+const friendsRoutes = require('./routes/friends');
 
 // ==========================================
 // MIDDLEWARE
@@ -87,6 +88,7 @@ app.use('/settings', settingsRoutes);
 app.use('/gridfs', gridfsRoutes);
 app.use('/chat', chatRoutes);
 app.use('/notifications', notificationsRoutes);
+app.use('/friends', friendsRoutes);
 
 // URL test route for debugging 🔧
 // app.use('/debug', createUrlTestRoute());

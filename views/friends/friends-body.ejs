@@ -1,0 +1,34 @@
+<div style="max-width:1000px;margin:32px auto;padding:20px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);">
+  <h2 style="margin:0 0 12px 0;font-family:var(--font-display);">Your Friends</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+    <% if (!friends || friends.length === 0) { %>
+      <div style="padding:18px;color:rgba(255,255,255,0.7)">You have no friends yet.</div>
+    <% } %>
+    <% friends.forEach(f => { %>
+      <% if (!f.user) return; %>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(0,0,0,0.35);">
+        <img src="<%= f.user.avatarUrl %>?v=<%= Date.now() %>" style="width:56px;height:56px;border-radius:8px;object-fit:cover;border:2px solid var(--red)" onerror="this.src='/images/default-avatar.png'">
+        <div style="flex:1">
+          <div style="font-weight:700;color:#fff">@<%= f.user.username %></div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6)"><%= f.user.name || '' %></div>
+        </div>
+        <div>
+          <button class="nav-btn-ghost open-chat-btn" data-user-id="<%= f.user._id %>">Chat</button>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<script>
+  (function(){
+    document.querySelectorAll('.open-chat-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const uid = btn.getAttribute('data-user-id');
+        if (!uid) return;
+        // open conversation in a new panel (reuse chat page)
+        window.location.href = '/chat/' + uid;
+      });
+    });
+  })();
+</script>

@@ -1,21 +1,20 @@
+<link rel="stylesheet" href="/css/chat-neo.css">
 <div class="chat-inbox">
   <h2>Messages</h2>
   <div id="conversationsList">
     <% if (conversations && conversations.length) { %>
       <% conversations.forEach(c => { %>
-        <div class="conversation-item" data-other-id="<%= c.otherUser._id %>" onclick="location.href='/chat/<%= c.otherUser._id %>'">
-          <div class="meta">
-            <img src="<%= c.otherUser.avatarUrl %>" alt="avatar" width="40" height="40" style="border-radius:6px" />
-            <div>
-              <div class="username"><%= c.otherUser.username %></div>
-              <div class="last-message"><%= c.lastMessage ? (c.lastMessage.content && c.lastMessage.content.slice(0,60)) : 'No messages yet' %></div>
+        <div class="conversation-item neo-chat-item" data-other-id="<%= c.otherUser._id %>">
+          <a class="open-chat-mini" href="/chat/<%= c.otherUser._id %>">
+            <img src="<%= c.otherUser.avatarUrl %>" alt="avatar" width="44" height="44" style="border-radius:8px; border:2px solid rgba(255,255,255,0.03); object-fit:cover" />
+            <div style="margin-left:10px">
+              <div class="username" style="font-weight:700">@<%= c.otherUser.username %></div>
+              <div class="last-message" style="font-size:13px;color:rgba(255,255,255,0.6)"><%= c.lastMessage ? (c.lastMessage.content && c.lastMessage.content.slice(0,60)) : 'No messages yet' %></div>
             </div>
-          </div>
-          <div>
-            <% if (c.unreadCount && c.unreadCount>0) { %>
-              <div class="unread"><%= c.unreadCount %></div>
-            <% } %>
-          </div>
+          </a>
+          <% if (c.unreadCount && c.unreadCount>0) { %>
+            <div class="unread neo-unread"><%= c.unreadCount %></div>
+          <% } %>
         </div>
       <% }) %>
     <% } else { %>
@@ -30,11 +29,11 @@
   <div id="conversationsList">
     <% if (conversations && conversations.length>0) { %>
       <% conversations.forEach(c => { %>
-        <div class="conversation-item" data-other-id="<%= c.otherUser._id %>">
-          <a href="/chat/<%= c.otherUser._id %>">@<%= c.otherUser.username %></a>
-          <div class="last-message"><%= c.lastMessage ? c.lastMessage.content : '' %></div>
+        <div class="conversation-item neo-chat-item" data-other-id="<%= c.otherUser._id %>">
+          <a class="open-chat-mini" href="/chat/<%= c.otherUser._id %>">@<%= c.otherUser.username %></a>
+          <div class="last-message" style="color:rgba(255,255,255,0.6)"><%= c.lastMessage ? c.lastMessage.content : '' %></div>
           <% if (c.unreadCount) { %>
-            <div class="unread"><%= c.unreadCount %></div>
+            <div class="unread neo-unread"><%= c.unreadCount %></div>
           <% } %>
         </div>
       <% }) %>

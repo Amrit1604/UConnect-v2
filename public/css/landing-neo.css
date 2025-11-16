@@ -1,3 +1,187 @@
+/* Notification popup (Neo theme) */
+#navNotificationsPopup.neo-notif-popup {
+        min-width: 320px;
+        max-width: 420px;
+        position: absolute;
+        top: 48px;
+        right: 0;
+        background: linear-gradient(180deg, rgba(10,10,10,0.88), rgba(20,20,20,0.85));
+        border: 1px solid rgba(255,255,255,0.04);
+        border-radius: 14px;
+        padding: 10px;
+        z-index: 1200;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+        backdrop-filter: blur(10px) saturate(120%);
+}
+
+.neo-notif-list { display:flex; flex-direction:column; gap:8px; max-height:360px; overflow:auto; padding:4px; }
+.neo-notif-item { transition: background 160ms ease, transform 140ms ease; }
+.neo-notif-item:hover { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); transform: translateY(-2px); }
+.neo-notif-item img { box-shadow: 0 4px 14px rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.03); }
+
+.neo-accept-btn { background: var(--red); color: #fff; border: none; border-radius:8px; font-weight:700; }
+.neo-accept-btn:hover { background: var(--red-dark); }
+.neo-reject-btn { background: transparent; color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.04); border-radius:8px; }
+
+/* Chat sidebar (Neo theme) */
+.neo-chat-sidebar {
+        background: linear-gradient(180deg, rgba(6,6,6,0.98), rgba(12,12,12,0.98));
+        box-shadow: -20px 0 40px rgba(0,0,0,0.6);
+        border-left: 1px solid rgba(255,255,255,0.03);
+        padding: 0;
+        backdrop-filter: blur(6px);
+}
+
+.neo-chat-sidebar #friendsListContainer { padding: 14px; }
+.neo-chat-sidebar .open-chat-mini { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.04); color: #fff; border-radius:8px; padding:6px 10px; }
+.neo-chat-sidebar .open-chat-mini:hover { background: rgba(255,255,255,0.04); }
+
+/* small-screen adjustments */
+@media (max-width: 900px) {
+    #chatSidebar, .neo-chat-sidebar { width: 100%; right: -100%; }
+    .neo-chat-sidebar.open { right: 0 !important; }
+}
+
+/* ========================================
+   CHAT UI - NEO THEME
+   ======================================== */
+
+.chat-window {
+    /* Docked, responsive chat panel */
+    position: fixed;
+    top: 96px; /* below navbar */
+    left: 24px;
+    bottom: 24px;
+    width: 420px;
+    max-width: calc(100% - 48px);
+    height: auto;
+    background: linear-gradient(180deg, rgba(8,8,8,0.96), rgba(12,12,12,0.98));
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1400;
+}
+
+.chat-header {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    backdrop-filter: blur(6px);
+}
+
+.chat-header .title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--white);
+}
+
+.chat-messages {
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    scroll-behavior: smooth;
+}
+
+.msg { display:flex; align-items:flex-end; gap:10px; margin:6px 0; }
+.msg--sent { justify-content: flex-end; }
+.msg--received { justify-content: flex-start; }
+
+.bubble {
+    display: inline-block;
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    line-height: 1.35;
+    font-size: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.msg--sent .bubble {
+    background: linear-gradient(180deg, var(--red), var(--red-dark));
+    color: var(--white);
+    border-bottom-right-radius: 6px;
+    margin-left: 12px;
+}
+
+.msg--received .bubble {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    color: var(--white);
+    border-bottom-left-radius: 6px;
+    margin-right: 12px;
+}
+
+.presence-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #6EE7B7, #10B981);
+    box-shadow: 0 4px 10px rgba(16,185,129,0.12);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+.typing-indicator {
+    display: inline-flex;
+    gap:6px;
+    align-items:center;
+}
+.typing-indicator .dot { width:6px; height:6px; background: rgba(255,255,255,0.2); border-radius:3px; animation: typingDot 1s infinite; }
+.typing-indicator .dot:nth-child(2){ animation-delay:0.15s }
+.typing-indicator .dot:nth-child(3){ animation-delay:0.3s }
+@keyframes typingDot { 0%{transform:translateY(0);opacity:.4}50%{transform:translateY(-6px);opacity:1}100%{transform:translateY(0);opacity:.4} }
+
+.read-receipt { font-size:11px; color: rgba(255,255,255,0.6); margin-left:6px; }
+
+.chat-input {
+    padding: 12px;
+    border-top: 1px solid rgba(255,255,255,0.02);
+    display:flex; gap:8px; align-items:center;
+    background: linear-gradient(180deg, rgba(8,8,8,0.96), rgba(6,6,6,0.96));
+}
+.chat-input textarea { flex:1; resize:none; min-height:40px; max-height:120px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.03); color: var(--white); padding:8px 10px; border-radius:10px; }
+.chat-input .send-btn { background: var(--red); color:var(--white); border-radius:10px; padding:8px 12px; border:none; font-weight:700 }
+
+/* small screens: stack chat window to full width + height */
+@media (max-width: 720px) {
+    .chat-window { width: 100% !important; height: 100vh !important; border-radius: 0; }
+    .chat-header .title { font-size: 16px; }
+    .chat-messages { padding: 12px; }
+}
+
+/* subtle entry animation */
+.chat-window { transform-origin: right top; animation: chatPop 220ms var(--ease-out-expo); }
+@keyframes chatPop { from { transform: translateY(8px) scale(.98); opacity:0 } to { transform: translateY(0) scale(1); opacity:1 } }
+
+/* Inbox & Requests list styles */
+.neo-chat-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    transition: background 200ms;
+}
+.neo-chat-item:hover { background: rgba(255,255,255,0.02); cursor: pointer; }
+.neo-chat-item .open-chat-mini { display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit }
+.neo-unread { background: var(--red); color:#fff; min-width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:999px; font-weight:700 }
+
+.neo-request-item { padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:12px }
+.neo-request-item .request-actions { display:flex; gap:8px }
+
+/* small helpers */
+.chat-empty { color: rgba(255,255,255,0.5); padding:20px; text-align:center }
+
+
+
 /**
  * UCONNECT NEO - BRUTALIST + APPLE HYBRID DESIGN
  * Black, White, Red Color Scheme
@@ -15,20 +199,20 @@
 }
 
 :root {
-    /* Colors - Brutalist Palette */
+    /* Colors - Strict Design-NEO Palette */
     --black: #000000;
     --white: #FFFFFF;
-    --red: #FF0000;
+    --red: #FF0000; /* Primary accent */
     --red-dark: #B22222;
     --red-light: #FF4444;
     --gray-dark: #1A1A1A;
     --gray-medium: #2E2E2E;
     --gray-light: #F5F5F5;
 
-    /* Glassmorphism */
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    /* Glassmorphism (stronger contrast for dark UI) */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 10px 36px 0 rgba(0, 0, 0, 0.5);
 
     /* Typography */
     --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -47,7 +231,7 @@ html {
     scroll-behavior: smooth;
 }
 
-@media (prefers-reduced-motion: prefer-reduced-motion) {
+@media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
@@ -345,7 +529,7 @@ body.landing-neo:hover .cursor-outline {
     padding: 0 32px;
     height: 72px;
     display: grid;
-    grid-template-columns: 220px 1fr 220px;
+    grid-template-columns: 180px minmax(720px, 1fr) 300px;
     align-items: center;
     gap: 48px;
 }
@@ -395,10 +579,14 @@ body.landing-neo:hover .cursor-outline {
 /* Center: Navigation Links */
 .nav-center-neo {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 40px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 24px;         /* more spacing */
+    padding: 10px 0;   /* optional breathing space */
 }
+
 
 .nav-link-neo {
     font-family: var(--font-display);
@@ -437,8 +625,191 @@ body.landing-neo:hover .cursor-outline {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 16px;
+    gap: 14px;
+    min-width: 0; /* allow items to shrink within grid */
+    flex-shrink: 0;
+    align-self: center;
 }
+
+/* Compact external apps dropdown to avoid navbar crowding */
+.nav-external-cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-external-toggle {
+    background: transparent;
+    border: 0;
+    color: var(--white);
+    font-size: 18px;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.nav-external-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: rgba(10,10,10,0.98);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    display: none;
+    min-width: 160px;
+    z-index: 1200;
+    overflow: hidden;
+}
+
+.nav-external-cta:hover .nav-external-menu,
+.nav-external-cta:focus-within .nav-external-menu {
+    display: block;
+}
+
+.nav-external-menu .nav-external-link {
+    display: block;
+    padding: 10px 14px;
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.nav-external-menu .nav-external-link:last-child { border-bottom: none; }
+
+/* Responsive: hide non-essential text in actions on narrow screens */
+@media (max-width: 1100px) {
+    .nav-actions-neo .nav-btn-ghost { display: none; }
+    .nav-actions-neo .nav-link-neo { margin-right: 6px; }
+}
+
+/* Make theme toggle visible and accessible on dark navbar */
+.theme-toggle-btn {
+    margin: 0 8px;
+    z-index: 1500;
+    background: rgba(255,255,255,0.06); /* slight contrast against dark nav */
+    border: 2px solid rgba(255,255,255,0.08);
+    color: var(--white);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.theme-toggle-btn .theme-icon { font-size: 18px; color: var(--white); }
+
+/* Ensure the search input has breathing room to the right so it doesn't butt up against action links */
+.nav-search-neo { margin-right: 24px; }
+
+/* Constrain search input so it cannot push center navigation links */
+.nav-search-input {
+    max-width: 420px;
+    width: 100%;
+    min-width: 160px;
+}
+
+/* Slightly larger gap for action links (external apps + icons) so spacing feels even */
+.nav-actions-neo { gap: 18px; }
+
+/* If navbar becomes cramped, ensure icons don't hide by allowing overflow visible */
+.navbar-neo { overflow: visible; }
+
+
+/* ========================================
+   NAVBAR FIXES (alignment, responsiveness, badge)
+   Small, targeted overrides to restore expected layout
+   ======================================== */
+
+/* Slightly lower and more room on small screens */
+.navbar-neo {
+    top: 16px;
+    width: calc(100% - 48px);
+    max-width: 1400px;
+}
+
+.nav-container-neo {
+    padding: 0 20px;
+    grid-template-columns: 180px minmax(720px, 1fr) 300px;
+    gap: 24px;
+    height: 64px;
+}
+
+.nav-center-neo {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* center the nav links horizontally */
+    gap: 50px; /* increase spacing between links */
+    flex-wrap: wrap;
+    padding: 0 12px; /* small horizontal padding so links aren't flush to edges */
+    justify-self: center;
+}
+
+/* Mobile / narrow adjustments to avoid overflow and broken layout */
+@media (max-width: 900px) {
+    .nav-container-neo {
+        grid-template-columns: 1fr auto;
+        grid-template-areas: "brand actions" "center center";
+        padding: 8px 14px;
+        gap: 12px;
+        height: auto;
+    }
+
+    .nav-brand-neo { grid-area: brand; }
+    .nav-actions-neo { grid-area: actions; justify-content: flex-end; }
+    .nav-center-neo { grid-area: center; grid-column: 1 / -1; justify-content: space-around; gap: 12px; }
+
+    .mobile-menu-btn-neo { display: flex; }
+}
+
+/* Notification bell / unread badge */
+.nav-notification {
+    position: relative;
+    display: inline-block;
+}
+
+.nav-notification .badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: var(--red);
+    color: var(--white);
+    border-radius: 999px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.9);
+    min-width: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+/* Admin-mode nav override: show navbar even when body has admin-mode
+   This allows small admin sessions to still display the main navbar.
+   Keep it scoped and minimal to avoid breaking admin layout. */
+body.admin-mode .admin-mode-nav {
+    display: flex !important;
+    position: fixed !important;
+    top: 12px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100% - 48px) !important;
+    max-width: 1200px !important;
+    background: rgba(0,0,0,0.85) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45) !important;
+    z-index: 1100 !important;
+}
+
+/* Ensure the branded text and avatar remain visible on admin pages */
+body.admin-mode .admin-mode-nav .brand-text { color: var(--white) !important; }
+body.admin-mode .admin-mode-nav .nav-avatar { border-color: var(--white) !important; }
+
+/* Notifications popup item */
+.nav-notification-item:hover { background: rgba(255,255,255,0.02); }
+
+/* Chat sidebar basic styles (fallback) */
+#chatSidebar .open-chat-mini { padding:6px 10px; border-radius:6px; }
+
+
 
 .nav-avatar-link {
     display: flex;
@@ -483,7 +854,7 @@ body.landing-neo:hover .cursor-outline {
 }
 
 .theme-icon {
-    font-size: 24px;
+    font-size: 26px;
     position: absolute;
     transition: all 0.3s var(--ease-out-expo);
 }
@@ -507,6 +878,28 @@ body.light-theme .theme-icon.moon {
 body.light-theme .theme-icon.sun {
     opacity: 1;
     transform: rotate(0deg) scale(1);
+}
+
+/* Make emoji-style nav buttons slightly larger for better visibility */
+#navNotificationsLink, #navChatToggle {
+    font-size: 20px;
+    line-height: 1;
+    padding: 6px 8px;
+}
+
+.nav-external-toggle {
+    font-size: 20px; /* slightly larger globe */
+    padding: 6px 8px;
+}
+
+/* Ensure theme icons are prominent */
+.theme-toggle-btn .theme-icon { font-size: 28px; }
+
+@media (max-width: 900px) {
+    /* On small screens keep emoji controls tappable */
+    #navNotificationsLink, #navChatToggle, .nav-external-toggle, .theme-toggle-btn .theme-icon {
+        font-size: 22px;
+    }
 }
 
 .nav-btn-ghost {

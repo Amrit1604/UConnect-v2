@@ -1,3 +1,65 @@
+<link rel="stylesheet" href="/css/chat-neo.css">
+<div class="chat-requests neo-requests">
+  <h2>Follow Requests</h2>
+
+  <section class="received">
+    <h3>Received</h3>
+    <div id="receivedRequests">
+      <% if (receivedRequests && receivedRequests.length>0) { %>
+        <% receivedRequests.forEach(r => { %>
+          <div class="request-item neo-request-item" data-id="<%= r._id %>">
+            <div class="request-meta">
+              <strong>@<%= r.sender.username %></strong>
+              <p><%= r.message %></p>
+            </div>
+            <div class="request-actions">
+              <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
+              <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="chat-empty">No received requests</div>
+      <% } %>
+    </div>
+  </section>
+
+  <section class="sent" style="margin-top:18px">
+    <h3>Sent</h3>
+    <div id="sentRequests">
+      <% if (sentRequests && sentRequests.length>0) { %>
+        <% sentRequests.forEach(r => { %>
+          <div class="request-item neo-request-item" data-id="<%= r._id %>">
+            <div>To: <strong>@<%= r.receiver.username %></strong> - <%= r.message %></div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="chat-empty">No sent requests</div>
+      <% } %>
+    </div>
+  </section>
+
+  <script>window.__USER_ID__ = '<%= user ? user._id : '' %>';</script>
+  <script>
+    (function(){
+      document.querySelectorAll('.neo-accept-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
+          if (res.ok) location.reload(); else alert('Failed');
+        });
+      });
+
+      document.querySelectorAll('.neo-reject-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
+          if (res.ok) location.reload(); else alert('Failed');
+        });
+      });
+    })();
+  </script>
+</div>
 <div class="chat-requests">
   <h2>Follow Requests</h2>
 
@@ -9,6 +71,14 @@
           <div><strong><%= r.sender.username %></strong> - <%= r.message %></div>
           <div style="margin-top:8px"><button class="accept-btn" data-id="<%= r._id %>">Accept</button><button class="reject-btn" data-id="<%= r._id %>">Reject</button><button class="block-btn" data-id="<%= r._id %>">Block</button></div>
         </div>
+          <div class="request-item neo-request-item" data-id="<%= r._id %>">
+            <div><strong>@<%= r.sender.username %></strong> - <%= r.message %></div>
+            <div style="margin-top:8px">
+              <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
+              <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
+              <button class="block-btn" data-id="<%= r._id %>">Block</button>
+            </div>
+          </div>
       <% }) %>
     <% } else { %>
       <div class="chat-empty">No received requests</div>
@@ -22,6 +92,9 @@
         <div class="request-item" data-id="<%= r._id %>">
           <div>To: <strong><%= r.receiver.username %></strong> - <%= r.message %></div>
         </div>
+          <div class="request-item neo-request-item" data-id="<%= r._id %>">
+            <div>To: <strong>@<%= r.receiver.username %></strong> - <%= r.message %></div>
+          </div>
       <% }) %>
     <% } else { %>
       <div class="chat-empty">No sent requests</div>
@@ -40,6 +113,12 @@
           <p><%= r.message %></p>
           <button class="accept-btn" data-id="<%= r._id %>">Accept</button>
           <button class="reject-btn" data-id="<%= r._id %>">Reject</button>
+          </div>
+          <div class="request-item neo-request-item" data-id="<%= r._id %>">
+            <strong>@<%= r.sender.username %></strong>
+            <p><%= r.message %></p>
+            <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
+            <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
         </div>
       <% }) %>
     <% } else { %>

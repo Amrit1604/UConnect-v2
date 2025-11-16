@@ -555,6 +555,44 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
+// GET /chat/start/:userId - Entry point when clicking 'Message' from profile
+router.get('/start/:userId', async (req, res) => {
+  try {
+    const otherUserId = req.params.userId;
+    if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
+      req.flash('error', 'Invalid user ID');
+      return res.redirect('/chat');
+    }
+
+    // If already friends, go to conversation
+    const areFriends = await Friendship.areFriends(req.user._id, otherUserId);
+    if (areFriends) {
+      return res.redirect(`/chat/${otherUserId}`);
+    }
+
+    // Otherwise, show a small "start chat" view that allows sending a follow request
+    const otherUser = await User.findById(otherUserId).select('username name avatarSeed avatarType avatarGridFSId');
+    if (!otherUser) {
+      req.flash('error', 'User not found');
+      return res.redirect('/chat');
+    }
+
+    res.render('layout', {
+      title: `Start chat with ${otherUser.username}`,
+      bodyTemplate: 'chat/start-body',
+      additionalCSS: ['/css/chat.css'],
+      additionalJS: ['/js/chat.js'],
+      otherUser: otherUser.toObject({ virtuals: true }),
+      user: req.user
+    });
+
+  } catch (error) {
+    console.error('Chat start error:', error);
+    req.flash('error', 'Failed to open chat starter');
+    res.redirect('/chat');
+  }
+});
+
 // POST /chat/:userId/message - Send a message
 router.post('/:userId/message',
   body('content')
