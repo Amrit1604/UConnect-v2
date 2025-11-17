@@ -84,6 +84,9 @@ app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
 app.use('/users', userRoutes);
 app.use('/admin', adminRoutes);
+// ROUTES SETUP
+app.use("/", require("./routes/pages"));
+
 app.use('/settings', settingsRoutes);
 app.use('/gridfs', gridfsRoutes);
 app.use('/chat', chatRoutes);

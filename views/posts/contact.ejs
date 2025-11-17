@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Us | UConnect</title>
+
+<style>
+/* GLOBAL */
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    background: #000000;   /* PURE BLACK */
+    color: white;
+}
+
+/* NAVBAR */
+.navbar-neo {
+    width: 100%;
+    background: #111;
+    padding: 18px 40px;
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-brand-neo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+
+.logo-brutalist {
+    background: red;
+    padding: 10px 14px;
+    font-weight: 800;
+    font-size: 22px;
+    border-radius: 6px;
+}
+
+.brand-text {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.nav-center-neo {
+    display: flex;
+    gap: 25px;
+}
+
+.nav-link-neo {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.nav-link-neo:hover,
+.nav-link-neo.active {
+    color: red;
+}
+
+/* FOOTER */
+.footer-neo {
+    margin-top: 80px;
+    width: 100%;
+    background: #111;
+    padding: 40px 20px;
+    text-align: center;
+    color: #999;
+    border-top: 1px solid #222;
+    font-size: 14px;
+}
+
+/* CONTACT PAGE */
+.contact-page {
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 20px;
+}
+
+.contact-title {
+    font-size: 60px;
+    font-weight: 800;
+    text-align: center;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #ff3333, #ff7777);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.contact-subtitle {
+    font-size: 18px;
+    text-align: center;
+    color: #bbb;
+    margin-top: 10px;
+    margin-bottom: 50px;
+}
+
+/* FORM CONTAINER */
+.contact-card {
+    background: #0f0f0f;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.15);
+}
+
+.input-group {
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-label {
+    font-size: 15px;
+    color: #aaa;
+    margin-bottom: 6px;
+}
+
+.input-field {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    color: white;
+}
+
+.input-field:focus {
+    border-color: red;
+    outline: none;
+}
+/* ABOUT + CONTACT BUTTON STYLE (match exact design) */
+.about-btn {
+    padding: 10px 18px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid #ff0000;
+    border-radius: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #ff4d4d;
+    transition: 0.25s ease;
+}
+
+.about-btn:hover {
+    background: #ff0000;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.about-btn.active {
+    background: #ff0000;
+    color: #ffffff;
+    border-color: #ff4d4d;
+}
+
+/* BUTTON */
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: red;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit-btn:hover {
+    background: #ff4d4d;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .contact-title { font-size: 42px; }
+    .contact-card { padding: 25px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar-neo">
+    <div class="nav-brand-neo">
+        <div class="logo-brutalist">U</div>
+        <span class="brand-text">CONNECT</span>
+    </div>
+
+    <div class="nav-center-neo">
+        <a href="/" class="nav-link-neo">HOME</a>
+        <a href="/about" class="nav-link-neo">ABOUT</a>
+        <a href="/contact" class="nav-link-neo active">CONTACT</a>
+    </div>
+</nav>
+
+<!-- CONTACT PAGE -->
+<div class="contact-page">
+    <h1 class="contact-title">CONTACT US</h1>
+    <p class="contact-subtitle">Have questions? Want to collaborate? We'll reply ASAP.</p>
+
+    <div class="contact-card">
+
+        <form action="https://formspree.io/f/xpwyjlbg" method="POST">
+
+            <div class="input-group">
+                <label class="input-label">Your Name</label>
+                <input name="name" required type="text" class="input-field" placeholder="Enter your name">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Email Address</label>
+                <input name="email" required type="email" class="input-field" placeholder="Enter your email">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Your Message</label>
+                <textarea name="message" required class="input-field" placeholder="Type your message..."></textarea>
+            </div>
+
+            <button class="submit-btn">Send Message</button>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer-neo">
+    © 2025 UConnect — All rights reserved.
+</footer>
+
+</body>
+</html>

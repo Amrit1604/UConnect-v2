@@ -56,7 +56,8 @@
                     <a href="/users/profile" class="nav-link-neo">PROFILE</a>
                 <% } else { %>
                     <a href="#features" class="nav-link-neo">FEATURES</a>
-                    <a href="#about" class="nav-link-neo">ABOUT</a>
+                   <a href="/about" class="nav-link-neo <%= currentPath === '/about' ? 'active' : '' %>">ABOUT</a>
+
                     <a href="#community" class="nav-link-neo">COMMUNITY</a>
                 <% } %>
             </div>
