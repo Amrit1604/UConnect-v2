@@ -1,9 +1,110 @@
 <div class="container admin-login-page">
   <div class="terminal-screen">
     <h1>uconnect@neo:/admin$ login</h1>
-    <form method="POST" action="/admin/login" style="margin-top:12px;">
-      <input type="password" name="password" placeholder="admin password..." style="width:100%; padding:8px; border-radius:4px; border:1px solid rgba(57,255,20,0.04); background:rgba(0,0,0,0.3); color:var(--accent-green); font-family:var(--font-mono); margin-bottom:8px;">
-      <button class="btn">unlock</button>
+    <form id="greenAdminLoginForm" method="POST" action="/admin/login" style="margin-top:12px;">
+      <input id="greenAdminPassword" type="password" name="password" placeholder="admin password..." style="width:100%; padding:8px; border-radius:4px; border:1px solid rgba(57,255,20,0.04); background:rgba(0,0,0,0.3); color:var(--accent-green); font-family:var(--font-mono); margin-bottom:8px;">
+      <button id="greenAdminSubmit" class="btn" type="submit">unlock</button>
     </form>
   </div>
+
+  <!-- Fullscreen video loader (hidden by default) -->
+  <div id="adminVideoLoader" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#000;z-index:99999;transition:opacity 400ms ease;opacity:0">
+    <video id="adminLoaderVideo" playsinline muted preload="auto" style="max-width:90%;max-height:90%;display:block;border-radius:8px;box-shadow:0 20px 80px rgba(0,0,0,0.9);">
+      <source src="/videos/Cmatrix_Particle_Eye_Loader_Video.mp4" type="video/mp4">
+      Your browser does not support the video loader.
+    </video>
+  </div>
+
+  <script>
+    (function(){
+      const form = document.getElementById('greenAdminLoginForm');
+      const pwInput = document.getElementById('greenAdminPassword');
+      const loader = document.getElementById('adminVideoLoader');
+      const video = document.getElementById('adminLoaderVideo');
+
+      if (!form) return;
+
+      function showLoader() {
+        try {
+          loader.style.display = 'flex';
+          // small fade-in
+          requestAnimationFrame(() => { loader.style.opacity = '1'; });
+        } catch (e) { /* ignore */ }
+      }
+
+      function hideLoader() {
+        try {
+          loader.style.opacity = '0';
+          setTimeout(() => { loader.style.display = 'none'; }, 420);
+        } catch (e) {}
+      }
+
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        const pw = (pwInput && pwInput.value) ? pwInput.value : '';
+        try {
+          const res = await fetch('/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ password: pw })
+          });
+
+          // If server responded with a redirect (non-AJAX), follow that
+          if (res.redirected) {
+            window.location.href = res.url;
+            return;
+          }
+
+          let json = null;
+          try { json = await res.json(); } catch (err) { json = null; }
+
+          if (json && json.success) {
+            // Play loader video with a pre-transition and then redirect after it ends
+            showLoader();
+            try {
+              // Ensure muted to allow autoplay
+              video.muted = true;
+              await video.play();
+            } catch (e) {
+              // If play fails, proceed with a short delay
+            }
+
+            // When video ends, transition out then redirect
+            const onEnd = () => {
+              try { video.removeEventListener('ended', onEnd); } catch (e) {}
+              // small post-transition pause
+              setTimeout(() => {
+                hideLoader();
+                // final redirect to either provided redirect or terminal
+                window.location.href = (json.redirect || '/admin/terminal');
+              }, 250);
+            };
+
+            video.addEventListener('ended', onEnd);
+
+            // safety fallback: if video doesn't end in 8s, redirect anyway
+            setTimeout(() => {
+              try { video.removeEventListener('ended', onEnd); } catch (e) {}
+              hideLoader();
+              window.location.href = (json.redirect || '/admin/terminal');
+            }, 8000);
+
+          } else {
+            // Show a quick inline error
+            const msg = document.createElement('div');
+            msg.className = 'admin-msg error';
+            msg.textContent = (json && json.message) ? json.message : 'Invalid password';
+            form.parentNode.insertBefore(msg, form.nextSibling);
+            setTimeout(() => { try { msg.remove(); } catch (e) {} }, 3500);
+          }
+        } catch (err) {
+          const msg = document.createElement('div');
+          msg.className = 'admin-msg error';
+          msg.textContent = 'Server error. Try again.';
+          form.parentNode.insertBefore(msg, form.nextSibling);
+          setTimeout(() => { try { msg.remove(); } catch (e) {} }, 3500);
+        }
+      });
+    })();
+  </script>
 </div>

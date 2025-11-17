@@ -12,6 +12,7 @@ const { logActivity, requireAdmin, requireAdminOrSession } = require('../middlew
 
 const { exec } = require('child_process');
 const router = express.Router();
+const chatHandlers = require('../sockets/chatHandlers');
 
 // GET /admin/login - Show admin login page (for fallback if JS disabled)
 router.get('/login', (req, res) => {
@@ -70,7 +71,8 @@ router.post('/login',
         return res.json({ success: true });
       }
 
-      res.redirect('/admin');
+      // After successful admin password entry, open the terminal as the primary entrypoint
+      res.redirect('/admin/terminal');
     } catch (err) {
       console.error('Admin login error:', err);
       return res.status(500).json({ success: false, message: 'Server error' });
@@ -169,6 +171,136 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /admin/terminal - Terminal-style admin UI
+router.get('/terminal', async (req, res) => {
+  try {
+    res.render('admin/terminal', {
+      title: 'Admin Terminal',
+      user: req.user
+    });
+  } catch (err) {
+    console.error('Admin terminal render error:', err);
+    req.flash('error', 'Failed to open admin terminal');
+    res.redirect('/admin');
+  }
+});
+
+// GET /admin/api/list/users - return JSON list of users for admin terminal
+router.get('/api/list/users', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 500);
+    const users = await User.find({})
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select('username displayName email isActive createdAt campus')
+      .lean();
+    return res.json({ success: true, users });
+  } catch (err) {
+    console.error('Admin API users error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /admin/api/list/posts - return JSON list of posts for admin terminal
+router.get('/api/list/posts', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 500);
+    const posts = await Post.find({})
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate('author', 'username displayName')
+      .select('author content createdAt isActive reportCount')
+      .lean();
+    return res.json({ success: true, posts });
+  } catch (err) {
+    console.error('Admin API posts error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /admin/api/list/audit - return recent admin logs
+router.get('/api/list/audit', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 200, 1000);
+    const logs = await AdminLog.find({})
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+    return res.json({ success: true, logs });
+  } catch (err) {
+    console.error('Admin API audit error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /admin/api/users/:id/toggle - toggle user active status (JSON)
+router.post('/api/users/:id/toggle', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    // prevent self-deactivation
+    if (req.user && req.user._id && userId === req.user._id.toString()) {
+      return res.status(400).json({ success: false, message: 'Cannot toggle yourself' });
+    }
+    user.isActive = !user.isActive;
+    await user.save();
+    return res.json({ success: true, user: { _id: user._id, isActive: user.isActive } });
+  } catch (err) {
+    console.error('Admin API toggle user error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// DELETE /admin/api/users/:id - delete user (JSON)
+router.delete('/api/users/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (req.user && req.user._id && userId === req.user._id.toString()) {
+      return res.status(400).json({ success: false, message: 'Cannot delete yourself' });
+    }
+    await Post.deleteMany({ author: userId });
+    await User.findByIdAndDelete(userId);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Admin API delete user error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// DELETE /admin/api/posts/:id - delete post (JSON)
+router.delete('/api/posts/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
+    await Post.findByIdAndDelete(postId);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Admin API delete post error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /admin/api/find/user?q= - find users by query
+router.get('/api/find/user', async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json({ success: true, users: [] });
+    const regex = { $regex: q, $options: 'i' };
+    const users = await User.find({ $or: [{ username: regex }, { displayName: regex }, { email: regex }] })
+      .limit(200)
+      .select('username displayName email isActive createdAt campus')
+      .lean();
+    return res.json({ success: true, users });
+  } catch (err) {
+    console.error('Admin API find user error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // GET /admin/api/status - provide basic system status for admin panel widgets
 router.get('/api/status', async (req, res) => {
   try {
@@ -186,6 +318,112 @@ router.get('/api/status', async (req, res) => {
     });
   } catch (err) {
     console.error('Admin status API error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /admin/api/recent-signups - recent user signups
+router.get('/api/recent-signups', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 500);
+    const users = await User.find({})
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select('username displayName email createdAt campus')
+      .lean();
+    return res.json({ success: true, users });
+  } catch (err) {
+    console.error('Recent signups API error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /admin/api/login-history - recent lastLogin times (from users)
+router.get('/api/login-history', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 500);
+    const users = await User.find({ lastLogin: { $exists: true } })
+      .sort({ lastLogin: -1 })
+      .limit(limit)
+      .select('username displayName email lastLogin')
+      .lean();
+    return res.json({ success: true, users });
+  } catch (err) {
+    console.error('Login history API error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /admin/api/online - who is online (basic)
+router.get('/api/online', async (req, res) => {
+  try {
+    const io = req.app.get('io');
+    // Use chatHandlers to get count if available
+    let onlineCount = 0;
+    try { onlineCount = chatHandlers.getOnlineUsersCount(); } catch (e) { onlineCount = 0; }
+
+    // also derive list of unique userIds from connected sockets (best-effort)
+    const sockets = io && io.sockets && io.sockets.sockets ? Array.from(io.sockets.sockets.values()) : [];
+    const userIds = new Set();
+    sockets.forEach(s => { if (s && s.userId) userIds.add(String(s.userId)); });
+
+    // resolve users for the ids (limit to 200)
+    const ids = Array.from(userIds).slice(0, 200);
+    const users = ids.length ? await User.find({ _id: { $in: ids } }).select('username displayName campus').lean() : [];
+
+    return res.json({ success: true, onlineCount, users, socketCount: sockets.length });
+  } catch (err) {
+    console.error('Online API error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /admin/api/traffic - lightweight traffic & system snapshot
+router.get('/api/traffic', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const activePosts = await Post.countDocuments({ isActive: true });
+    const io = req.app.get('io');
+    const socketCount = io && io.engine ? (io.engine.clientsCount || 0) : 0;
+    return res.json({ success: true, totalUsers, activePosts, socketCount });
+  } catch (err) {
+    console.error('Traffic API error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /admin/api/broadcast - send admin message to users (body: { message, targetType, target })
+router.post('/api/broadcast', async (req, res) => {
+  try {
+    const { message, targetType, target } = req.body || {};
+    if (!message || !message.trim()) return res.status(400).json({ success: false, message: 'Message is required' });
+
+    const io = req.app.get('io');
+    const payload = { from: (req.user && req.user.username) || 'admin', message: String(message), createdAt: new Date() };
+
+    if (targetType === 'user' && target) {
+      // target can be userId or username; attempt to resolve username
+      let user = null;
+      if (/^[0-9a-fA-F]{24}$/.test(target)) user = await User.findById(target).select('_id');
+      else user = await User.findOne({ username: target }).select('_id');
+      if (user) {
+        io.to(`user:${user._id}`).emit('admin:message', payload);
+      } else return res.status(404).json({ success: false, message: 'User not found' });
+    } else if (targetType === 'campus' && target) {
+      io.to(target).emit('admin:message', payload);
+    } else {
+      // broadcast to everyone
+      io.emit('admin:message', payload);
+    }
+
+    // Log the broadcast
+    try {
+      AdminLog.create({ actor: req.user ? req.user._id : 'session-admin', actorType: req.user ? 'user' : 'session', action: 'admin.broadcast', details: { message: payload.message, targetType, target }, ip: req.ip }).catch(() => {});
+    } catch (e) { /* ignore */ }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Broadcast API error:', err);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -218,18 +456,34 @@ router.post('/api/run', async (req, res) => {
 // POST /admin/api/run-jest - Run Jest test suite and return JSON report
 router.post('/api/run-jest', async (req, res) => {
   try {
-    // Run the helper script that executes jest and emits JSON
-    const { exec } = require('child_process');
-    const scriptPath = require('path').resolve(__dirname, '..', 'scripts', 'runAllTests.js');
+    const { spawn } = require('child_process');
+    const path = require('path');
+    const scriptPath = path.resolve(__dirname, '..', 'scripts', 'runAllTests.js');
 
-    exec(`node "${scriptPath}"`, { cwd: process.cwd(), maxBuffer: 60 * 1024 * 1024 }, (err, stdout, stderr) => {
-      if (err && !stdout) {
-        console.error('Jest run error:', err);
-        return res.status(500).json({ success: false, error: (stderr || err.message) });
+    const child = spawn(process.execPath, [scriptPath], { cwd: process.cwd(), windowsHide: true });
+    let outBuf = '';
+    let closed = false;
+
+    child.stdout.on('data', chunk => { const s = chunk.toString(); process.stdout.write(s); outBuf += s; });
+    child.stderr.on('data', chunk => { const s = chunk.toString(); process.stderr.write(s); outBuf += s; });
+
+    child.on('error', err => {
+      console.error('Failed to start test runner:', err);
+      if (!closed) {
+        closed = true;
+        return res.status(500).json({ success: false, error: 'Failed to start test runner', details: err && err.message });
+      }
+    });
+
+    child.on('close', (code) => {
+      if (closed) return;
+      closed = true;
+      const out = (outBuf && outBuf.trim()) ? outBuf : '';
+      if (!out) {
+        return res.status(500).json({ success: false, error: 'No output from test runner', code });
       }
 
-      const out = (stdout && stdout.trim() ? stdout : stderr && stderr.trim() ? stderr : '') || '';
-      // Our runner prints logs then a JSON blob between markers __JEST_JSON_REPORT_START__ and __JEST_JSON_REPORT_END__
+      // Look for JSON markers printed by the runner
       const startMarker = '__JEST_JSON_REPORT_START__';
       const endMarker = '__JEST_JSON_REPORT_END__';
       let jsonText = null;
@@ -238,27 +492,137 @@ router.post('/api/run-jest', async (req, res) => {
       if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
         jsonText = out.slice(startIdx + startMarker.length, endIdx).trim();
       } else {
-        // Fallback: attempt to find first JSON object in output
+        // fallback: find first JSON object in output
         const firstBrace = out.indexOf('{');
-        if (firstBrace !== -1) jsonText = out.slice(firstBrace).trim();
+        if (firstBrace !== -1) {
+          // Attempt to extract a balanced JSON substring from first brace
+          let depth = 0;
+          for (let i = firstBrace; i < out.length; i++) {
+            const ch = out[i];
+            if (ch === '{') depth++;
+            else if (ch === '}') depth--;
+            if (depth === 0) {
+              jsonText = out.slice(firstBrace, i + 1).trim();
+              break;
+            }
+          }
+          // as a final fallback, take the rest starting at first brace
+          if (!jsonText) jsonText = out.slice(firstBrace).trim();
+        }
       }
 
       if (!jsonText) {
-        console.error('Could not locate jest JSON in runner output. Raw length:', out.length);
-        return res.status(500).json({ success: false, error: 'Could not locate jest JSON in runner output', raw: out.slice(0, 4000) });
+        // Return raw output for debugging instead of a server error
+        return res.json({ success: false, error: 'Could not locate jest JSON in runner output', raw: out.slice(0, 10000), code });
       }
 
       try {
         const report = JSON.parse(jsonText);
-        return res.json({ success: true, report });
+        return res.json({ success: true, report, raw: out.slice(0, 2000), code });
       } catch (parseErr) {
-        console.error('Failed to parse jest JSON output:', parseErr, '\nRaw snippet:', jsonText.slice(0, 4000));
-        return res.status(500).json({ success: false, error: 'Failed to parse jest output', raw: jsonText.slice(0, 4000) });
+        console.error('Failed to parse jest JSON output:', parseErr, '\nSnippet:', jsonText.slice(0, 2000));
+        return res.json({ success: false, error: 'Failed to parse jest JSON', parseError: parseErr.message, rawSnippet: jsonText.slice(0, 2000), code });
       }
     });
+
   } catch (err) {
     console.error('Run-jest endpoint error:', err);
-    return res.status(500).json({ success: false, error: 'Server error' });
+    return res.status(500).json({ success: false, error: 'Server error', details: err && err.message });
+  }
+});
+
+// GET /admin/api/run-jest-stream - stream test runner output via SSE
+router.get('/api/run-jest-stream', async (req, res) => {
+  try {
+    const { spawn } = require('child_process');
+    const path = require('path');
+    const scriptPath = path.resolve(__dirname, '..', 'scripts', 'runAllTests.js');
+
+    // SSE headers
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive'
+    });
+    res.write(':ok\n\n');
+
+    const child = spawn(process.execPath, [scriptPath], { cwd: process.cwd(), windowsHide: true });
+    let outBuf = '';
+
+    function sendEvent(obj) {
+      try {
+        res.write('data: ' + JSON.stringify(obj) + '\n\n');
+      } catch (e) {
+        // ignore write errors
+      }
+    }
+
+    child.stdout.on('data', chunk => {
+      const s = chunk.toString();
+      process.stdout.write(s);
+      outBuf += s;
+      sendEvent({ type: 'stdout', text: s });
+    });
+
+    child.stderr.on('data', chunk => {
+      const s = chunk.toString();
+      process.stderr.write(s);
+      outBuf += s;
+      sendEvent({ type: 'stderr', text: s });
+    });
+
+    child.on('error', err => {
+      sendEvent({ type: 'error', message: err && err.message ? err.message : String(err) });
+      try { res.end(); } catch (e) {}
+    });
+
+    child.on('close', (code) => {
+      // try to extract JSON report as in POST handler
+      const out = (outBuf && outBuf.trim()) ? outBuf : '';
+      const startMarker = '__JEST_JSON_REPORT_START__';
+      const endMarker = '__JEST_JSON_REPORT_END__';
+      let jsonText = null;
+      const startIdx = out.indexOf(startMarker);
+      const endIdx = out.indexOf(endMarker);
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        jsonText = out.slice(startIdx + startMarker.length, endIdx).trim();
+      } else {
+        const firstBrace = out.indexOf('{');
+        if (firstBrace !== -1) {
+          let depth = 0;
+          for (let i = firstBrace; i < out.length; i++) {
+            const ch = out[i];
+            if (ch === '{') depth++;
+            else if (ch === '}') depth--;
+            if (depth === 0) { jsonText = out.slice(firstBrace, i + 1).trim(); break; }
+          }
+          if (!jsonText) jsonText = out.slice(firstBrace).trim();
+        }
+      }
+
+      if (jsonText) {
+        try {
+          const report = JSON.parse(jsonText);
+          sendEvent({ type: 'report', report, code });
+        } catch (e) {
+          sendEvent({ type: 'report_error', message: 'Failed to parse report', snippet: jsonText.slice(0, 2000), code });
+        }
+      } else {
+        sendEvent({ type: 'no_report', raw: out.slice(0, 2000), code });
+      }
+
+      sendEvent({ type: 'end', code });
+      try { res.end(); } catch (e) {}
+    });
+
+    // client disconnect handling
+    req.on('close', () => {
+      try { if (!child.killed) child.kill('SIGTERM'); } catch (e) {}
+    });
+
+  } catch (err) {
+    console.error('Run-jest-stream endpoint error:', err);
+    return res.status(500).json({ success: false, error: 'Server error', details: err && err.message });
   }
 });
 

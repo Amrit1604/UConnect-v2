@@ -1,0 +1,45 @@
+<main class="admin-terminal-root">
+  <div class="admin-terminal-layout">
+    <aside class="terminal-side terminal-side-left" aria-hidden="false">
+      <h4>Test Commands</h4>
+      <div class="side-group">
+        <button class="side-btn" data-cmd="jeststream">Run tests (stream)</button>
+        <button class="side-btn" data-cmd="jest">Run tests (blocking)</button>
+        <button class="side-btn" data-cmd="run:testGridFS">Run script: testGridFS</button>
+        <button class="side-btn" data-cmd="run:fixCampus">Run script: fixCampus</button>
+      </div>
+      <h4>Quick Lookups</h4>
+      <div class="side-group">
+        <button class="side-btn" data-cmd="status">Status</button>
+        <button class="side-btn" data-cmd="users 20">List users</button>
+        <button class="side-btn" data-cmd="posts 20">List posts</button>
+      </div>
+    </aside>
+
+    <section class="terminal-main">
+      <div class="admin-terminal" id="adminTerminal" role="region" aria-label="Admin terminal">
+        <div class="terminal-header">UConnect Admin Terminal — type <span class="cmd">help</span> for commands</div>
+        <div class="terminal-output" id="terminalOutput" tabindex="0"></div>
+        <form id="terminalForm" class="terminal-input-form" autocomplete="off" action="#" onsubmit="return false;">
+          <label for="terminalInput" class="sr-only">Command</label>
+          <input id="terminalInput" class="terminal-input" type="text" placeholder="Enter command (help, users, posts, audit, status, run &lt;script&gt;, clear)" aria-label="Admin command input">
+        </form>
+      </div>
+    </section>
+
+    <aside class="terminal-side terminal-side-right" aria-hidden="false">
+      <h4>Actions</h4>
+      <div class="side-group">
+        <button class="side-btn" data-cmd="finduser">Find user</button>
+        <button class="side-btn" data-cmd="deactivate">Deactivate user</button>
+        <button class="side-btn" data-cmd="deleteuser">Delete user</button>
+        <button class="side-btn" data-cmd="deletepost">Delete post</button>
+      </div>
+      <h4>Hints</h4>
+      <div class="side-group">
+        <div class="hint">You can reference items by number after listing: e.g. <code>posts</code> then <code>deletepost 3</code></div>
+        <div class="hint">Use usernames or IDs: <code>deactivate deadshot_1604</code> or <code>deactivate 691190b77746fd50dd461301</code></div>
+      </div>
+    </aside>
+  </div>
+</main>

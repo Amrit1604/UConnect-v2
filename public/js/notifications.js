@@ -1,5 +1,6 @@
 // Fetch unread count and update navbar badge
 (function(){
+  function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   const badgeEl = document.getElementById('navNotificationsCount');
   const linkEl = document.getElementById('navNotificationsLink');
   // create popup container if missing
@@ -157,6 +158,34 @@
       const s = io();
       s.on('notification', (payload) => { try{ refreshCount(); loadList(); }catch(e){} });
       s.on('follow_request', (payload) => { try{ refreshCount(); loadList(); }catch(e){} });
+      // Admin broadcast messages (pop-up)
+      s.on('admin:message', (payload) => {
+        try {
+          // lightweight toast/modal
+          const t = document.createElement('div');
+          t.className = 'admin-toast';
+          t.style.position = 'fixed';
+          t.style.right = '20px';
+          t.style.bottom = '20px';
+          t.style.zIndex = 99999;
+          t.style.background = 'linear-gradient(180deg, rgba(0,20,0,0.95), rgba(0,10,0,0.95))';
+          t.style.border = '1px solid rgba(0,255,0,0.06)';
+          t.style.color = '#b7ffb7';
+          t.style.padding = '12px 14px';
+          t.style.borderRadius = '8px';
+          t.style.boxShadow = '0 12px 40px rgba(0,0,0,0.6)';
+          t.innerHTML = `<div style="font-weight:700;margin-bottom:6px">Admin message</div><div style="font-size:14px">${(payload && payload.message) ? escapeHtml(payload.message) : ''}</div>`;
+          const btn = document.createElement('button');
+          btn.textContent = 'Dismiss';
+          btn.style.marginTop = '8px';
+          btn.className = 'nav-btn-ghost';
+          btn.addEventListener('click', () => { try { t.remove(); } catch (e) {} });
+          t.appendChild(btn);
+          document.body.appendChild(t);
+          // auto-remove after 12s
+          setTimeout(() => { try { t.remove(); } catch (e) {} }, 12000);
+        } catch (e) { console.warn('Failed to show admin message', e); }
+      });
     } catch (e) {}
   }
 
