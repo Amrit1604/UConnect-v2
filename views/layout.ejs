@@ -208,6 +208,7 @@
     <script src="/js/admin.js"></script>
     <script src="/js/notifications.js"></script>
     <script src="/js/chat-navbar.js"></script>
+    <script src="/js/mini-gossip.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
@@ -329,6 +330,16 @@
           } catch (_) {}
         });
       })();
+    </script>
+
+    <!-- Page-specific Configuration and JavaScript -->
+    <script>
+        // Gossip Box Configuration - Set anonId if available
+        window.GOSSIP_CONFIG = window.GOSSIP_CONFIG || {};
+        <% if (typeof anonId !== 'undefined') { %>
+        window.GOSSIP_CONFIG.anonId = '<%= anonId %>';
+        console.log('✅ GOSSIP_CONFIG set:', window.GOSSIP_CONFIG);
+        <% } %>
     </script>
 
     <!-- Additional page-specific JavaScript -->

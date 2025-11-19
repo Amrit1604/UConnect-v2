@@ -28,6 +28,14 @@ const configureServer = (app) => {
       console.log(`👥 User joined campus: ${campus}`);
     });
 
+    // Join gossip room for real-time updates
+    socket.on('join', (room) => {
+      if (room === 'gossip') {
+        socket.join('gossip');
+        console.log(`🗣️ User joined gossip room`);
+      }
+    });
+
     // Handle new post creation
     socket.on('new-post', (postData) => {
       console.log('📝 New post created:', postData.content?.substring(0, 30) + '...');

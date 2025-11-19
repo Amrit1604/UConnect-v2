@@ -322,7 +322,27 @@
                 </div>
             </div>
 
+            <!-- Mini Gossip Box -->
+            <div class="mini-gossip-card-neo">
+                <div class="mini-gossip-header">
+                    <h3 class="card-title-neo">🗣️ GOSSIP BOX</h3>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <a href="/gossip" class="view-all-gossip" title="View full gossip box">→</a>
+                    </div>
+                </div>
+                
+                <div class="mini-gossip-input-section">
+                    <textarea id="miniGossipInput" class="mini-gossip-textarea" placeholder="Share a secret..." maxlength="300"></textarea>
+                    <div class="mini-gossip-footer">
+                        <span id="miniCharCount">0/300</span>
+                        <button id="miniPostGossipBtn" class="mini-post-btn" type="button">POST</button>
+                    </div>
+                </div>
 
+                <div id="miniGossipFeed" class="mini-gossip-feed">
+                    <p class="mini-gossip-loading">Loading...</p>
+                </div>
+            </div>
 
             <!-- Quick Links -->
             <div class="links-card-neo">
@@ -339,6 +359,10 @@
                     <a href="/users/settings/profile" class="link-item-neo">
                         <span class="link-icon">⚙️</span>
                         <span class="link-text">Settings</span>
+                    </a>
+                    <a href="/gossip" class="link-item-neo <%= currentPath === '/gossip' ? 'active' : '' %>">
+                        <span class="link-icon">🗣️</span>
+                        <span class="link-text">Gossip Box</span>
                     </a>
                     <a href="/auth/logout" class="link-item-neo logout">
                         <span class="link-icon">🚪</span>

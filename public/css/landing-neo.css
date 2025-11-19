@@ -2801,3 +2801,333 @@ body.light-theme .theme-icon.sun {
 .stagger-2 { animation-delay: 0.2s; }
 .stagger-3 { animation-delay: 0.3s; }
 .stagger-4 { animation-delay: 0.4s; }
+
+/* ========================================
+   MINI GOSSIP BOX - NEO THEME
+   ======================================== */
+
+.mini-gossip-card-neo {
+    background: linear-gradient(135deg, rgba(255, 51, 51, 0.06), rgba(255, 51, 51, 0.02));
+    border: 1px solid rgba(255, 51, 51, 0.2);
+    border-radius: 12px;
+    padding: 14px;
+    margin: 12px 0;
+    transition: all 0.3s ease;
+}
+
+.mini-gossip-card-neo:hover {
+    border-color: rgba(255, 51, 51, 0.4);
+    box-shadow: 0 0 20px rgba(255, 51, 51, 0.1);
+}
+
+.mini-gossip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 51, 51, 0.15);
+}
+
+.mini-gossip-header h3 {
+    margin: 0;
+    font-size: 13px;
+}
+
+.view-all-gossip {
+    color: #ff9999;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-all-gossip:hover {
+    color: #ff3333;
+    transform: translateX(2px);
+}
+
+.mini-gossip-input-section {
+    margin-bottom: 10px;
+}
+
+.mini-gossip-textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 51, 51, 0.2);
+    border-radius: 6px;
+    padding: 8px;
+    color: #fff;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    min-height: 60px;
+    resize: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    margin-bottom: 6px;
+}
+
+.mini-gossip-textarea:focus {
+    outline: none;
+    border-color: rgba(255, 51, 51, 0.6);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(255, 51, 51, 0.15);
+}
+
+.mini-gossip-textarea::placeholder {
+    color: #666;
+}
+
+.mini-gossip-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #888;
+}
+
+#miniCharCount {
+    font-weight: 600;
+}
+
+.mini-post-btn {
+    background: linear-gradient(90deg, #ff3333, #cc0000);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mini-post-btn:hover:not(:disabled) {
+    opacity: 0.9;
+    box-shadow: 0 0 12px rgba(255, 51, 51, 0.3);
+    transform: translateY(-1px);
+}
+
+.mini-post-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mini-gossip-feed {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.mini-gossip-feed::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mini-gossip-feed::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mini-gossip-feed::-webkit-scrollbar-thumb {
+    background: rgba(255, 51, 51, 0.3);
+    border-radius: 4px;
+}
+
+.mini-gossip-feed::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 51, 51, 0.5);
+}
+
+.mini-gossip-item {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 51, 51, 0.1);
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #ddd;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mini-gossip-item.deleted {
+    animation: slideOut 0.3s ease forwards;
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+}
+
+.mini-gossip-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 10px;
+}
+
+.mini-gossip-anon-id {
+    background: rgba(255, 51, 51, 0.2);
+    color: #ff9999;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+.mini-gossip-time {
+    color: #666;
+}
+
+.mini-gossip-content {
+    margin: 4px 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.mini-gossip-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mini-action-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 10px;
+    padding: 0;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.mini-action-btn:hover {
+    color: #ff3333;
+}
+
+.mini-action-btn.liked {
+    color: #ff3333;
+}
+
+.mini-gossip-loading,
+.mini-gossip-empty {
+    text-align: center;
+    padding: 20px 10px;
+    color: #666;
+    font-size: 12px;
+}
+
+/* Mini Comments Section */
+.mini-comments-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 51, 51, 0.1);
+    animation: slideDown 0.3s ease-out;
+}
+
+.mini-comments-toggle {
+    margin-bottom: 6px;
+}
+
+.mini-toggle-comments-btn {
+    font-size: 11px !important;
+    color: #888 !important;
+    cursor: pointer !important;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.mini-toggle-comments-btn:hover {
+    color: #ff9999 !important;
+}
+
+.mini-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    opacity: 1;
+}
+
+.mini-comments-list.active {
+    display: flex;
+    opacity: 1;
+    max-height: 300px;
+}
+
+.mini-comments-list:not(.active) {
+    display: none;
+    opacity: 0;
+    max-height: 0;
+}
+
+.mini-comment-item {
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 2px solid rgba(255, 51, 51, 0.2);
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    animation: slideIn 0.3s ease;
+}
+
+.mini-comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+    font-size: 9px;
+}
+
+.mini-comment-anon {
+    color: #ff9999;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
+.mini-comment-time {
+    color: #666;
+}
+
+.mini-comment-text {
+    color: #ccc;
+    line-height: 1.3;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
