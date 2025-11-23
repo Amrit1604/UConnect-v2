@@ -6,6 +6,12 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "cert:generate": "node scripts/generate-self-signed-cert.js",
+    "cert:generate:force": "node scripts/generate-self-signed-cert.js --force",
+    "cert:mkcert": "mkcert -install && mkcert -cert-file certs/server.crt -key-file certs/server.key localhost 127.0.0.1 ::1",
+    "cert:mkcert:generate": "npm run cert:mkcert || npm run cert:generate",
+    "cert:mkcert:install": "mkcert -install",
+    "cert:mkcert:force": "rm -f certs/* && mkcert -cert-file certs/server.crt -key-file certs/server.key localhost 127.0.0.1 ::1",
     "smoke:test": "node scripts/smokePostsTest.js",
     "test": "jest --coverage",
     "test:quick": "jest tests/basic.sanity.test.js --runInBand",

@@ -1,13 +1,27 @@
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const socketIo = require('socket.io');
+const path = require('path');
 const { initializeChatHandlers } = require('../sockets/chatHandlers');
 
 /**
  * Server and Socket.IO Configuration
- * Sets up HTTP server and real-time features
+ * Sets up HTTPS server and real-time features
  */
 const configureServer = (app) => {
-  const server = http.createServer(app);
+  // Paths to SSL cert and key - these can be customized as needed
+  const certPath = process.env.SSL_CERT_PATH || path.join(__dirname, '..', 'certs', 'server.crt');
+  const keyPath = process.env.SSL_KEY_PATH || path.join(__dirname, '..', 'certs', 'server.key');
+
+  // Read SSL certificate and private key
+  const sslOptions = {
+    cert: fs.readFileSync(certPath),
+    key: fs.readFileSync(keyPath)
+  };
+
+  // Create HTTPS server
+  const server = https.createServer(sslOptions, app);
+
   const io = socketIo(server, {
     cors: {
       origin: "*",
