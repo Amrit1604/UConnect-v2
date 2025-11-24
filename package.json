@@ -15,6 +15,7 @@
     "smoke:test": "node scripts/smokePostsTest.js",
     "test": "jest --coverage",
     "test:quick": "jest tests/basic.sanity.test.js --runInBand",
+    "test:perf:session": "jest tests/session.performance.test.js --runInBand",
     "test:student": "jest tests/simple.studentChecks.test.js --runInBand",
     "test:student:exists": "jest tests/student.exists.test.js --runInBand",
     "test:student:password:presence": "jest tests/password.presence.test.js --runInBand",
@@ -38,6 +39,8 @@
   "author": "UConnect Team",
   "license": "MIT",
   "dependencies": {
+    "redis": "^4.7.0",
+    "connect-redis": "^7.1.0",
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.0",
     "compression": "^1.7.4",

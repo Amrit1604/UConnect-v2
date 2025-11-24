@@ -37,6 +37,7 @@ const chatRoutes = require('./routes/chat');
 const notificationsRoutes = require('./routes/notifications');
 const friendsRoutes = require('./routes/friends');
 const gossipRoutes = require('./routes/gossip');
+const redisDemoRoutes = require('./routes/redisdemo');
 
 // ==========================================
 // MIDDLEWARE
@@ -64,6 +65,8 @@ mongoose.connection.once('open', () => {
 configureHelmet(app);
 
 // Session configuration (MUST be first after basic setup)
+const useRedisForSessions = process.env.SESSION_STORE === 'redis' || !!process.env.REDIS_URL;
+// Configure session immediately (session middleware must be active for other middlewares)
 configureSession(app);
 
 // Flash messages (needs session)
@@ -77,6 +80,11 @@ configureCORS(app);
 
 // Server and Socket.IO setup
 const { server, io } = configureServer(app);
+
+// Connect Redis client for dev if configured and not already connected for sessions
+if (!useRedisForSessions && ((process.env.NODE_ENV || 'development') === 'development')) {
+  connectRedis().then(() => console.log('Redis connected for development')).catch((err) => console.warn('Redis connect failed (dev):', err.message));
+}
 
 // ==========================================
 // ROUTES SETUP
@@ -94,6 +102,7 @@ app.use('/chat', chatRoutes);
 app.use('/notifications', notificationsRoutes);
 app.use('/friends', friendsRoutes);
 app.use('/gossip', gossipRoutes);
+app.use('/redis', redisDemoRoutes);
 
 // URL test route for debugging 🔧
 // app.use('/debug', createUrlTestRoute());
