@@ -55,6 +55,8 @@ A modern, real-time social media platform exclusively for Indian university stud
    # Security Keys (Generate strong keys for production)
    JWT_SECRET=your_super_secure_jwt_secret_key_here_minimum_32_characters
    SESSION_SECRET=your_super_secure_session_secret_key_here_minimum_32_characters
+   # Optional: AES-256 key (base64) used to encrypt passwords stored temporarily in sessions
+   PASSWORD_SESSION_KEY=<BASE64_32_BYTE_KEY>
 
    # Email Configuration (for .edu.in verification)
    EMAIL_HOST=smtp.gmail.com
@@ -68,6 +70,10 @@ A modern, real-time social media platform exclusively for Indian university stud
    # Rate Limiting (optional - currently disabled)
    RATE_LIMIT_WINDOW_MS=900000
    RATE_LIMIT_MAX_REQUESTS=100
+  
+   # Optional: Redis (sessions & cache)
+   # REDIS_URL=redis://127.0.0.1:6379
+   # SESSION_STORE=redis
    ```
 
 4. **Start MongoDB**
@@ -94,7 +100,77 @@ A modern, real-time social media platform exclusively for Indian university stud
    ```
 
 7. **Access the application**
-   Open your browser and navigate to `http://localhost:4000`
+Open your browser and navigate to `http://localhost:4000`
+
+### Local HTTPS & Certificates (Optional but recommended)
+
+For local development, you can run the app over HTTPS so the browser shows 'Secure' instead of 'Not Secure'. The project includes a helper script and `npm` shortcuts that generate a certificate in the `certs/` folder:
+
+1. Try `mkcert` (recommended):
+```bash
+# generate a locally-trusted certificate with mkcert
+npm run cert:mkcert:generate
+```
+This will use `mkcert` (if present) to generate a certificate and key at `certs/server.crt` and `certs/server.key` and should be trusted by your system/browser.
+
+2. Use the OpenSSL fallback (if mkcert is not installed):
+```bash
+# generate a self-signed cert with OpenSSL (includes SANs for localhost and 127.0.0.1)
+npm run cert:generate
+```
+The script will warn you if certs already exist; use `--force` (or `npm run cert:generate:force`) to regenerate.
+
+Alternatively, you can run the generator script directly:
+```bash
+# Generate a certificate (OpenSSL or mkcert) directly with Node
+node scripts/generate-self-signed-cert.js
+# For mkcert preference or force regeneration, use flags:
+node scripts/generate-self-signed-cert.js --mkcert
+node scripts/generate-self-signed-cert.js --force
+```
+
+3. Start the server using the generated certs (defaults to `certs/server.crt` and `certs/server.key`):
+```bash
+# Development mode — certs are loaded automatically if present
+npm run dev
+
+# Or set custom cert path and key explicitly
+SSL_CERT_PATH=/path/to/server.crt SSL_KEY_PATH=/path/to/server.key npm run dev
+```
+
+4. If you used `mkcert` and the cert is still not trusted in the browser, double-check mkcert CA installation:
+```bash
+mkcert -install
+```
+
+5. Note: self-signed certificates (OpenSSL fallback) will still show as untrusted unless you add them to your trust store or use `mkcert`.
+
+6. The project ignores `certs/` by default to avoid committing local certs to the repo. If you are switching between machines, regenerate certs on each machine.
+
+### Optional: Run Redis (Sessions & Caching)
+
+Redis is optional but recommended for sessions, caching, and better performance. If you want to enable Redis-backed session storage, follow these steps.
+
+1. Start Redis (Docker):
+```bash
+docker run --name uconnect-redis -p 6379:6379 -d redis:7
+```
+2. Optional: Start RedisInsight (Docker web GUI):
+```bash
+docker run --name redisinsight -d -p 8001:8001 -e RDIS_URL=redis://host.docker.internal:6379 redislabs/redisinsight:latest
+```
+3. Enable Redis in this app by setting `REDIS_URL` or `SESSION_STORE=redis` in `.env`:
+```env
+REDIS_URL=redis://127.0.0.1:6379
+SESSION_STORE=redis
+```
+
+4. Restart your app and log in / register — you should see session keys (prefixed `sess:`) and cached keys appear in RedisInsight.
+
+> Tip: To remove old sessions from Redis during testing, run:
+```bash
+redis-cli --scan --pattern 'sess:*' | xargs -r redis-cli del
+```
 
 ## 🔧 Configuration
 
@@ -115,6 +191,19 @@ For email verification to work properly:
 - Generate strong, unique secrets for `JWT_SECRET` and `SESSION_SECRET`
 - Use environment variables for all sensitive data
 - Enable HTTPS in production with proper SSL certificates
+
+#### Local HTTPS: mkcert
+To make your local development HTTPS connections show 'Secure' in browsers, install `mkcert` and generate a trusted certificate:
+```bash
+# Install mkcert (macOS, using Homebrew)
+brew install mkcert
+brew install nss # for firefox
+mkcert -install
+
+# Generate a certificate for localhost
+mkcert -cert-file certs/server.crt -key-file certs/server.key localhost 127.0.0.1 ::1
+```
+The repo includes a generator (`scripts/generate-self-signed-cert.js`) that will try `mkcert` and fall back to OpenSSL with SANs if needed.
 
 ## 📁 Project Structure
 
@@ -231,6 +320,21 @@ BackendPro/
 - **Content Security Policy**: XSS protection via Helmet
 - **Data Sanitization**: HTML sanitization for user content
 
+### Session Encryption & Password Safety
+- During registration, the app stores a `pendingRegistration` object in the session while the user verifies their email. Previously this contained the plaintext password which could appear in RedisInsight. To protect privacy, the application now encrypts the password using AES-GCM before saving to the session, and decrypts it only when creating the user in the database.
+
+Set a strong `PASSWORD_SESSION_KEY` (base64) in your `.env` to secure the encrypted password stored in sessions. Example generator:
+```bash
+openssl rand -base64 32
+```
+Add to `.env` like:
+```env
+PASSWORD_SESSION_KEY=<BASE64_KEY>
+```
+If `PASSWORD_SESSION_KEY` is not set, the server will derive an encryption key from `SESSION_SECRET` (not recommended for production).
+
+> Important: Clean any legacy session data with plaintext passwords from Redis using the earlier `redis-cli --scan` command.
+
 ## 🧪 Testing & Development
 
 ### Available Scripts
@@ -240,6 +344,19 @@ npm run dev        # Start development server (with nodemon)
 npm run seed       # Seed database with sample data
 npm test           # Run tests with coverage
 npm run lint       # Run ESLint for code quality
+
+### Session performance & Redis benchmark
+We included a Jest benchmark to compare Redis vs Mongo session set/get latencies: `tests/session.performance.test.js`.
+
+Run it like this (make sure Redis & Mongo are running):
+```bash
+REDIS_URL=redis://127.0.0.1:6379 MONGODB_URI=mongodb://127.0.0.1:27017/uconnect_test npm run test:perf:session
+```
+
+You can increase the number of iterations with `SESSION_BENCH_ITER`:
+```bash
+SESSION_BENCH_ITER=500 REDIS_URL=redis://127.0.0.1:6379 MONGODB_URI=mongodb://127.0.0.1:27017/uconnect_test npm run test:perf:session
+```
 ```
 
 ### Sample Accounts (After Seeding)
