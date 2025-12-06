@@ -9,18 +9,46 @@ const { initializeChatHandlers } = require('../sockets/chatHandlers');
  * Sets up HTTPS server and real-time features
  */
 const configureServer = (app) => {
-  // Paths to SSL cert and key - these can be customized as needed
-  const certPath = process.env.SSL_CERT_PATH || path.join(__dirname, '..', 'certs', 'server.crt');
-  const keyPath = process.env.SSL_KEY_PATH || path.join(__dirname, '..', 'certs', 'server.key');
+  let server;
 
-  // Read SSL certificate and private key
-  const sslOptions = {
-    cert: fs.readFileSync(certPath),
-    key: fs.readFileSync(keyPath)
-  };
+  // Try to get SSL certificates from environment variables first (for production)
+  const sslCert = process.env.SSL_CERT;
+  const sslKey = process.env.SSL_KEY;
 
-  // Create HTTPS server
-  const server = https.createServer(sslOptions, app);
+  if (sslCert && sslKey) {
+    // Use certificates from environment variables
+    const sslOptions = {
+      cert: sslCert,
+      key: sslKey
+    };
+
+    server = https.createServer(sslOptions, app);
+    console.log('🔒 HTTPS server configured with SSL certificates from environment variables');
+  } else {
+    // Check if SSL certificate files exist (for local development)
+    const certPath = process.env.SSL_CERT_PATH || path.join(__dirname, '..', 'certs', 'server.crt');
+    const keyPath = process.env.SSL_KEY_PATH || path.join(__dirname, '..', 'certs', 'server.key');
+
+    try {
+      // Check if cert files exist and are readable
+      fs.accessSync(certPath, fs.constants.R_OK);
+      fs.accessSync(keyPath, fs.constants.R_OK);
+
+      // Read SSL certificate and private key
+      const sslOptions = {
+        cert: fs.readFileSync(certPath),
+        key: fs.readFileSync(keyPath)
+      };
+
+      // Create HTTPS server
+      server = https.createServer(sslOptions, app);
+      console.log('🔒 HTTPS server configured with SSL certificate files');
+    } catch (error) {
+      // No certificates available, use HTTP
+      server = http.createServer(app);
+      console.log('🌐 HTTP server configured (SSL termination handled by reverse proxy)');
+    }
+  }
 
   const io = socketIo(server, {
     cors: {
