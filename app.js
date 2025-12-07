@@ -23,6 +23,7 @@ const { configureCORS } = require('./config/cors');
 const { configureHelmet } = require('./config/helmet');
 const { configureAppMiddleware } = require('./middleware/appMiddleware');
 const { configureServer } = require('./startup/server');
+const { connectRedis } = require('./services/redisClient');
 
 // ==========================================
 // ROUTES
