@@ -58,4 +58,19 @@ router.get('/session-get', (req, res) => {
   return res.json({ user: req.session.user, sessionId: req.sessionID });
 });
 
+// Health check for Redis connectivity
+router.get('/health', async (req, res) => {
+  try {
+    if (!client) {
+      return res.json({ ok: false, configured: false, message: 'REDIS_URL not configured' });
+    }
+    // Use ping to check server connectivity
+    const pong = await client.ping();
+    return res.json({ ok: pong === 'PONG', configured: true, pong });
+  } catch (err) {
+    console.error('Redis health check failed:', err);
+    return res.status(500).json({ ok: false, configured: true, error: err.message });
+  }
+});
+
 module.exports = router;

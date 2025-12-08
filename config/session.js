@@ -49,7 +49,22 @@ const configureSession = (app) => {
       }
       // Create separate client for session store to reduce interference with general use
       const { createClient } = require('redis');
-      const SESSION_REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+      // Prefer an explicitly configured REDIS_URL. If SESSION_STORE=redis is set
+      // without a REDIS_URL, we should not implicitly connect to localhost in production
+      // since many PaaS providers won't run Redis for you. Fall back to MongoDB and log
+      // a helpful message instructing the deployer to set REDIS_URL.
+      const SESSION_REDIS_URL = process.env.REDIS_URL || null;
+      if (!SESSION_REDIS_URL) {
+        console.warn('SESSION_STORE=redis set but REDIS_URL is not provided. Falling back to MongoDB session store.');
+        sessionOptions.store = MongoStore.create({
+          mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/campus_connect',
+          touchAfter: 24 * 3600
+        });
+        // Use Mongo store and avoid creating Redis client or connecting.
+        app.use(session(sessionOptions));
+        return;
+      }
+      // It's safe to create the client now that SESSION_REDIS_URL is present
       const sessionRedisClient = createClient({ url: SESSION_REDIS_URL });
       sessionRedisClient.on('error', (err) => console.warn('Session Redis Client Error', err));
       sessionRedisClient.connect().catch((err) => console.warn('Failed to connect session redis client', err));

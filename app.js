@@ -65,8 +65,12 @@ mongoose.connection.once('open', () => {
 // Security middleware
 configureHelmet(app);
 
+// Important for PaaS like Render which sits behind a proxy (ensures cookie secure check works)
+app.set('trust proxy', 1);
+
 // Session configuration (MUST be first after basic setup)
 const useRedisForSessions = process.env.SESSION_STORE === 'redis' || !!process.env.REDIS_URL;
+console.log('🔐 Session store selection ->', useRedisForSessions ? 'Redis' : 'MongoDB');
 // Configure session immediately (session middleware must be active for other middlewares)
 configureSession(app);
 

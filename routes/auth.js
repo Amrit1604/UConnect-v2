@@ -173,6 +173,19 @@ router.post('/register',
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
       };
 
+      // Persist session immediately so the pendingRegistration is available for the verification flow
+      try {
+        req.session.save((err) => {
+          if (err) {
+            console.warn('⚠️ Failed to save session after pendingRegistration:', err);
+          } else {
+            console.log('✅ pendingRegistration saved in session');
+          }
+        });
+      } catch (e) {
+        console.warn('⚠️ Exception during session.save after registration:', e.message);
+      }
+
       // Create environment-aware verification URL 🌍
       const baseUrl = getSmartBaseUrl(req);
       const verificationUrl = `${baseUrl}/auth/verify-email?token=${verificationToken}`;
@@ -491,8 +504,53 @@ router.get('/verify-email', async (req, res) => {
       console.log(`👤 Username: @${newUser.username}`);
       console.log('=====================================\n');
 
-      req.flash('success', 'Email verified successfully! Your account has been created. You can now log in.');
-      res.redirect('/auth/login');
+        // Regenerate session to avoid session fixation, set the authenticated user on the new session,
+        // and persist the session (works with Redis session store as well)
+        req.session.regenerate((err) => {
+          if (err) {
+            console.error('❌ Session regenerate error:', err);
+            // fallback: set user on current session
+            req.session.user = {
+              id: newUser._id,
+              email: newUser.email,
+              name: newUser.name,
+              username: newUser.username,
+              avatar: newUser.avatar,
+              avatarSeed: newUser.avatarSeed,
+              avatarType: newUser.avatarType,
+              avatarUrl: newUser.avatarUrl,
+              role: newUser.role,
+              campus: newUser.campus
+            };
+            req.flash('success', 'Email verified successfully and you are logged in!');
+            req.session.save((saveErr) => {
+              if (saveErr) console.error('❌ Session save error after fallback auto-login:', saveErr);
+              else console.log('✅ User auto-logged in using fallback session save');
+              return res.redirect('/posts');
+            });
+            return;
+          }
+
+          // On regenerated session set the user and save
+          req.session.user = {
+            id: newUser._id,
+            email: newUser.email,
+            name: newUser.name,
+            username: newUser.username,
+            avatar: newUser.avatar,
+            avatarSeed: newUser.avatarSeed,
+            avatarType: newUser.avatarType,
+            avatarUrl: newUser.avatarUrl,
+            role: newUser.role,
+            campus: newUser.campus
+          };
+          req.flash('success', 'Email verified successfully and you are logged in!');
+          req.session.save((saveErr) => {
+            if (saveErr) console.error('❌ Session save error after auto-login:', saveErr);
+            else console.log('✅ User auto-logged in and session saved');
+            return res.redirect('/posts');
+          });
+        });
 
   } catch (error) {
     console.error('Email verification error:', error);
