@@ -130,62 +130,62 @@
     }
 
 	// Add comment: POST /posts/:id/comment
+	// NOTE: Socket.IO will broadcast the new comment, so we DON'T add it to DOM here
+	// to avoid duplicates. We just clear the input and let the socket handler add it.
 	async function addComment(postId, textarea) {
 		try {
-			console.log('Adding comment for postId:', postId);
 			const content = textarea.value.trim();
-			console.log('Comment content:', content);
-			if (!content) {
-				console.log('Comment content is empty, returning');
-				return;
+			if (!content) return;
+
+			// Disable submit button while posting
+			const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+			const submitBtn = postEl ? postEl.querySelector('.comment-submit') : null;
+			if (submitBtn) {
+				submitBtn.disabled = true;
+				submitBtn.innerHTML = '<span class="spinner-small"></span> Posting...';
 			}
 
-			const payload = { content };
-			console.log('Sending payload:', payload);
 			const data = await requestJson(`/posts/${postId}/comment`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'Accept': 'application/json'
 				},
-				body: JSON.stringify(payload)
+				body: JSON.stringify({ content })
 			});
 
-			console.log('Comment response:', data);
+			// Clear textarea on success
+			textarea.value = '';
+			
+			// Reset character counter
+			const charCounter = postEl ? postEl.querySelector(`#comment-char-${postId}`) : null;
+			if (charCounter) charCounter.textContent = '0';
 
-			// Append the new comment into comments list if present
-			const postEl = document.querySelector(`[data-post-id="${postId}"]`);
-			if (postEl) {
-				const commentsList = postEl.querySelector('.comments-list') || postEl.querySelector('.comments-container .comments-list');
-				if (commentsList && data.comment) {
-					const div = document.createElement('div');
-					div.className = 'comment-item new-comment';
-					div.innerHTML = `
-						<img src="${data.comment.author.avatarUrl || '/images/default-avatar.png'}" alt="${data.comment.author.username}" style="width:32px;height:32px;border-radius:50%;border:2px solid #e5e7eb;flex-shrink:0;">
-						<div style="flex:1">
-							<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-								<strong style="font-weight:600;color:#1f2937">${data.comment.author.username}</strong>
-								<small style="color:#6b7280">Just now</small>
-							</div>
-							<p style="margin:0;color:#374151">${escapeHtml(data.comment.content)}</p>
-						</div>
-					`;
-					commentsList.appendChild(div);
-					textarea.value = '';
-
-					// Update comment count in the action button
-					const commentCountSpan = postEl.querySelector('.comment-btn span');
-					console.log('Comment count span found:', !!commentCountSpan);
-					if (commentCountSpan) {
-						const currentCount = parseInt(commentCountSpan.textContent) || 0;
-						console.log('Current comment count:', currentCount);
-						commentCountSpan.textContent = currentCount + 1;
-						console.log('Updated comment count to:', currentCount + 1);
-					}
-				}
+			// Re-enable submit button
+			if (submitBtn) {
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+				</svg> Comment`;
 			}
+
+			// NOTE: Don't add comment to DOM here - Socket.IO 'new-comment' event
+			// will handle it to avoid duplicates. If socket is not working,
+			// the comment will appear on page refresh.
+
 		} catch (err) {
 			console.error('Add comment error', err);
+			
+			// Re-enable submit button on error
+			const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+			const submitBtn = postEl ? postEl.querySelector('.comment-submit') : null;
+			if (submitBtn) {
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+				</svg> Comment`;
+			}
+			
 			alert(err.body || 'Failed to add comment');
 		}
 	}
