@@ -1,10 +1,10 @@
 /**
  * Email Service - UConnect 🔥
  * Hybrid Email System: SMTP (Local) + Resend API (Production)
- * 
+ *
  * LOCAL DEV  → Gmail SMTP (your gmail app password)
  * PRODUCTION → Resend API (works on Render free tier!)
- * 
+ *
  * Super cool Red/White/Black branded emails! 🎨
  */
 
@@ -31,8 +31,19 @@ class EmailService {
     console.log('╚════════════════════════════════════════════════════════════╝');
     console.log('🌐 Environment:', process.env.NODE_ENV || 'development');
 
-    // Decision: Use Resend in production (Render), SMTP in development
-    if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
+    // Detect if running on Render (has RENDER env var) or production
+    const isRender = !!process.env.RENDER;
+    const isProduction = process.env.NODE_ENV === 'production' || isRender;
+    const hasResendKey = !!process.env.RESEND_API_KEY;
+
+    console.log('☁️ Running on Render:', isRender ? 'YES' : 'NO');
+    console.log('🔑 Resend API Key:', hasResendKey ? 'SET' : 'NOT SET');
+
+    // Decision: Use Resend on Render/production, SMTP in development
+    if ((isProduction || isRender) && hasResendKey) {
+      this.initializeResend();
+    } else if (hasResendKey && !process.env.EMAIL_USER) {
+      // If only Resend key is available, use Resend
       this.initializeResend();
     } else {
       this.initializeSMTP();
@@ -48,7 +59,7 @@ class EmailService {
     try {
       console.log('📧 Mode: RESEND API (Production)');
       console.log('🔑 API Key:', process.env.RESEND_API_KEY ? '***' + process.env.RESEND_API_KEY.slice(-8) : 'MISSING');
-      
+
       if (!process.env.RESEND_API_KEY) {
         console.error('❌ RESEND_API_KEY is missing in environment variables!');
         this.isConfigured = false;
@@ -58,7 +69,7 @@ class EmailService {
       this.resend = new Resend(process.env.RESEND_API_KEY);
       this.useResend = true;
       this.isConfigured = true;
-      
+
       console.log('✅ Resend API initialized successfully! 🚀');
       console.log('📬 From:', process.env.RESEND_FROM || 'UConnect <onboarding@resend.dev>');
     } catch (error) {
@@ -190,7 +201,7 @@ class EmailService {
   async sendWithResend({ to, subject, html, text }) {
     try {
       console.log('🚀 Sending via Resend API...');
-      
+
       const result = await this.resend.emails.send({
         from: process.env.RESEND_FROM || 'UConnect <onboarding@resend.dev>',
         to: to,
@@ -201,9 +212,9 @@ class EmailService {
 
       console.log('✅ Email sent via Resend!');
       console.log('📧 Message ID:', result.data?.id || result.id || 'N/A');
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         messageId: result.data?.id || result.id,
         provider: 'resend'
       };
@@ -243,9 +254,9 @@ class EmailService {
 
         console.log('✅ Email sent via SMTP!');
         console.log('📧 Message ID:', info.messageId);
-        
-        return { 
-          success: true, 
+
+        return {
+          success: true,
           messageId: info.messageId,
           provider: 'smtp'
         };
@@ -292,7 +303,7 @@ class EmailService {
     <tr>
       <td align="center">
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #111111; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px rgba(220, 38, 38, 0.15);">
-          
+
           <!-- 🔥 HEADER - Bold Red Gradient -->
           <tr>
             <td style="background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); padding: 50px 40px; text-align: center;">
@@ -309,13 +320,13 @@ class EmailService {
           <!-- CONTENT -->
           <tr>
             <td style="padding: 50px 40px;">
-              
+
               <!-- Welcome Message -->
               <h2 style="color: #FFFFFF; font-size: 28px; font-weight: 700; margin: 0 0 10px 0;">
                 Welcome aboard, ${name || username}! 👋
               </h2>
               <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                You're just one click away from joining the most exclusive campus community. 
+                You're just one click away from joining the most exclusive campus community.
                 Verify your email to unlock all features and start connecting!
               </p>
 
@@ -438,7 +449,7 @@ If you didn't create this account, ignore this email.
     <tr>
       <td align="center">
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #111111; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px rgba(220, 38, 38, 0.15);">
-          
+
           <!-- HEADER - Dark with Red Accent -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); padding: 50px 40px; text-align: center; border-bottom: 3px solid #DC2626;">
@@ -455,7 +466,7 @@ If you didn't create this account, ignore this email.
           <!-- CONTENT -->
           <tr>
             <td style="padding: 50px 40px;">
-              
+
               <h2 style="color: #FFFFFF; font-size: 24px; font-weight: 700; margin: 0 0 10px 0;">
                 Hey ${name || username},
               </h2>
@@ -491,7 +502,7 @@ If you didn't create this account, ignore this email.
                 <tr>
                   <td style="background-color: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; padding: 15px 20px;">
                     <p style="color: #FBBF24; font-size: 13px; margin: 0;">
-                      ⚠️ <strong>Didn't request this?</strong> Someone may have entered your email by mistake. 
+                      ⚠️ <strong>Didn't request this?</strong> Someone may have entered your email by mistake.
                       If you didn't request a password reset, you can safely ignore this email.
                     </p>
                   </td>
@@ -569,7 +580,7 @@ Click here to reset: ${resetUrl}
       console.log('✅ Resend API is configured');
       return true;
     }
-    
+
     if (this.transporter) {
       try {
         await this.transporter.verify();
@@ -580,7 +591,7 @@ Click here to reset: ${resetUrl}
         return false;
       }
     }
-    
+
     return false;
   }
 }

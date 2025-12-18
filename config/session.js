@@ -8,7 +8,7 @@ const MongoStore = require('connect-mongo');
  */
 const configureSession = (app) => {
   console.log('🔧 Configuring session store...');
-  
+
   const sessionOptions = {
     secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
     resave: false,
@@ -28,17 +28,17 @@ const configureSession = (app) => {
 
   // Determine session store: Redis only if explicitly requested AND available
   const useRedis = process.env.SESSION_STORE === 'redis' && process.env.REDIS_URL;
-  
+
   if (useRedis) {
     try {
       const RedisStoreCreator = require('connect-redis');
       const { client: redisClient, isAvailable } = require('../services/redisClient');
-      
+
       if (redisClient && isAvailable && isAvailable()) {
-        let RedisStoreFactory = typeof RedisStoreCreator === 'function' 
-          ? RedisStoreCreator 
+        let RedisStoreFactory = typeof RedisStoreCreator === 'function'
+          ? RedisStoreCreator
           : RedisStoreCreator.default;
-        
+
         if (RedisStoreFactory) {
           let RedisStoreClass;
           try {
@@ -46,10 +46,10 @@ const configureSession = (app) => {
           } catch (e) {
             RedisStoreClass = RedisStoreFactory;
           }
-          
-          sessionOptions.store = new RedisStoreClass({ 
-            client: redisClient, 
-            prefix: 'sess:' 
+
+          sessionOptions.store = new RedisStoreClass({
+            client: redisClient,
+            prefix: 'sess:'
           });
           console.log('✅ Session store: Redis');
         } else {

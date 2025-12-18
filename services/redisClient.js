@@ -21,7 +21,7 @@ function initializeClient() {
   }
 
   try {
-    client = redis.createClient({ 
+    client = redis.createClient({
       url: REDIS_URL,
       socket: {
         connectTimeout: 5000, // 5 second timeout
@@ -66,7 +66,7 @@ client = initializeClient();
  */
 async function connectRedis() {
   connectionAttempted = true;
-  
+
   if (!client) {
     console.log('ℹ️ Redis: Not configured, skipping connection');
     return false;
@@ -80,7 +80,7 @@ async function connectRedis() {
   try {
     await Promise.race([
       client.connect(),
-      new Promise((_, reject) => 
+      new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Connection timeout')), 5000)
       )
     ]);
