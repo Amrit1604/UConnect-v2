@@ -1,606 +1,587 @@
 /**
- * Email Service - UConnect
- * Handles all email functionality with Gmail SMTP
- * Optimized for cloud deployment (Render, Vercel, etc.) 🚀⚡
+ * Email Service - UConnect 🔥
+ * Hybrid Email System: SMTP (Local) + Resend API (Production)
+ * 
+ * LOCAL DEV  → Gmail SMTP (your gmail app password)
+ * PRODUCTION → Resend API (works on Render free tier!)
+ * 
+ * Super cool Red/White/Black branded emails! 🎨
  */
 
 const nodemailer = require('nodemailer');
-const path = require('path');
+const { Resend } = require('resend');
 
 class EmailService {
   constructor() {
     this.transporter = null;
+    this.resend = null;
     this.isConfigured = false;
-    this.retryCount = 0;
+    this.useResend = false;
     this.maxRetries = 3;
-    this.initializeTransporter();
+    this.initialize();
   }
 
   /**
-   * Initialize Gmail SMTP transporter with cloud-optimized settings
+   * Initialize email service based on environment
    */
-  initializeTransporter() {
-    try {
-      console.log('🔧 Initializing Email Service...');
-      console.log('📧 Email User:', process.env.EMAIL_USER ? process.env.EMAIL_USER.substring(0, 5) + '***' : 'MISSING');
-      console.log('🔑 Email Pass:', process.env.EMAIL_PASS ? '****' + process.env.EMAIL_PASS.slice(-4) : 'MISSING');
-      console.log('🌐 Environment:', process.env.NODE_ENV || 'development');
+  initialize() {
+    console.log('');
+    console.log('╔════════════════════════════════════════════════════════════╗');
+    console.log('║          🔥 UCONNECT EMAIL SERVICE INITIALIZING 🔥         ║');
+    console.log('╚════════════════════════════════════════════════════════════╝');
+    console.log('🌐 Environment:', process.env.NODE_ENV || 'development');
 
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.error('❌ Email credentials missing in environment variables');
+    // Decision: Use Resend in production (Render), SMTP in development
+    if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
+      this.initializeResend();
+    } else {
+      this.initializeSMTP();
+    }
+    console.log('');
+  }
+
+  /**
+   * Initialize Resend API for production (Render)
+   * Resend works perfectly on Render's free tier! 🚀
+   */
+  initializeResend() {
+    try {
+      console.log('📧 Mode: RESEND API (Production)');
+      console.log('🔑 API Key:', process.env.RESEND_API_KEY ? '***' + process.env.RESEND_API_KEY.slice(-8) : 'MISSING');
+      
+      if (!process.env.RESEND_API_KEY) {
+        console.error('❌ RESEND_API_KEY is missing in environment variables!');
         this.isConfigured = false;
         return;
       }
 
-      // Cloud-optimized Gmail SMTP configuration
-      // Works with Render, Vercel, Railway, Heroku, etc.
+      this.resend = new Resend(process.env.RESEND_API_KEY);
+      this.useResend = true;
+      this.isConfigured = true;
+      
+      console.log('✅ Resend API initialized successfully! 🚀');
+      console.log('📬 From:', process.env.RESEND_FROM || 'UConnect <onboarding@resend.dev>');
+    } catch (error) {
+      console.error('❌ Resend initialization failed:', error.message);
+      this.isConfigured = false;
+    }
+  }
+
+  /**
+   * Initialize Gmail SMTP for local development
+   */
+  initializeSMTP() {
+    try {
+      console.log('📧 Mode: GMAIL SMTP (Development)');
+      console.log('📧 Email User:', process.env.EMAIL_USER ? process.env.EMAIL_USER.substring(0, 5) + '***' : 'MISSING');
+      console.log('🔑 Email Pass:', process.env.EMAIL_PASS ? '****' + process.env.EMAIL_PASS.slice(-4) : 'MISSING');
+
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.warn('⚠️ SMTP credentials missing - emails will not work locally');
+        console.warn('💡 Set EMAIL_USER and EMAIL_PASS in your .env file');
+        this.isConfigured = false;
+        return;
+      }
+
+      // Gmail SMTP configuration
       this.transporter = nodemailer.createTransport({
-        service: 'gmail', // Use 'gmail' service for automatic config
+        service: 'gmail',
         host: 'smtp.gmail.com',
         port: 465,
-        secure: true, // Use SSL (more reliable on cloud platforms)
+        secure: true, // Use SSL
         auth: {
           user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS // Must be Gmail App Password (16 chars)
+          pass: process.env.EMAIL_PASS // Gmail App Password (16 chars)
         },
-        // Cloud-specific settings for reliability
-        pool: true, // Use pooled connections
-        maxConnections: 5,
-        maxMessages: 100,
-        rateDelta: 1000,
-        rateLimit: 5, // Max 5 emails per second
-        // TLS settings for cloud environments
         tls: {
-          rejectUnauthorized: true, // Verify SSL certificates
-          minVersion: 'TLSv1.2'
+          rejectUnauthorized: false
         },
-        // Timeout settings (important for cloud)
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 10000,
-        socketTimeout: 30000, // 30 seconds for sending
-        // Debug in development
-        debug: process.env.NODE_ENV === 'development',
-        logger: process.env.NODE_ENV === 'development'
+        connectionTimeout: 30000,
+        greetingTimeout: 30000,
+        socketTimeout: 60000
       });
 
-      console.log('📧 SMTP Transporter created with cloud-optimized settings');
-
-      // Skip verification in test mode
-      if (process.env.NODE_ENV !== 'test' && process.env.SKIP_EMAIL_VERIFY !== 'true') {
-        this.verifyConnectionAsync();
-      } else {
-        console.log('ℹ️ Skipping SMTP verification in test mode');
-        this.isConfigured = true;
-      }
-
-    } catch (error) {
-      console.error('❌ Email Service initialization failed:', error.message);
-      this.isConfigured = false;
-    }
-  }
-
-  /**
-   * Async connection verification (non-blocking)
-   */
-  verifyConnectionAsync() {
-    this.isConfigured = true; // Optimistically set to true
-    console.log('✅ Email Service: Configuration accepted, verifying in background...');
-
-    // Verify in background without blocking app startup
-    setTimeout(() => {
-      this.verifyConnection().catch(error => {
-        console.error('⚠️ Background SMTP verification issue:', error.message);
-        console.log('📧 Email sending will retry on first actual send attempt');
-      });
-    }, 2000); // Delay verification to not block startup
-  }
-
-  /**
-   * Verify email service connection with retry logic
-   */
-  async verifyConnection() {
-    try {
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.error('❌ Email credentials missing');
-        this.isConfigured = false;
-        return false;
-      }
-
-      await this.transporter.verify();
-      console.log('✅ Email Service: SMTP connection verified! 🚀');
+      this.useResend = false;
       this.isConfigured = true;
-      this.retryCount = 0;
-      return true;
+
+      // Verify connection in background
+      console.log('🔄 Verifying SMTP connection...');
+      this.transporter.verify()
+        .then(() => {
+          console.log('✅ SMTP connection verified! 🚀');
+        })
+        .catch(err => {
+          console.warn('⚠️ SMTP verification failed:', err.message);
+          console.log('📧 Will retry when sending actual email');
+        });
+
     } catch (error) {
-      console.error('❌ SMTP verification failed:', error.message);
-      
-      // Provide helpful error messages
-      if (error.code === 'EAUTH' || error.responseCode === 535) {
-        console.error('');
-        console.error('🔐 AUTHENTICATION ERROR - Common fixes:');
-        console.error('1. Make sure you are using a Gmail APP PASSWORD (not your regular password)');
-        console.error('2. App Password is exactly 16 characters (no spaces): xxxx xxxx xxxx xxxx');
-        console.error('3. Enable 2-Step Verification first: https://myaccount.google.com/security');
-        console.error('4. Generate App Password: https://myaccount.google.com/apppasswords');
-        console.error('5. On Render: Set EMAIL_USER and EMAIL_PASS in Environment Variables');
-        console.error('');
-      } else if (error.code === 'ESOCKET' || error.code === 'ECONNECTION') {
-        console.error('');
-        console.error('🌐 CONNECTION ERROR - The server cannot reach Gmail SMTP');
-        console.error('This is normal during startup. Emails will work when actually sent.');
-        console.error('');
-      }
-      
+      console.error('❌ SMTP initialization failed:', error.message);
       this.isConfigured = false;
-      return false;
     }
   }
 
   /**
-   * Recreate transporter (for retry logic)
-   */
-  recreateTransporter() {
-    console.log('🔄 Recreating SMTP transporter...');
-    this.initializeTransporter();
-  }
-
-  /**
-   * Send email verification with retry logic for cloud environments
-   * @param {Object} options - Email options
-   * @param {string} options.to - Recipient email
-   * @param {string} options.username - User's username
-   * @param {string} options.displayName - User's display name
-   * @param {string} options.verificationUrl - Verification URL
+   * Send verification email
+   * Uses Resend (production) or SMTP (development) automatically
    */
   async sendVerificationEmail({ to, username, name, verificationUrl }) {
-    console.log('📧 Attempting to send verification email...');
-    console.log('🎯 Recipient:', to);
-    console.log('🔧 Service configured:', this.isConfigured);
-    console.log('🌐 Environment:', process.env.NODE_ENV || 'development');
+    console.log('');
+    console.log('📧 ═══════════════════════════════════════════════════════');
+    console.log('📧 SENDING VERIFICATION EMAIL');
+    console.log('📧 To:', to);
+    console.log('📧 Provider:', this.useResend ? '🚀 Resend API' : '📮 Gmail SMTP');
+    console.log('📧 ═══════════════════════════════════════════════════════');
 
-    // Retry logic for cloud environments
-    let lastError = null;
-    
-    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-      try {
-        // If not configured or transporter is null, try to reinitialize
-        if (!this.isConfigured || !this.transporter) {
-          console.log(`🔄 Attempt ${attempt}: Reinitializing email transporter...`);
-          this.recreateTransporter();
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s
-        }
+    const html = this.generateVerificationHTML({ name, username, verificationUrl, to });
+    const text = this.generateVerificationText({ name, verificationUrl });
 
-        const htmlContent = this.generateVerificationEmailHTML({
-          username,
-          name,
-          verificationUrl,
-          to
-        });
-
-        const textContent = this.generateVerificationEmailText({
-          username,
-          name,
-          verificationUrl
-        });
-
-        const mailOptions = {
-          from: {
-            name: process.env.EMAIL_FROM_NAME || 'UConnect Campus',
-            address: process.env.EMAIL_FROM || process.env.EMAIL_USER
-          },
-          to: to,
-          subject: '🎓 Verify Your UConnect Account - Welcome to Campus!',
-          text: textContent,
-          html: htmlContent,
-          headers: {
-            'X-Priority': '1',
-            'X-MSMail-Priority': 'High',
-            'Importance': 'high'
-          }
-        };
-
-        console.log(`📤 Attempt ${attempt}: Sending email via Gmail SMTP...`);
-        const info = await this.transporter.sendMail(mailOptions);
-        
-        console.log(`✅ Verification email sent successfully to ${to}! 🎉`);
-        console.log(`📧 Message ID: ${info.messageId}`);
-        
-        this.isConfigured = true; // Mark as working
-        this.retryCount = 0;
-        
-        return {
-          success: true,
-          messageId: info.messageId,
-          response: info.response
-        };
-
-      } catch (error) {
-        lastError = error;
-        console.error(`❌ Attempt ${attempt}/${this.maxRetries} failed:`, error.message);
-        
-        // Check if error is recoverable
-        if (error.code === 'EAUTH' || error.responseCode === 535) {
-          // Auth errors are not recoverable by retry
-          console.error('🔐 Authentication error - check your Gmail App Password');
-          break;
-        }
-        
-        if (attempt < this.maxRetries) {
-          const waitTime = attempt * 2000; // Exponential backoff: 2s, 4s, 6s
-          console.log(`⏳ Waiting ${waitTime/1000}s before retry...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-          
-          // Recreate transporter for next attempt
-          this.recreateTransporter();
-        }
-      }
-    }
-
-    // All retries failed
-    console.error(`❌ All ${this.maxRetries} attempts failed to send email to ${to}`);
-    console.error('🔧 Last error:', lastError?.message);
-    
-    // Provide specific error messages
-    if (lastError?.code === 'EAUTH' || lastError?.responseCode === 535) {
-      throw new Error('Gmail authentication failed. Please verify your App Password is correct. Go to https://myaccount.google.com/apppasswords to generate a new one.');
-    } else if (lastError?.code === 'ECONNECTION' || lastError?.code === 'ESOCKET') {
-      throw new Error('Cannot connect to Gmail SMTP server. This may be a temporary network issue. Please try again.');
-    } else if (lastError?.code === 'ETIMEDOUT') {
-      throw new Error('Connection to Gmail timed out. Please try again in a moment.');
+    if (this.useResend) {
+      return this.sendWithResend({
+        to,
+        subject: '🔥 Verify Your UConnect Account',
+        html,
+        text
+      });
     } else {
-      throw new Error(`Email sending failed after ${this.maxRetries} attempts: ${lastError?.message || 'Unknown error'}`);
+      return this.sendWithSMTP({
+        to,
+        subject: '🔥 Verify Your UConnect Account',
+        html,
+        text
+      });
     }
   }
 
   /**
-   * Generate HTML email template for verification
-   */
-  generateVerificationEmailHTML({ username, name, verificationUrl, to }) {
-    return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Verify Your UConnect Account</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                background-color: #f8f9fa;
-            }
-
-            .container {
-                max-width: 600px;
-                margin: 0 auto;
-                background-color: #ffffff;
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            }
-
-            .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 40px 30px;
-                text-align: center;
-            }
-
-            .header h1 {
-                font-size: 28px;
-                margin-bottom: 10px;
-                font-weight: 700;
-            }
-
-            .header .subtitle {
-                font-size: 16px;
-                opacity: 0.9;
-            }
-
-            .content {
-                padding: 40px 30px;
-            }
-
-            .welcome {
-                font-size: 18px;
-                margin-bottom: 20px;
-                color: #2c3e50;
-            }
-
-            .message {
-                font-size: 16px;
-                margin-bottom: 30px;
-                color: #555;
-                line-height: 1.7;
-            }
-
-            .verify-button {
-                display: inline-block;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                text-decoration: none;
-                padding: 16px 32px;
-                border-radius: 8px;
-                font-weight: 600;
-                font-size: 16px;
-                margin: 20px 0;
-                transition: all 0.3s ease;
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            }
-
-            .verify-button:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-            }
-
-            .alternative-link {
-                background-color: #f8f9fa;
-                border: 1px solid #e9ecef;
-                border-radius: 6px;
-                padding: 15px;
-                margin: 25px 0;
-                word-break: break-all;
-                font-size: 14px;
-                color: #6c757d;
-            }
-
-            .security-notice {
-                background-color: #fff3cd;
-                border-left: 4px solid #ffc107;
-                padding: 15px;
-                margin: 25px 0;
-                border-radius: 4px;
-            }
-
-            .security-notice strong {
-                color: #856404;
-            }
-
-            .footer {
-                background-color: #f8f9fa;
-                padding: 30px;
-                text-align: center;
-                border-top: 1px solid #e9ecef;
-            }
-
-            .footer p {
-                color: #6c757d;
-                font-size: 14px;
-                margin: 5px 0;
-            }
-
-            .social-links {
-                margin: 20px 0;
-            }
-
-            .social-links a {
-                display: inline-block;
-                margin: 0 10px;
-                color: #667eea;
-                text-decoration: none;
-                font-weight: 500;
-            }
-
-            @media (max-width: 600px) {
-                .container {
-                    margin: 0;
-                    border-radius: 0;
-                }
-
-                .header, .content, .footer {
-                    padding: 25px 20px;
-                }
-
-                .verify-button {
-                    display: block;
-                    text-align: center;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>🎓 UConnect</h1>
-                <p class="subtitle">Your Campus Community Platform</p>
-            </div>
-
-            <div class="content">
-                <div class="welcome">
-                    Welcome to UConnect, ${name}! 👋
-                </div>
-
-                <div class="message">
-                    Thanks for joining our campus community! We're excited to have you connect with fellow students
-                    from your university. To complete your registration and start exploring, please verify your email address.
-                </div>
-
-                <div style="text-align: center;">
-                    <a href="${verificationUrl}" class="verify-button">
-                        ✅ Verify My Email Address
-                    </a>
-                </div>
-
-                <div class="message">
-                    This verification link will expire in <strong>24 hours</strong> for security reasons.
-                </div>
-
-                <div class="security-notice">
-                    <strong>🔒 Security Notice:</strong> If you didn't create an account with UConnect,
-                    please ignore this email. Your email address will not be used without verification.
-                </div>
-
-                <div class="alternative-link">
-                    <strong>Having trouble with the button?</strong> Copy and paste this link into your browser:
-                    <br><br>
-                    ${verificationUrl}
-                </div>
-            </div>
-
-            <div class="footer">
-                <p><strong>UConnect Campus Community</strong></p>
-                <p>Connecting students, building communities</p>
-                <div class="social-links">
-                    <a href="#">About</a> •
-                    <a href="#">Privacy</a> •
-                    <a href="#">Support</a>
-                </div>
-                <p style="margin-top: 20px; font-size: 12px;">
-                    This email was sent to ${to} because you signed up for UConnect.<br>
-                    If you have any questions, please contact our support team.
-                </p>
-            </div>
-        </div>
-    </body>
-    </html>
-    `;
-  }
-
-  /**
-   * Generate text email template for verification (fallback)
-   */
-  generateVerificationEmailText({ username, name, verificationUrl }) {
-    return `
-🎓 Welcome to UConnect, ${name}!
-
-Thanks for joining our campus community! We're excited to have you connect with fellow students from your university.
-
-To complete your registration and start exploring, please verify your email address by clicking the link below:
-
-${verificationUrl}
-
-This verification link will expire in 24 hours for security reasons.
-
-🔒 Security Notice: If you didn't create an account with UConnect, please ignore this email. Your email address will not be used without verification.
-
----
-UConnect Campus Community
-Connecting students, building communities
-
-If you have any questions, please contact our support team.
-    `.trim();
-  }
-
-  /**
-   * Send password reset email with retry logic
+   * Send password reset email
    */
   async sendResetPasswordEmail({ to, username, name, resetUrl }) {
-    console.log('📧 Sending password reset email to:', to);
+    console.log('');
+    console.log('📧 ═══════════════════════════════════════════════════════');
+    console.log('📧 SENDING PASSWORD RESET EMAIL');
+    console.log('📧 To:', to);
+    console.log('📧 Provider:', this.useResend ? '🚀 Resend API' : '📮 Gmail SMTP');
+    console.log('📧 ═══════════════════════════════════════════════════════');
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-          .button { display: inline-block; padding: 15px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
-          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>🔐 Password Reset</h1>
-          </div>
-          <div class="content">
-            <p>Hello ${name || username},</p>
-            <p>We received a request to reset your password. Click the button below to create a new password:</p>
-            <p style="text-align: center;">
-              <a href="${resetUrl}" class="button">Reset My Password</a>
-            </p>
-            <p>This link will expire in <strong>1 hour</strong> for security reasons.</p>
-            <p>If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
-            <p style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 5px; font-size: 14px;">
-              <strong>⚠️ Security Tip:</strong> Never share this link with anyone. UConnect staff will never ask for your password.
-            </p>
-          </div>
-          <div class="footer">
-            <p>UConnect Campus Community</p>
-            <p>This email was sent to ${to}</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+    const html = this.generateResetPasswordHTML({ name, username, resetUrl, to });
+    const text = this.generateResetPasswordText({ name, resetUrl });
 
-    const text = `
-Password Reset Request
+    if (this.useResend) {
+      return this.sendWithResend({
+        to,
+        subject: '🔐 Reset Your UConnect Password',
+        html,
+        text
+      });
+    } else {
+      return this.sendWithSMTP({
+        to,
+        subject: '🔐 Reset Your UConnect Password',
+        html,
+        text
+      });
+    }
+  }
 
-Hello ${name || username},
+  /**
+   * Send email using Resend API (Production - Render)
+   */
+  async sendWithResend({ to, subject, html, text }) {
+    try {
+      console.log('🚀 Sending via Resend API...');
+      
+      const result = await this.resend.emails.send({
+        from: process.env.RESEND_FROM || 'UConnect <onboarding@resend.dev>',
+        to: to,
+        subject: subject,
+        html: html,
+        text: text
+      });
 
-We received a request to reset your password. Visit the link below to create a new password:
+      console.log('✅ Email sent via Resend!');
+      console.log('📧 Message ID:', result.data?.id || result.id || 'N/A');
+      
+      return { 
+        success: true, 
+        messageId: result.data?.id || result.id,
+        provider: 'resend'
+      };
+    } catch (error) {
+      console.error('❌ Resend error:', error.message);
+      console.error('📋 Error details:', JSON.stringify(error, null, 2));
+      throw new Error(`Failed to send email via Resend: ${error.message}`);
+    }
+  }
 
-${resetUrl}
-
-This link will expire in 1 hour.
-
-If you didn't request this, please ignore this email.
-
-- UConnect Team
-    `.trim();
-
-    // Retry logic for cloud environments
+  /**
+   * Send email using Gmail SMTP (Development - Local)
+   */
+  async sendWithSMTP({ to, subject, html, text }) {
     let lastError = null;
-    
+
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        if (!this.isConfigured || !this.transporter) {
-          console.log(`🔄 Attempt ${attempt}: Reinitializing email transporter...`);
-          this.recreateTransporter();
+        console.log(`📮 Attempt ${attempt}/${this.maxRetries}: Sending via SMTP...`);
+
+        if (!this.transporter) {
+          console.log('🔄 Reinitializing SMTP transporter...');
+          this.initializeSMTP();
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
-        console.log(`📤 Attempt ${attempt}: Sending password reset email...`);
         const info = await this.transporter.sendMail({
           from: {
-            name: process.env.EMAIL_FROM_NAME || 'UConnect Campus',
-            address: process.env.EMAIL_FROM || process.env.EMAIL_USER
+            name: process.env.EMAIL_FROM_NAME || 'UConnect',
+            address: process.env.EMAIL_USER
           },
-          to,
-          subject: "🔐 Reset Your UConnect Password",
-          text,
-          html
+          to: to,
+          subject: subject,
+          html: html,
+          text: text
         });
 
-        console.log(`✅ Password reset email sent to ${to}!`);
-        return { success: true, messageId: info.messageId };
+        console.log('✅ Email sent via SMTP!');
+        console.log('📧 Message ID:', info.messageId);
+        
+        return { 
+          success: true, 
+          messageId: info.messageId,
+          provider: 'smtp'
+        };
 
       } catch (error) {
         lastError = error;
-        console.error(`❌ Attempt ${attempt}/${this.maxRetries} failed:`, error.message);
-        
-        if (error.code === 'EAUTH') break; // Don't retry auth errors
-        
+        console.error(`❌ Attempt ${attempt} failed:`, error.message);
+
+        // Don't retry auth errors
+        if (error.code === 'EAUTH' || error.responseCode === 535) {
+          console.error('🔐 Authentication failed - check your Gmail App Password');
+          break;
+        }
+
         if (attempt < this.maxRetries) {
           const waitTime = attempt * 2000;
           console.log(`⏳ Waiting ${waitTime/1000}s before retry...`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
-          this.recreateTransporter();
         }
       }
     }
 
-    throw new Error(`Password reset email failed: ${lastError?.message || 'Unknown error'}`);
+    throw new Error(`SMTP email failed: ${lastError?.message || 'Unknown error'}`);
   }
 
+  // ╔═══════════════════════════════════════════════════════════════════════════╗
+  // ║         🎨 SUPER COOL EMAIL TEMPLATES - RED/WHITE/BLACK THEME 🎨          ║
+  // ╚═══════════════════════════════════════════════════════════════════════════╝
 
   /**
-   * Send welcome email after successful verification
+   * Generate VERIFICATION email HTML - Red/White/Black Theme 🔥
+   */
+  generateVerificationHTML({ name, username, verificationUrl, to }) {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your UConnect Account</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0a0a0a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #111111; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px rgba(220, 38, 38, 0.15);">
+          
+          <!-- 🔥 HEADER - Bold Red Gradient -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); padding: 50px 40px; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 10px;">🔥</div>
+              <h1 style="color: #FFFFFF; font-size: 36px; font-weight: 900; margin: 0; letter-spacing: -1px; text-transform: uppercase;">
+                UCONNECT
+              </h1>
+              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 10px 0 0 0; letter-spacing: 3px; text-transform: uppercase;">
+                YOUR CAMPUS • YOUR COMMUNITY
+              </p>
+            </td>
+          </tr>
+
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding: 50px 40px;">
+              
+              <!-- Welcome Message -->
+              <h2 style="color: #FFFFFF; font-size: 28px; font-weight: 700; margin: 0 0 10px 0;">
+                Welcome aboard, ${name || username}! 👋
+              </h2>
+              <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                You're just one click away from joining the most exclusive campus community. 
+                Verify your email to unlock all features and start connecting!
+              </p>
+
+              <!-- 📊 Stats Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
+                <tr>
+                  <td style="background-color: #1a1a1a; border-radius: 12px; padding: 25px; border-left: 4px solid #DC2626;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td width="33%" style="text-align: center; padding: 10px;">
+                          <div style="color: #DC2626; font-size: 28px; font-weight: 900;">10K+</div>
+                          <div style="color: #6B7280; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Students</div>
+                        </td>
+                        <td width="33%" style="text-align: center; padding: 10px; border-left: 1px solid #333; border-right: 1px solid #333;">
+                          <div style="color: #DC2626; font-size: 28px; font-weight: 900;">50+</div>
+                          <div style="color: #6B7280; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Campuses</div>
+                        </td>
+                        <td width="33%" style="text-align: center; padding: 10px;">
+                          <div style="color: #DC2626; font-size: 28px; font-weight: 900;">24/7</div>
+                          <div style="color: #6B7280; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Active</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- 🔴 CTA Button - Red Gradient -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <a href="${verificationUrl}" style="display: inline-block; background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); color: #FFFFFF; text-decoration: none; padding: 18px 50px; border-radius: 50px; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);">
+                      ✅ VERIFY MY EMAIL
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- ⏰ Expiry Warning -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 30px;">
+                <tr>
+                  <td style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 8px; padding: 15px 20px;">
+                    <p style="color: #DC2626; font-size: 14px; margin: 0; text-align: center;">
+                      ⏰ This link expires in <strong>24 hours</strong>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- 🔗 Alternative Link -->
+              <div style="margin-top: 30px; padding: 20px; background-color: #1a1a1a; border-radius: 8px;">
+                <p style="color: #6B7280; font-size: 12px; margin: 0 0 10px 0;">Can't click the button? Copy this link:</p>
+                <p style="color: #9CA3AF; font-size: 11px; margin: 0; word-break: break-all; font-family: monospace; background: #0a0a0a; padding: 10px; border-radius: 4px;">
+                  ${verificationUrl}
+                </p>
+              </div>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color: #0a0a0a; padding: 30px 40px; text-align: center; border-top: 1px solid #222;">
+              <p style="color: #DC2626; font-size: 20px; font-weight: 900; margin: 0 0 5px 0; letter-spacing: 2px;">UCONNECT</p>
+              <p style="color: #4B5563; font-size: 12px; margin: 0 0 20px 0;">Connect • Share • Thrive</p>
+              <p style="color: #374151; font-size: 11px; margin: 0;">
+                Sent to <span style="color: #6B7280;">${to}</span><br>
+                If you didn't sign up, just ignore this email.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  }
+
+  /**
+   * Generate verification email plain text
+   */
+  generateVerificationText({ name, verificationUrl }) {
+    return `
+═══════════════════════════════════════
+🔥 UCONNECT - VERIFY YOUR EMAIL
+═══════════════════════════════════════
+
+Welcome aboard, ${name}! 👋
+
+You're just one click away from joining the most exclusive campus community.
+
+Click here to verify: ${verificationUrl}
+
+⏰ This link expires in 24 hours.
+
+═══════════════════════════════════════
+If you didn't create this account, ignore this email.
+
+- The UConnect Team 🔥
+═══════════════════════════════════════
+    `.trim();
+  }
+
+  /**
+   * Generate PASSWORD RESET email HTML - Red/White/Black Theme 🔐
+   */
+  generateResetPasswordHTML({ name, username, resetUrl, to }) {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Your Password</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0a0a0a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #111111; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px rgba(220, 38, 38, 0.15);">
+          
+          <!-- HEADER - Dark with Red Accent -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); padding: 50px 40px; text-align: center; border-bottom: 3px solid #DC2626;">
+              <div style="font-size: 48px; margin-bottom: 10px;">🔐</div>
+              <h1 style="color: #FFFFFF; font-size: 32px; font-weight: 900; margin: 0; letter-spacing: -1px;">
+                PASSWORD RESET
+              </h1>
+              <p style="color: #DC2626; font-size: 14px; margin: 10px 0 0 0; letter-spacing: 2px; text-transform: uppercase;">
+                Secure Account Recovery
+              </p>
+            </td>
+          </tr>
+
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding: 50px 40px;">
+              
+              <h2 style="color: #FFFFFF; font-size: 24px; font-weight: 700; margin: 0 0 10px 0;">
+                Hey ${name || username},
+              </h2>
+              <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                We received a request to reset your password. No worries, it happens! Click the button below to create a new secure password.
+              </p>
+
+              <!-- 🛡️ Security Icon Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
+                <tr>
+                  <td style="background-color: #1a1a1a; border-radius: 12px; padding: 25px; text-align: center; border-left: 4px solid #DC2626;">
+                    <div style="font-size: 40px; margin-bottom: 15px;">🛡️</div>
+                    <p style="color: #6B7280; font-size: 14px; margin: 0;">
+                      For your security, this link will expire in <span style="color: #DC2626; font-weight: bold;">1 hour</span>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- 🔴 CTA Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); color: #FFFFFF; text-decoration: none; padding: 18px 50px; border-radius: 50px; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);">
+                      🔑 RESET PASSWORD
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- ⚠️ Warning -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 30px;">
+                <tr>
+                  <td style="background-color: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; padding: 15px 20px;">
+                    <p style="color: #FBBF24; font-size: 13px; margin: 0;">
+                      ⚠️ <strong>Didn't request this?</strong> Someone may have entered your email by mistake. 
+                      If you didn't request a password reset, you can safely ignore this email.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- 🔗 Alternative Link -->
+              <div style="margin-top: 30px; padding: 20px; background-color: #1a1a1a; border-radius: 8px;">
+                <p style="color: #6B7280; font-size: 12px; margin: 0 0 10px 0;">Can't click the button? Copy this link:</p>
+                <p style="color: #9CA3AF; font-size: 11px; margin: 0; word-break: break-all; font-family: monospace; background: #0a0a0a; padding: 10px; border-radius: 4px;">
+                  ${resetUrl}
+                </p>
+              </div>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color: #0a0a0a; padding: 30px 40px; text-align: center; border-top: 1px solid #222;">
+              <p style="color: #DC2626; font-size: 20px; font-weight: 900; margin: 0 0 5px 0; letter-spacing: 2px;">UCONNECT</p>
+              <p style="color: #4B5563; font-size: 12px; margin: 0 0 20px 0;">Your Security Matters 🔒</p>
+              <p style="color: #374151; font-size: 11px; margin: 0;">
+                Sent to <span style="color: #6B7280;">${to}</span>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  }
+
+  /**
+   * Generate password reset plain text
+   */
+  generateResetPasswordText({ name, resetUrl }) {
+    return `
+═══════════════════════════════════════
+🔐 UCONNECT - PASSWORD RESET
+═══════════════════════════════════════
+
+Hey ${name},
+
+We received a request to reset your password. No worries!
+
+Click here to reset: ${resetUrl}
+
+⏰ This link expires in 1 hour.
+
+═══════════════════════════════════════
+⚠️ If you didn't request this, please ignore this email.
+
+- The UConnect Team 🔥
+═══════════════════════════════════════
+    `.trim();
+  }
+
+  /**
+   * Send welcome email (optional - for future use)
    */
   async sendWelcomeEmail({ to, username, name }) {
-    // Implementation for welcome emails
-    // This is for future enhancement
-    console.log('Welcome email functionality - Coming soon!');
+    console.log('📧 Welcome email feature - Coming soon!');
+    return { success: true };
+  }
+
+  /**
+   * Verify email service connection
+   */
+  async verifyConnection() {
+    if (this.useResend) {
+      console.log('✅ Resend API is configured');
+      return true;
+    }
+    
+    if (this.transporter) {
+      try {
+        await this.transporter.verify();
+        console.log('✅ SMTP connection verified');
+        return true;
+      } catch (error) {
+        console.error('❌ SMTP verification failed:', error.message);
+        return false;
+      }
+    }
+    
+    return false;
   }
 }
 
