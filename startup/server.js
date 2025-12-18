@@ -1,13 +1,56 @@
+const https = require('https');
 const http = require('http');
+const fs = require('fs');
 const socketIo = require('socket.io');
+const path = require('path');
 const { initializeChatHandlers } = require('../sockets/chatHandlers');
 
 /**
  * Server and Socket.IO Configuration
- * Sets up HTTP server and real-time features
+ * Sets up HTTPS server and real-time features
  */
 const configureServer = (app) => {
-  const server = http.createServer(app);
+  let server;
+
+  // Try to get SSL certificates from environment variables first (for production)
+  const sslCert = process.env.SSL_CERT;
+  const sslKey = process.env.SSL_KEY;
+
+  if (sslCert && sslKey) {
+    // Use certificates from environment variables
+    const sslOptions = {
+      cert: sslCert,
+      key: sslKey
+    };
+
+    server = https.createServer(sslOptions, app);
+    console.log('🔒 HTTPS server configured with SSL certificates from environment variables');
+  } else {
+    // Check if SSL certificate files exist (for local development)
+    const certPath = process.env.SSL_CERT_PATH || path.join(__dirname, '..', 'certs', 'server.crt');
+    const keyPath = process.env.SSL_KEY_PATH || path.join(__dirname, '..', 'certs', 'server.key');
+
+    try {
+      // Check if cert files exist and are readable
+      fs.accessSync(certPath, fs.constants.R_OK);
+      fs.accessSync(keyPath, fs.constants.R_OK);
+
+      // Read SSL certificate and private key
+      const sslOptions = {
+        cert: fs.readFileSync(certPath),
+        key: fs.readFileSync(keyPath)
+      };
+
+      // Create HTTPS server
+      server = https.createServer(sslOptions, app);
+      console.log('🔒 HTTPS server configured with SSL certificate files');
+    } catch (error) {
+      // No certificates available, use HTTP
+      server = http.createServer(app);
+      console.log('🌐 HTTP server configured (SSL termination handled by reverse proxy)');
+    }
+  }
+
   const io = socketIo(server, {
     cors: {
       origin: "*",
@@ -26,6 +69,14 @@ const configureServer = (app) => {
     socket.on('join-campus', (campus) => {
       socket.join(campus);
       console.log(`👥 User joined campus: ${campus}`);
+    });
+
+    // Join gossip room for real-time updates
+    socket.on('join', (room) => {
+      if (room === 'gossip') {
+        socket.join('gossip');
+        console.log(`🗣️ User joined gossip room`);
+      }
     });
 
     // Handle new post creation

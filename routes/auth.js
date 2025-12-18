@@ -19,6 +19,29 @@ const getSmartBaseUrl = (req) => {
 
 const router = express.Router();
 
+// Encryption helpers for temporarily storing password in session without plaintext
+// Uses AES-256-GCM. Provide `PASSWORD_SESSION_KEY` as base64 in env for strong key.
+const ENC_KEY = (process.env.PASSWORD_SESSION_KEY ? Buffer.from(process.env.PASSWORD_SESSION_KEY, 'base64') : null) || crypto.createHash('sha256').update(process.env.SESSION_SECRET || 'fallback-secret-change-in-production').digest();
+function encryptForSession(plain) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', ENC_KEY, iv);
+  const encrypted = Buffer.concat([cipher.update(String(plain), 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `${iv.toString('base64')}.${tag.toString('base64')}.${encrypted.toString('base64')}`;
+}
+function decryptFromSession(payload) {
+  if (!payload) return null;
+  const [ivB64, tagB64, dataB64] = payload.split('.');
+  if (!ivB64 || !tagB64 || !dataB64) return null;
+  const iv = Buffer.from(ivB64, 'base64');
+  const tag = Buffer.from(tagB64, 'base64');
+  const data = Buffer.from(dataB64, 'base64');
+  const decipher = crypto.createDecipheriv('aes-256-gcm', ENC_KEY, iv);
+  decipher.setAuthTag(tag);
+  const decrypted = Buffer.concat([decipher.update(data), decipher.final()]);
+  return decrypted.toString('utf8');
+}
+
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
 
@@ -78,8 +101,7 @@ router.post('/register',
   registerValidation,
   async (req, res) => {
     try {
-      console.log('Request Body:', req.body);
-      console.log('Request File:', req.file);
+      // Avoid logging full request body to prevent leaking sensitive fields (passwords)
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.render('auth/register-neo', {
@@ -90,6 +112,7 @@ router.post('/register',
       }
 
       const { email, name, username, password, avatarType } = req.body;
+      console.log(`Register attempt for email=${email}, username=${username}, avatarFile=${req.file ? req.file.originalname : 'none'}`);
 
       // Check if user already exists in MongoDB (verified users only)
       const existingUser = await User.findOne({
@@ -107,11 +130,15 @@ router.post('/register',
       }
 
       // Prepare user data for temporary storage (DON'T save to MongoDB yet!)
+      // Encrypt the password before storing in session so plaintext is never stored in Redis
+      const encryptedPassword = encryptForSession(password);
+
       const tempUserData = {
         email,
         name,
         username,
-        password, // Will be hashed when actually saving
+        // Store encryptedPassword instead of plaintext password
+        encryptedPassword,
         isVerified: false,
         registrationTimestamp: new Date()
       };
@@ -428,11 +455,13 @@ router.get('/verify-email', async (req, res) => {
       }
 
       // NOW CREATE THE USER IN MONGODB! 🚀
+      // Decrypt password from session before creating user. Do not keep plaintext in session.
+      const decryptedPassword = decryptFromSession(tempUserData.encryptedPassword);
       const userData = {
         email: tempUserData.email,
         name: tempUserData.name,
         username: tempUserData.username,
-        password: tempUserData.password,
+        password: decryptedPassword,
         avatarType: avatarType,
         isVerified: true, // Set as verified since they clicked the link!
         verificationToken: null,

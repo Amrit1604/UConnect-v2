@@ -181,40 +181,30 @@
                                         </div>
                                     <% } else if (firstMedia.type === 'video') { %>
                                         <div class="post-media-neo">
-                                            <%# Prefer transcoded mp4 if available in post.media %>
-                                            <% var mp4 = (post.media || []).find(function(m){ return m.type === 'video' && ((m.mimetype||'').indexOf('mp4') !== -1) && m.transcoded; }); %>
-                                            <% var chosen = mp4 || firstMedia; %>
-                                            <video class="post-video-neo" controls playsinline preload="metadata">
-                                                <source src="<%= chosen.url || '/uploads/posts/' + chosen.filename %>"
-                                                        type="<%= chosen.mimetype || 'video/mp4' %>">
+                                            <video class="post-video-neo" controls>
+                                                <source src="<%= firstMedia.url || '/uploads/posts/' + firstMedia.filename %>"
+                                                        type="<%= firstMedia.mimetype || 'video/mp4' %>">
                                                 Your browser does not support the video tag.
                                             </video>
-                                            <% if (firstMedia.transcoding) { %>
-                                              <div class="transcoding-badge">Transcoding…</div>
-                                            <% } %>
-                                            <a class="video-download-btn" href="<%= chosen.url || '/uploads/posts/' + chosen.filename %>" download>Download</a>
                                         </div>
                                     <% } %>
                                 <% } else if (post.videos && post.videos.length > 0) { %>
                                     <div class="post-media-neo">
                                         <% if (post.videos[0].url) { %>
-                                            <video class="post-video-neo" controls playsinline preload="metadata">
+                                            <video class="post-video-neo" controls>
                                                 <source src="<%= post.videos[0].url %>" type="<%= post.videos[0].mimetype || 'video/mp4' %>">
                                                 Your browser does not support the video tag.
                                             </video>
-                                            <a class="video-download-btn" href="<%= post.videos[0].url %>" download>Download</a>
                                         <% } else if (post.videos[0].filename) { %>
-                                            <video class="post-video-neo" controls playsinline preload="metadata">
+                                            <video class="post-video-neo" controls>
                                                 <source src="/uploads/posts/<%= post.videos[0].filename %>" type="<%= post.videos[0].mimetype || 'video/mp4' %>">
                                                 Your browser does not support the video tag.
                                             </video>
-                                            <a class="video-download-btn" href="/uploads/posts/<%= post.videos[0].filename %>" download>Download</a>
                                         <% } else if (typeof post.videos[0] === 'string') { %>
-                                            <video class="post-video-neo" controls playsinline preload="metadata">
+                                            <video class="post-video-neo" controls>
                                                 <source src="/uploads/posts/<%= post.videos[0] %>" type="video/mp4">
                                                 Your browser does not support the video tag.
                                             </video>
-                                            <a class="video-download-btn" href="/uploads/posts/<%= post.videos[0] %>" download>Download</a>
                                         <% } %>
                                     </div>
                                 <% } %>
@@ -279,9 +269,9 @@
                                             <% } %>
                                         <% }); %>
                                         <% if (post.comments.length > 2) { %>
-                                            <button class="view-all-comments-btn" data-post-id="<%= post._id %>" data-offset="2" data-total="<%= post.comments.length %>">
+                                            <a href="/posts/<%= post._id %>" class="view-all-comments">
                                                 View all <%= post.comments.length %> comments
-                                            </button>
+                                            </a>
                                         <% } %>
                                     </div>
                                 <% } %>
@@ -332,7 +322,27 @@
                 </div>
             </div>
 
+            <!-- Mini Gossip Box -->
+            <div class="mini-gossip-card-neo">
+                <div class="mini-gossip-header">
+                    <h3 class="card-title-neo">🗣️ GOSSIP BOX</h3>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <a href="/gossip" class="view-all-gossip" title="View full gossip box">→</a>
+                    </div>
+                </div>
+                
+                <div class="mini-gossip-input-section">
+                    <textarea id="miniGossipInput" class="mini-gossip-textarea" placeholder="Share a secret..." maxlength="300"></textarea>
+                    <div class="mini-gossip-footer">
+                        <span id="miniCharCount">0/300</span>
+                        <button id="miniPostGossipBtn" class="mini-post-btn" type="button">POST</button>
+                    </div>
+                </div>
 
+                <div id="miniGossipFeed" class="mini-gossip-feed">
+                    <p class="mini-gossip-loading">Loading...</p>
+                </div>
+            </div>
 
             <!-- Quick Links -->
             <div class="links-card-neo">
@@ -350,10 +360,24 @@
                         <span class="link-icon">⚙️</span>
                         <span class="link-text">Settings</span>
                     </a>
+                    <a href="/gossip" class="link-item-neo <%= currentPath === '/gossip' ? 'active' : '' %>">
+                        <span class="link-icon">🗣️</span>
+                        <span class="link-text">Gossip Box</span>
+                    </a>
                     <a href="/auth/logout" class="link-item-neo logout">
                         <span class="link-icon">🚪</span>
                         <span class="link-text">Logout</span>
                     </a>
+<a href="/about" class="link-item-neo about-link <%= currentPath === '/about' ? 'active' : '' %>">
+    <span class="link-icon">📘</span>
+    <span class="link-text">About</span>
+</a>
+<a href="/contact" class="link-item-neo <%= currentPath === '/contact' ? 'active' : '' %>">
+    <span class="link-icon">📩</span>
+    <span class="link-text">CONTACT US</span>
+</a>
+
+
                 </div>
             </div>
         </aside>
@@ -364,22 +388,6 @@
 </div>
 
 <!-- Inline JavaScript for Quick Interactions -->
-<style>
-.view-all-comments-btn {
-    background: none;
-    border: none;
-    color: #007bff;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: underline;
-    padding: 4px 0;
-    margin-top: 8px;
-    transition: color 0.2s ease;
-}
-.view-all-comments-btn:hover {
-    color: #0056b3;
-}
-</style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Like button handled by public/js/posts.js (delegated). Removing inline handler to avoid double POSTs.
@@ -398,45 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // View all comments button
-    document.querySelectorAll('.view-all-comments-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const postId = this.dataset.postId;
-            const offset = parseInt(this.dataset.offset) || 0;
-            const total = parseInt(this.dataset.total) || 0;
-            try {
-                const res = await fetch(`/posts/${postId}/comments`);
-                const data = await res.json();
-                if (!res.ok || !data.comments) throw new Error('Failed to load comments');
-                const commentsList = this.closest('.quick-comments-list');
-                if (!commentsList) return;
-                // Remove the button
-                this.remove();
-                // Append remaining comments
-                data.comments.slice(offset).forEach(comment => {
-                    // Skip if already in DOM
-                    if (comment._id && commentsList.querySelector(`[data-comment-id="${comment._id}"]`)) return;
-                    const div = document.createElement('div');
-                    div.className = 'quick-comment-item';
-                    div.setAttribute('data-comment-id', comment._id || '');
-                    div.innerHTML = `
-                        <a href="/users/${comment.author.username}" class="author-link-neo" data-username="${comment.author.username}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
-                            <img src="${comment.author.avatarUrl || '/images/default-avatar.png'}" alt="${comment.author.username}" class="quick-comment-avatar" onerror="this.src='/images/default-avatar.png'">
-                        </a>
-                        <div class="quick-comment-content">
-                            <a href="/users/${comment.author.username}" class="author-link-neo" data-username="${comment.author.username}" style="font-weight:600;color:inherit;text-decoration:none;">@${comment.author.username}</a>
-                            <p></p>
-                        </div>`;
-                    const p = div.querySelector('p');
-                    if (p) p.textContent = comment.content || '';
-                    commentsList.appendChild(div);
-                });
-            } catch (err) {
-                console.error('Load comments error', err);
-                alert('Failed to load all comments');
-            }
-        });
-    });
+    // Quick comment submit handled by public/js/posts.js (delegated). Removing inline reload-based handler.
 
     // Share button functionality
     document.querySelectorAll('.share-btn').forEach(btn => {

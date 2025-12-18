@@ -1,4 +1,4 @@
-# Admin Mode — Quick Guide
+    # Admin Mode — Quick Guide
 
 This repository includes an Admin Mode with a special unlock sequence you can use anywhere in the app UI.
 

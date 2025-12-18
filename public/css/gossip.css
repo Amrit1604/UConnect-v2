@@ -1,0 +1,775 @@
+/* Gossip CSS - Dark Mode (Black & Red) Theme */
+
+:root {
+  --gossip-primary: #ff3333;
+  --gossip-primary-dark: #cc0000;
+  --gossip-bg: #000000;
+  --gossip-bg-dark: #0a0a0a;
+  --gossip-surface: rgba(20, 20, 20, 0.8);
+  --gossip-border: rgba(255, 51, 51, 0.2);
+  --gossip-border-hover: rgba(255, 51, 51, 0.4);
+  --gossip-text-primary: #ffffff;
+  --gossip-text-secondary: #cccccc;
+  --gossip-text-muted: #999999;
+}
+
+/* Page Background */
+.gossip-page {
+  background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+  color: var(--gossip-text-primary);
+  min-height: 100vh;
+  padding-top: 140px;
+  padding-bottom: 60px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Container */
+.gossip-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header */
+.gossip-header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: slideDown 0.6s ease-out;
+}
+
+.gossip-title {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #ff3333, #ff7777);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.gossip-subtitle {
+  font-size: 16px;
+  color: var(--gossip-text-muted);
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Create Gossip Section */
+.gossip-create-section {
+  background: rgba(255, 51, 51, 0.08);
+  border: 1px solid var(--gossip-border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+.create-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ff6666;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.gossip-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--gossip-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--gossip-text-primary);
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.gossip-textarea:focus {
+  outline: none;
+  border-color: var(--gossip-primary);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);
+}
+
+.gossip-textarea::placeholder {
+  color: var(--gossip-text-muted);
+  opacity: 0.6;
+}
+
+.char-count {
+  font-size: 12px;
+  color: var(--gossip-text-muted);
+  margin-top: 8px;
+  text-align: right;
+  font-family: 'Poppins', sans-serif;
+}
+
+.char-count.warning {
+  color: #ff6666;
+  font-weight: 600;
+}
+
+.create-btn {
+  background: linear-gradient(90deg, #ff3333, #cc0000);
+  color: var(--gossip-text-primary);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+}
+
+.create-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255, 51, 51, 0.4);
+}
+
+.create-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.create-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Gossip Feed */
+.gossip-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gossip-card {
+  background: var(--gossip-surface);
+  border: 1px solid var(--gossip-border);
+  border-radius: 12px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out;
+  position: relative;
+}
+
+.gossip-card:hover {
+  border-color: var(--gossip-border-hover);
+  box-shadow: 0 10px 30px rgba(255, 51, 51, 0.1);
+}
+
+/* Gossip Header Row */
+.gossip-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.gossip-anon-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--gossip-text-muted);
+  font-family: 'Poppins', sans-serif;
+}
+
+.gossip-anon-id {
+  background: rgba(255, 51, 51, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  color: #ff9999;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.gossip-time {
+  font-size: 12px;
+  color: var(--gossip-text-muted);
+  font-family: 'Poppins', sans-serif;
+}
+
+.gossip-menu-btn {
+  background: none;
+  border: none;
+  color: var(--gossip-text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+.gossip-menu-btn:hover {
+  color: var(--gossip-primary);
+}
+
+.gossip-delete-btn {
+  background: none;
+  border: none;
+  color: var(--gossip-text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gossip-delete-btn:hover {
+  color: var(--gossip-primary);
+  transform: scale(1.1);
+}
+
+/* Gossip Content */
+.gossip-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--gossip-text-secondary);
+  margin-bottom: 16px;
+  word-wrap: break-word;
+  word-break: break-word;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Actions */
+.gossip-actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 51, 51, 0.1);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--gossip-text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+}
+
+.action-btn:hover {
+  color: var(--gossip-primary);
+  transform: scale(1.05);
+}
+
+.action-btn.liked {
+  color: var(--gossip-primary);
+}
+
+.action-btn span {
+  display: inline-block;
+  font-size: 16px;
+}
+
+/* Comments Section */
+.comments-section {
+  margin-top: 16px;
+}
+
+.comments-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff6666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding-right: 4px;
+}
+
+.comments-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+  background: rgba(255, 51, 51, 0.05);
+  border-radius: 3px;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 51, 51, 0.3);
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.comments-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 51, 51, 0.5);
+}
+
+.comment-item {
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid var(--gossip-primary);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.comment-item:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.comment-anon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--gossip-text-muted);
+  font-family: 'Poppins', sans-serif;
+}
+
+.comment-anon-id {
+  background: rgba(255, 51, 51, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  color: #ff9999;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.comment-action {
+  background: none;
+  border: none;
+  color: var(--gossip-text-muted);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.comment-action:hover {
+  color: var(--gossip-primary);
+}
+
+.comment-time {
+  font-size: 10px;
+  color: var(--gossip-text-muted);
+  font-family: 'Poppins', sans-serif;
+}
+
+.comment-text {
+  color: var(--gossip-text-secondary);
+  line-height: 1.4;
+  word-wrap: break-word;
+  word-break: break-word;
+  font-family: 'Poppins', sans-serif;
+  margin-bottom: 6px;
+}
+
+.comment-likes {
+  font-size: 11px;
+  color: var(--gossip-text-muted);
+}
+
+.comment-likes.liked {
+  color: var(--gossip-primary);
+}
+
+/* Add Comment Form */
+.add-comment-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.comment-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--gossip-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--gossip-text-primary);
+  font-size: 13px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: var(--gossip-primary);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 15px rgba(255, 51, 51, 0.15);
+}
+
+.comment-input::placeholder {
+  color: var(--gossip-text-muted);
+  opacity: 0.6;
+}
+
+.comment-submit-btn {
+  background: linear-gradient(90deg, #ff3333, #cc0000);
+  color: var(--gossip-text-primary);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-family: 'Poppins', sans-serif;
+}
+
+.comment-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(255, 51, 51, 0.3);
+}
+
+.comment-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.comment-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gossip-text-muted);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.empty-state-text {
+  font-size: 16px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Loading Skeleton */
+.loading-skeleton {
+  background: rgba(255, 51, 51, 0.1);
+  border: 1px solid var(--gossip-border);
+  border-radius: 12px;
+  padding: 20px;
+  animation: pulse 1.5s infinite;
+}
+
+/* Delete Menu */
+.delete-menu {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid var(--gossip-border-hover);
+  border-radius: 8px;
+  padding: 8px 0;
+  z-index: 100;
+  min-width: 150px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  top: 100%;
+  right: 0;
+}
+
+.delete-menu-item {
+  background: none;
+  border: none;
+  color: var(--gossip-text-primary);
+  cursor: pointer;
+  padding: 10px 16px;
+  font-size: 13px;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.delete-menu-item:hover {
+  background: rgba(255, 51, 51, 0.2);
+  color: var(--gossip-primary);
+}
+
+.delete-menu-item.delete {
+  color: var(--gossip-primary);
+}
+
+.delete-menu-item.delete:hover {
+  background: rgba(255, 51, 51, 0.3);
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .gossip-container {
+    padding: 16px;
+  }
+
+  .gossip-title {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .gossip-page {
+    padding-top: 120px;
+    padding-bottom: 40px;
+  }
+
+  .gossip-container {
+    padding: 12px;
+  }
+
+  .gossip-title {
+    font-size: 32px;
+    letter-spacing: 1px;
+  }
+
+  .gossip-subtitle {
+    font-size: 14px;
+  }
+
+  .gossip-create-section {
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .gossip-textarea {
+    min-height: 80px;
+    font-size: 13px;
+  }
+
+  .gossip-card {
+    padding: 16px;
+  }
+
+  .comment-item {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .gossip-actions {
+    gap: 12px;
+  }
+
+  .action-btn {
+    font-size: 12px;
+  }
+
+  .create-btn,
+  .comment-submit-btn {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .comment-input {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gossip-page {
+    padding-top: 100px;
+  }
+
+  .gossip-container {
+    padding: 8px;
+  }
+
+  .gossip-title {
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+
+  .gossip-subtitle {
+    font-size: 12px;
+  }
+
+  .gossip-create-section {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+
+  .create-label {
+    font-size: 12px;
+  }
+
+  .gossip-textarea {
+    min-height: 70px;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .gossip-card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .gossip-header-row {
+    margin-bottom: 10px;
+  }
+
+  .gossip-content {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .gossip-actions {
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  .action-btn {
+    font-size: 11px;
+  }
+
+  .comment-item {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  .comments-list {
+    max-height: 250px;
+    margin-bottom: 8px;
+  }
+
+  .add-comment-form {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .comment-input,
+  .comment-submit-btn {
+    font-size: 11px;
+  }
+
+  .comment-input {
+    padding: 6px 8px;
+  }
+
+  .comment-submit-btn {
+    padding: 6px 12px;
+  }
+}
+
+/* Loading Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.loading-skeleton {
+  animation: pulse 1.5s infinite;
+}
+
+/* Utility Classes */
+.hidden {
+  display: none !important;
+}
+
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Focus States for Accessibility */
+.action-btn:focus-visible,
+.comment-action:focus-visible,
+.delete-menu-item:focus-visible {
+  outline: 2px solid var(--gossip-primary);
+  outline-offset: 2px;
+}

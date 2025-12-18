@@ -6,10 +6,16 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "email:test": "node scripts/testEmailConfig.js",
+    "cert:generate": "node scripts/generate-self-signed-cert.js",
+    "cert:generate:force": "node scripts/generate-self-signed-cert.js --force",
+    "cert:mkcert": "mkcert -install && mkcert -cert-file certs/server.crt -key-file certs/server.key localhost 127.0.0.1 ::1",
+    "cert:mkcert:generate": "npm run cert:mkcert || npm run cert:generate",
+    "cert:mkcert:install": "mkcert -install",
+    "cert:mkcert:force": "rm -f certs/* && mkcert -cert-file certs/server.crt -key-file certs/server.key localhost 127.0.0.1 ::1",
     "smoke:test": "node scripts/smokePostsTest.js",
     "test": "jest --coverage",
     "test:quick": "jest tests/basic.sanity.test.js --runInBand",
+    "test:perf:session": "jest tests/session.performance.test.js --runInBand",
     "test:student": "jest tests/simple.studentChecks.test.js --runInBand",
     "test:student:exists": "jest tests/student.exists.test.js --runInBand",
     "test:student:password:presence": "jest tests/password.presence.test.js --runInBand",
@@ -17,7 +23,8 @@
     "test:student:username": "jest tests/username.format.test.js --runInBand",
     "test:student:email": "jest tests/email.domain.test.js --runInBand",
     "test:student:auth": "jest tests/auth.endpoints.test.js --runInBand",
-    "test:student:all": "jest tests/student.exists.test.js tests/password.presence.test.js tests/password.hash.test.js tests/email.domain.test.js tests/username.format.test.js tests/auth.endpoints.test.js --runInBand",
+    "test:student:db": "jest tests/db.completeness.test.js --runInBand",
+    "test:student:all": "jest tests/student.exists.test.js tests/password.presence.test.js tests/password.hash.test.js tests/email.domain.test.js tests/username.format.test.js tests/auth.endpoints.test.js tests/db.completeness.test.js --runInBand",
     "lint": "eslint .",
     "seed": "node scripts/seedDatabase.js",
     "agent": "node scripts/agent.js"
@@ -32,8 +39,8 @@
   "author": "UConnect Team",
   "license": "MIT",
   "dependencies": {
-    "@faker-js/faker": "^10.1.0",
-    "bcrypt": "^6.0.0",
+    "redis": "^4.7.0",
+    "connect-redis": "^7.1.0",
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.0",
     "compression": "^1.7.4",
@@ -51,7 +58,7 @@
     "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
     "moment": "^2.29.4",
-    "mongoose": "^7.5.0",
+    "mongoose": "^7.8.7",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "multer-gridfs-storage": "^5.0.2",
@@ -70,5 +77,16 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Amrit1604/UConnect-v2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Amrit1604/UConnect-v2/issues"
+  },
+  "homepage": "https://github.com/Amrit1604/UConnect-v2#readme"
 }

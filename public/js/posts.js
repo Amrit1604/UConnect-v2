@@ -80,8 +80,7 @@
                 const c = data.comment;
                 const avatar = (c.author && c.author.avatarUrl) ? c.author.avatarUrl : '/images/default-avatar.png';
                 const row = document.createElement('div');
-				row.className = 'quick-comment-item new-comment';
-				row.setAttribute('data-comment-id', c._id || '');
+                row.className = 'quick-comment-item new-comment';
                 row.innerHTML = `
                     <a href="/users/${c.author.username}" class="author-link-neo" data-username="${c.author.username}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
                         <img src="${avatar}" alt="${c.author.username}" class="quick-comment-avatar" onerror="this.src='/images/default-avatar.png'">
@@ -157,13 +156,10 @@
 			// Append the new comment into comments list if present
 			const postEl = document.querySelector(`[data-post-id="${postId}"]`);
 			if (postEl) {
-				const commentsList = postEl.querySelector('.comments-list') || postEl.querySelector('.comments-container .comments-list') || postEl.querySelector('.quick-comments-list');
+				const commentsList = postEl.querySelector('.comments-list') || postEl.querySelector('.comments-container .comments-list');
 				if (commentsList && data.comment) {
-					// Avoid duplicate insertion if comment already present
-					if (data.comment._id && commentsList.querySelector(`[data-comment-id="${data.comment._id}"]`)) return;
 					const div = document.createElement('div');
 					div.className = 'comment-item new-comment';
-					div.setAttribute('data-comment-id', data.comment._id || '');
 					div.innerHTML = `
 						<img src="${data.comment.author.avatarUrl || '/images/default-avatar.png'}" alt="${data.comment.author.username}" style="width:32px;height:32px;border-radius:50%;border:2px solid #e5e7eb;flex-shrink:0;">
 						<div style="flex:1">
@@ -177,7 +173,15 @@
 					commentsList.appendChild(div);
 					textarea.value = '';
 
-					// Do NOT bump comment count here; Socket.IO 'new-comment' handler will update
+					// Update comment count in the action button
+					const commentCountSpan = postEl.querySelector('.comment-btn span');
+					console.log('Comment count span found:', !!commentCountSpan);
+					if (commentCountSpan) {
+						const currentCount = parseInt(commentCountSpan.textContent) || 0;
+						console.log('Current comment count:', currentCount);
+						commentCountSpan.textContent = currentCount + 1;
+						console.log('Updated comment count to:', currentCount + 1);
+					}
 				}
 			}
 		} catch (err) {
@@ -275,45 +279,6 @@
 		});
 	}
 
-	// Load more comments for a post
-	async function loadMoreComments(postId, offset, total, btn) {
-		try {
-			const res = await fetch(`/posts/${postId}/comments?offset=${offset}&limit=50`);
-			const data = await res.json();
-			if (!data.success) throw new Error(data.message);
-
-			const postEl = document.querySelector(`[data-post-id="${postId}"]`);
-			if (!postEl) return;
-
-			const commentsList = postEl.querySelector('.quick-comments-list');
-			if (!commentsList) return;
-
-			data.comments.forEach(comment => {
-				const div = document.createElement('div');
-				div.className = 'quick-comment-item';
-				div.innerHTML = `
-					<a href="/users/${comment.author.username}" class="author-link-neo" data-username="${comment.author.username}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
-						<img src="${comment.author.avatarUrl || '/images/default-avatar.png'}" alt="${comment.author.username}" class="quick-comment-avatar" onerror="this.src='/images/default-avatar.png'">
-					</a>
-					<div class="quick-comment-content">
-						<a href="/users/${comment.author.username}" class="author-link-neo" data-username="${comment.author.username}" style="font-weight:600;color:inherit;text-decoration:none;">@${comment.author.username}</a>
-						<p>${escapeHtml(comment.content)}</p>
-					</div>
-				`;
-				commentsList.appendChild(div);
-			});
-
-			if (!data.hasMore) {
-				btn.style.display = 'none';
-			} else {
-				btn.dataset.offset = offset + data.comments.length;
-			}
-		} catch (err) {
-			console.error('Load more comments error:', err);
-			alert('Failed to load more comments');
-		}
-	}
-
 	// Attach event listeners on DOMContentLoaded
 	document.addEventListener('DOMContentLoaded', function () {
 		// Delegate click events for like buttons
@@ -343,15 +308,6 @@
 			if (deleteBtn) {
 				const postEl = deleteBtn.closest('[data-post-id]');
 				if (postEl) deletePost(postEl.dataset.postId);
-				return;
-			}
-
-			const viewAllBtn = e.target.closest('.view-all-comments-btn');
-			if (viewAllBtn) {
-				const postId = viewAllBtn.dataset.postId;
-				const offset = parseInt(viewAllBtn.dataset.offset);
-				const total = parseInt(viewAllBtn.dataset.total);
-				loadMoreComments(postId, offset, total, viewAllBtn);
 				return;
 			}
 		});

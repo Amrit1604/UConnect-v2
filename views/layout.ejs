@@ -208,6 +208,7 @@
     <script src="/js/admin.js"></script>
     <script src="/js/notifications.js"></script>
     <script src="/js/chat-navbar.js"></script>
+    <script src="/js/mini-gossip.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
@@ -296,33 +297,24 @@
           } catch (_) {}
         });
 
-        // Realtime new comments (deduplicated)
+        // Realtime new comments
         socket.on('new-comment', (data) => {
           try {
             const card = document.querySelector(`[data-post-id="${data.postId}"]`);
             if (!card) return;
-            // Support both neo and classic feeds
-            const list = card.querySelector('.quick-comments-list') || card.querySelector('.comments-list');
-            const c = data && data.comment ? data.comment : null;
-
-            // If comment already exists in DOM (by id) skip insertion and counter increment
-            if (list && c && c._id) {
-              if (list.querySelector(`[data-comment-id="${c._id}"]`)) return;
-            }
-
             // Update comment count on the action bar
             const countSpan = card.querySelector('.comment-btn .action-count, .comment-btn span');
             if (countSpan) {
               const n = parseInt(countSpan.textContent || '0', 10) || 0;
               countSpan.textContent = n + 1;
             }
-
             // Append to quick comments list if present
-            if (list && c) {
+            const list = card.querySelector('.quick-comments-list');
+            if (list && data.comment) {
+              const c = data.comment;
               const avatar = (c.author && c.author.avatarUrl) ? c.author.avatarUrl : '/images/default-avatar.png';
               const wrapper = document.createElement('div');
               wrapper.className = 'quick-comment-item';
-              if (c._id) wrapper.setAttribute('data-comment-id', c._id);
               wrapper.innerHTML = `
                 <a href="/users/${c.author.username}" class="author-link-neo" data-username="${c.author.username}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
                   <img src="${avatar}" alt="${c.author.username}" class="quick-comment-avatar" onerror="this.src='/images/default-avatar.png'">
@@ -331,11 +323,23 @@
                   <a href="/users/${c.author.username}" class="author-link-neo" data-username="${c.author.username}" style="font-weight:600;color:inherit;text-decoration:none;">@${c.author.username}</a>
                   <p></p>
                 </div>`;
+              const p = wrapper.querySelector('p');
+              if (p) p.textContent = c.content || '';
               list.prepend(wrapper);
             }
           } catch (_) {}
         });
       })();
+    </script>
+
+    <!-- Page-specific Configuration and JavaScript -->
+    <script>
+        // Gossip Box Configuration - Set anonId if available
+        window.GOSSIP_CONFIG = window.GOSSIP_CONFIG || {};
+        <% if (typeof anonId !== 'undefined') { %>
+        window.GOSSIP_CONFIG.anonId = '<%= anonId %>';
+        console.log('✅ GOSSIP_CONFIG set:', window.GOSSIP_CONFIG);
+        <% } %>
     </script>
 
     <!-- Additional page-specific JavaScript -->

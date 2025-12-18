@@ -13,6 +13,8 @@ const configureHelmet = (app) => {
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         scriptSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+        formAction: ["'self'", "https://formspree.io"],
       },
     },
   }));
