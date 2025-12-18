@@ -1,69 +1,158 @@
 const redis = require('redis');
 require('dotenv').config();
 
-// Default to local Redis
-const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+// Redis URL - optional for cloud deployment
+const REDIS_URL = process.env.REDIS_URL;
 
-// Create redis client
-const client = redis.createClient({ url: REDIS_URL });
+// Track connection state
+let client = null;
+let isConnected = false;
+let connectionAttempted = false;
 
-client.on('error', (err) => {
-  console.error('Redis Client Error', err);
-});
+/**
+ * Initialize Redis client with graceful failure handling
+ * Redis is optional - app works without it using MongoDB for sessions
+ */
+function initializeClient() {
+  // Skip Redis if no URL provided or SESSION_STORE is explicitly set to mongo
+  if (!REDIS_URL || process.env.SESSION_STORE === 'mongo') {
+    console.log('ℹ️ Redis: Skipped (using MongoDB for sessions)');
+    return null;
+  }
 
-// Connect immediately (async)
-async function connectRedis() {
-  if (!client.isOpen) await client.connect();
+  try {
+    client = redis.createClient({ 
+      url: REDIS_URL,
+      socket: {
+        connectTimeout: 5000, // 5 second timeout
+        reconnectStrategy: (retries) => {
+          if (retries > 3) {
+            console.log('⚠️ Redis: Max reconnection attempts reached, giving up');
+            return false; // Stop reconnecting
+          }
+          return Math.min(retries * 1000, 3000); // Exponential backoff
+        }
+      }
+    });
+
+    client.on('error', (err) => {
+      if (!connectionAttempted) return; // Ignore errors before first connection attempt
+      console.error('⚠️ Redis Client Error:', err.message);
+      isConnected = false;
+    });
+
+    client.on('connect', () => {
+      console.log('✅ Redis: Connected successfully');
+      isConnected = true;
+    });
+
+    client.on('end', () => {
+      console.log('ℹ️ Redis: Connection closed');
+      isConnected = false;
+    });
+
+    return client;
+  } catch (err) {
+    console.error('⚠️ Redis: Failed to create client:', err.message);
+    return null;
+  }
 }
 
-// Expose simple helper functions for GET/SET and a connect method
+// Initialize on module load
+client = initializeClient();
+
+/**
+ * Connect to Redis (non-blocking, graceful failure)
+ */
+async function connectRedis() {
+  connectionAttempted = true;
+  
+  if (!client) {
+    console.log('ℹ️ Redis: Not configured, skipping connection');
+    return false;
+  }
+
+  if (client.isOpen) {
+    isConnected = true;
+    return true;
+  }
+
+  try {
+    await Promise.race([
+      client.connect(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), 5000)
+      )
+    ]);
+    isConnected = true;
+    console.log('✅ Redis: Connection established');
+    return true;
+  } catch (err) {
+    console.warn('⚠️ Redis: Connection failed -', err.message);
+    console.log('ℹ️ Redis: App will continue without Redis (using MongoDB for sessions)');
+    isConnected = false;
+    return false;
+  }
+}
+
+/**
+ * Safe GET - returns null on error (no crash)
+ */
+async function get(key) {
+  if (!client || !isConnected) return null;
+  try {
+    return await client.get(key);
+  } catch (err) {
+    console.error('Redis GET error:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Safe SET - fails silently (no crash)
+ */
+async function set(key, value, ttlSeconds) {
+  if (!client || !isConnected) return false;
+  try {
+    if (ttlSeconds) {
+      await client.set(key, value, { EX: ttlSeconds });
+    } else {
+      await client.set(key, value);
+    }
+    return true;
+  } catch (err) {
+    console.error('Redis SET error:', err.message);
+    return false;
+  }
+}
+
+/**
+ * Safe DEL - fails silently (no crash)
+ */
+async function del(key) {
+  if (!client || !isConnected) return false;
+  try {
+    await client.del(key);
+    return true;
+  } catch (err) {
+    console.error('Redis DEL error:', err.message);
+    return false;
+  }
+}
+
+/**
+ * Check if Redis is available
+ */
+function isAvailable() {
+  return client && isConnected;
+}
+
 module.exports = {
   connectRedis,
   client,
-  async get(key) {
-    try {
-      const val = await client.get(key);
-      return val;
-    } catch (err) {
-      console.error('Redis GET error', err);
-      return null;
-    }
-  },
-  async set(key, value, ttlSeconds) {
-    try {
-      if (ttlSeconds) {
-        await client.set(key, value, { EX: ttlSeconds });
-      } else {
-        await client.set(key, value);
-      }
-    } catch (err) {
-      console.error('Redis SET error', err);
-    }
-  },
-  async del(key) {
-    try { await client.del(key); } catch (err) { console.error('Redis DEL error', err); }
-  }
+  get,
+  set,
+  del,
+  isAvailable
 };
-
-
-// const redis = require("redis");
-
-// const REDIS_URL = process.env.REDIS_URL;
-
-// const client = redis.createClient({ url: REDIS_URL });
-
-// client.on("error", (err) => {
-//   console.error("❌ Redis Client Error:", err);
-// });
-
-// (async () => {
-//   try {
-//     await client.connect();
-//     console.log("✅ Redis connected successfully");
-//   } catch (err) {
-//     console.error("❌ Redis connection failed:", err);
-//   }
-// })();
-
-// module.exports = client;
 

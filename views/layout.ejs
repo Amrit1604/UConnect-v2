@@ -34,10 +34,10 @@
         <% }) %>
     <% } %>
 </head>
-<body class="<%= (typeof bodyClass !== 'undefined' ? bodyClass : '') + (isAdminSession ? ' admin-mode' : '') %>">
+<body class="<%= (typeof bodyClass !== 'undefined' ? bodyClass : '') + (typeof isAdminSession !== 'undefined' && isAdminSession ? ' admin-mode' : '') %>">
     <!-- Navigation (render for logged-in users; admin pages may still have a compact nav) -->
     <% if (user) { %>
-    <nav class="navbar-neo <%= isAdminSession ? 'admin-mode-nav' : '' %>">
+    <nav class="navbar-neo <%= typeof isAdminSession !== 'undefined' && isAdminSession ? 'admin-mode-nav' : '' %>">
         <div class="nav-container-neo">
             <!-- Left: Logo -->
             <div class="nav-brand-neo">

@@ -1,70 +1,89 @@
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-// Optionally use Redis for session storage
-const RedisStoreCreator = require('connect-redis');
-const { client: redisClient } = require('../services/redisClient');
 
 /**
  * Session Configuration
- * Sets up Express session with MongoDB store
+ * Uses MongoDB by default (more reliable on Render free tier)
+ * Redis is optional and only used if explicitly configured
  */
 const configureSession = (app) => {
-  // Choose a session store: Redis if REDIS_URL is set or SESSION_STORE=redis, else MongoDB
-  const useRedis = process.env.SESSION_STORE === 'redis' || !!process.env.REDIS_URL;
+  console.log('🔧 Configuring session store...');
+  
   const sessionOptions = {
     secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // For cross-site cookies in production
     }
   };
 
-  if (useRedis && redisClient) {
-    // connect-redis export shape may vary across versions — support both
-    let RedisStoreFactory = null;
+  // Trust proxy for Render/cloud deployments (needed for secure cookies behind proxy)
+  if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+  }
+
+  // Determine session store: Redis only if explicitly requested AND available
+  const useRedis = process.env.SESSION_STORE === 'redis' && process.env.REDIS_URL;
+  
+  if (useRedis) {
     try {
-      if (typeof RedisStoreCreator === 'function') RedisStoreFactory = RedisStoreCreator;
-      else if (RedisStoreCreator && typeof RedisStoreCreator.default === 'function') RedisStoreFactory = RedisStoreCreator.default;
-    } catch (e) {
-      RedisStoreFactory = null;
-    }
-    if (!RedisStoreFactory) {
-      console.warn('connect-redis: unexpected export type; falling back to MongoStore for sessions');
-      sessionOptions.store = MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/campus_connect',
-        touchAfter: 24 * 3600
-      });
-    } else {
-      // RedisStoreFactory may be a factory function requiring session, or a class constructor
-      let RedisStoreClass;
-      try {
-        // If it's a function that expects session, calling returns a class
-        RedisStoreClass = RedisStoreFactory(session);
-      } catch (e) {
-        // Not callable — treat as a class
-        RedisStoreClass = RedisStoreFactory;
+      const RedisStoreCreator = require('connect-redis');
+      const { client: redisClient, isAvailable } = require('../services/redisClient');
+      
+      if (redisClient && isAvailable && isAvailable()) {
+        let RedisStoreFactory = typeof RedisStoreCreator === 'function' 
+          ? RedisStoreCreator 
+          : RedisStoreCreator.default;
+        
+        if (RedisStoreFactory) {
+          let RedisStoreClass;
+          try {
+            RedisStoreClass = RedisStoreFactory(session);
+          } catch (e) {
+            RedisStoreClass = RedisStoreFactory;
+          }
+          
+          sessionOptions.store = new RedisStoreClass({ 
+            client: redisClient, 
+            prefix: 'sess:' 
+          });
+          console.log('✅ Session store: Redis');
+        } else {
+          throw new Error('Redis store factory not available');
+        }
+      } else {
+        throw new Error('Redis client not connected');
       }
-      // Create separate client for session store to reduce interference with general use
-      const { createClient } = require('redis');
-      const SESSION_REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-      const sessionRedisClient = createClient({ url: SESSION_REDIS_URL });
-      sessionRedisClient.on('error', (err) => console.warn('Session Redis Client Error', err));
-      sessionRedisClient.connect().catch((err) => console.warn('Failed to connect session redis client', err));
-      sessionOptions.store = new RedisStoreClass({ client: sessionRedisClient, prefix: 'sess:' });
+    } catch (err) {
+      console.warn('⚠️ Redis session store failed:', err.message);
+      console.log('ℹ️ Falling back to MongoDB session store');
+      sessionOptions.store = createMongoStore();
     }
   } else {
-    sessionOptions.store = MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/campus_connect',
-      touchAfter: 24 * 3600 // lazy session update
-    });
+    // Default: MongoDB store (reliable on all platforms)
+    sessionOptions.store = createMongoStore();
+    console.log('✅ Session store: MongoDB');
   }
 
   app.use(session(sessionOptions));
-  
 };
+
+/**
+ * Create MongoDB session store
+ */
+function createMongoStore() {
+  return MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/campus_connect',
+    touchAfter: 24 * 3600, // Lazy session update (1 day)
+    // NOTE: Removed crypto to avoid "Unable to parse ciphertext" errors with old sessions
+    autoRemove: 'native', // Auto-remove expired sessions
+    ttl: 60 * 60 * 24 * 7 // 7 days
+  });
+}
 
 module.exports = { configureSession };
 

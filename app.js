@@ -11,6 +11,7 @@ const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const path = require('path');
 const http = require('http');
+const https = require('https');
 const socketIo = require('socket.io');
 require('dotenv').config();
 
@@ -187,9 +188,10 @@ process.on('SIGTERM', () => {
 // Start server only when this file is run directly (prevents tests from starting server)
 if (require.main === module) {
   server.listen(PORT, () => {
-    console.log(`🚀 UConnect HTTPS server running on port ${PORT}`);
+    const protocol = server instanceof https.Server ? 'https' : 'http';
+    console.log(`🚀 UConnect ${protocol.toUpperCase()} server running on port ${PORT}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`📱 Access the app at: https://localhost:${PORT}`);
+    console.log(`📱 Access the app at: ${protocol}://localhost:${PORT}`);
     console.log(`⚡ Socket.IO enabled for real-time features!`);
   });
 }
