@@ -1,0 +1,151 @@
+<!-- Settings: Profile (uses global layout) -->
+<div class="settings-page">
+  <div class="parallax-bg">
+    <div class="parallax-layer layer-1"></div>
+    <div class="parallax-layer layer-2"></div>
+    <div class="blob-container">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+  </div>
+
+  <div class="emoji-reactions">
+    <div class="emoji-float emoji-1">⚙️</div>
+    <div class="emoji-float emoji-2">🔒</div>
+    <div class="emoji-float emoji-3">🛡️</div>
+    <div class="emoji-float emoji-4">👤</div>
+  </div>
+
+  <main class="settings-layout-neo">
+    <div class="settings-header-neo">
+      <h1 class="settings-title-neo">⚙️ SETTINGS</h1>
+      <p class="settings-subtitle-neo">Customize your UConnect experience</p>
+    </div>
+
+    <aside class="settings-sidebar-neo">
+      <nav class="settings-nav-neo">
+        <a href="/users/settings/profile" class="settings-nav-item-neo active"><span class="settings-nav-icon-neo">👤</span><span>PROFILE</span></a>
+        <a href="/users/settings/password" class="settings-nav-item-neo"><span class="settings-nav-icon-neo">🔒</span><span>PASSWORD</span></a>
+        <a href="/users/settings/account" class="settings-nav-item-neo"><span class="settings-nav-icon-neo">🛡️</span><span>ACCOUNT</span></a>
+      </nav>
+    </aside>
+
+    <div class="settings-main-neo">
+      <h2 class="section-title-neo">👤 PROFILE SETTINGS</h2>
+
+      <form method="POST" action="/users/settings/profile" id="profileForm">
+        <!-- Avatar Section -->
+        <div class="avatar-section-neo">
+          <img src="<%= user.avatarUrl %>?t=<%= Date.now() %>" alt="Current Avatar" class="current-avatar-neo" id="avatarPreview" onerror="this.src='/images/default-avatar.png'">
+          <h3 class="avatar-title-neo">PROFILE PICTURE</h3>
+          <p class="avatar-description-neo">Your profile picture helps others recognize you on campus</p>
+          <div class="avatar-buttons-neo">
+            <button type="button" class="avatar-btn-neo" id="randomAvatarBtn">🎲 RANDOM AVATAR</button>
+            <button type="button" class="avatar-btn-neo" id="uploadPhotoBtn">📁 UPLOAD PHOTO</button>
+            <button type="button" class="avatar-btn-neo danger" id="removeAvatarBtn" style="<%= (user.avatarType === 'gridfs') ? '' : 'display:none;' %>">🗑️ REMOVE</button>
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div class="form-group-neo">
+          <label for="username" class="form-label-neo">USERNAME</label>
+          <input type="text" id="username" name="username" class="form-input-neo" value="<%= user.username %>" required maxlength="20" pattern="[a-zA-Z0-9_]+">
+          <small class="form-help-neo">Only letters, numbers, and underscores allowed (3-20 characters)</small>
+        </div>
+
+        <!-- Bio -->
+        <div class="form-group-neo">
+          <label for="bio" class="form-label-neo">BIO</label>
+          <textarea id="bio" name="bio" class="form-textarea-neo" maxlength="200" placeholder="Tell other students about yourself..."><%= user.bio || '' %></textarea>
+          <small class="form-help-neo" id="bioHelp">Share a bit about yourself (0/200 characters)</small>
+        </div>
+
+        <!-- Privacy Settings -->
+        <div class="privacy-section-neo">
+          <h3 class="privacy-title-neo">🔒 PRIVACY SETTINGS</h3>
+          <div class="checkbox-group-neo">
+            <input type="checkbox" id="profilePublic" name="profilePublic" class="checkbox-neo" <%= user.privacy?.profilePublic !== false ? 'checked' : '' %>>
+            <label for="profilePublic" class="checkbox-label-neo">Make my profile visible to other students</label>
+          </div>
+          <div class="checkbox-group-neo">
+            <input type="checkbox" id="showEmail" name="showEmail" class="checkbox-neo" <%= user.privacy?.showEmail === true ? 'checked' : '' %>>
+            <label for="showEmail" class="checkbox-label-neo">Show my email to other students</label>
+          </div>
+          <div class="checkbox-group-neo">
+            <input type="checkbox" id="allowMessages" name="allowMessages" class="checkbox-neo" <%= user.privacy?.allowMessages !== false ? 'checked' : '' %>>
+            <label for="allowMessages" class="checkbox-label-neo">Allow other students to message me</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary-neo btn-neo">💾 SAVE CHANGES</button>
+      </form>
+
+      <!-- Hidden forms for avatar actions -->
+      <form method="POST" action="/users/settings/avatar" enctype="multipart/form-data" id="avatarUploadForm" style="display: none;">
+        <input type="file" id="avatarFile" name="avatar" accept="image/*">
+      </form>
+      <form method="POST" action="/users/settings/avatar-api" id="randomAvatarForm" style="display: none;">
+        <input type="hidden" id="avatarSeed" name="avatarSeed" value="">
+      </form>
+      <form method="POST" action="/users/settings/remove-avatar" id="removeAvatarForm" style="display: none;"></form>
+
+      <div class="danger-zone-neo" style="margin-top: 40px;">
+        <h3 class="danger-title-neo">⚠️ DANGER ZONE</h3>
+        <p class="danger-text-neo">These actions are permanent and cannot be undone.</p>
+        <a href="/users/settings/account" class="btn-danger-neo">🗑️ DELETE ACCOUNT</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  function generateRandomAvatar() {
+    const timestamp = Date.now().toString(36);
+    const randomPart = Math.random().toString(36).substring(2, 15);
+    const randomSeed = timestamp + randomPart;
+    const avatarPreview = document.getElementById('avatarPreview');
+    const avatarSeed = document.getElementById('avatarSeed');
+    const randomForm = document.getElementById('randomAvatarForm');
+    if (avatarPreview) avatarPreview.src = `https://api.dicebear.com/9.x/adventurer/svg?seed=${randomSeed}`;
+    if (avatarSeed) avatarSeed.value = randomSeed;
+    if (randomForm) randomForm.submit();
+  }
+  function uploadAvatar(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const avatarPreview = document.getElementById('avatarPreview');
+        if (avatarPreview) avatarPreview.src = e.target.result;
+      };
+      reader.readAsDataURL(input.files[0]);
+      const uploadForm = document.getElementById('avatarUploadForm');
+      if (uploadForm) uploadForm.submit();
+    }
+  }
+  function removeAvatar() {
+    const removeForm = document.getElementById('removeAvatarForm');
+    if (removeForm) removeForm.submit();
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    const randomAvatarBtn = document.getElementById('randomAvatarBtn');
+    const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+    const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+    const avatarFileInput = document.getElementById('avatarFile');
+    if (randomAvatarBtn) randomAvatarBtn.addEventListener('click', generateRandomAvatar);
+    if (uploadPhotoBtn && avatarFileInput) uploadPhotoBtn.addEventListener('click', () => avatarFileInput.click());
+    if (avatarFileInput) avatarFileInput.addEventListener('change', function() { uploadAvatar(this); });
+    if (removeAvatarBtn) removeAvatarBtn.addEventListener('click', removeAvatar);
+    const bioTextarea = document.getElementById('bio');
+    const bioHelp = document.getElementById('bioHelp');
+    if (bioTextarea && bioHelp) {
+      function updateCharCount() {
+        const count = bioTextarea.value.length;
+        bioHelp.textContent = `Share a bit about yourself (${count}/200 characters)`;
+        bioHelp.style.color = count > 180 ? 'var(--red)' : 'rgba(255, 255, 255, 0.5)';
+      }
+      bioTextarea.addEventListener('input', updateCharCount);
+      updateCharCount();
+    }
+  });
+</script>

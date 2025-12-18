@@ -1,0 +1,50 @@
+<link rel="stylesheet" href="/css/chat-neo.css">
+<div class="chat-start-container" style="max-width:820px;margin:40px auto;padding:28px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
+    <img src="<%= otherUser.avatarUrl %>?v=<%= Date.now() %>" alt="<%= otherUser.username %>" style="width:64px;height:64px;border-radius:8px;border:2px solid var(--red);object-fit:cover;">
+    <div>
+      <h2 style="margin:0;font-family:var(--font-display);letter-spacing:0.02em;">Start chat with <%= otherUser.name || ('@' + otherUser.username) %></h2>
+      <div style="color:rgba(255,255,255,0.6);font-size:14px;margin-top:6px">You need to send a follow request to start chatting. Send a quick message to introduce yourself.</div>
+    </div>
+  </div>
+
+  <div>
+    <textarea id="startMessage" placeholder="Say hi and why you'd like to connect (optional)" style="width:100%;min-height:120px;padding:12px;border-radius:8px;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);color:var(--white);margin-bottom:12px"></textarea>
+    <div style="display:flex;gap:12px;align-items:center">
+      <button id="sendRequestBtn" class="btn-brutalist btn-primary-neo">Send Request & Start Chat</button>
+      <a href="/users/<%= otherUser.username %>" class="nav-btn-ghost" style="padding:8px 12px;border-radius:8px;text-decoration:none">View Profile</a>
+      <span id="startStatus" style="color:rgba(255,255,255,0.8);font-weight:600;margin-left:12px"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const btn = document.getElementById('sendRequestBtn');
+    const txt = document.getElementById('startMessage');
+    const status = document.getElementById('startStatus');
+    if (!btn) return;
+    btn.addEventListener('click', async function(){
+      btn.disabled = true;
+      status.textContent = 'Sending...';
+      try {
+        const res = await fetch(`/chat/request/<%= otherUser._id %>`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: txt.value })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          status.textContent = 'Request sent — redirecting to Requests...';
+          setTimeout(() => { window.location.href = '/chat/requests'; }, 900);
+        } else {
+          status.textContent = (data && data.message) ? data.message : 'Failed to send request';
+          btn.disabled = false;
+        }
+      } catch (e) {
+        status.textContent = 'Network error';
+        btn.disabled = false;
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,19 @@
+<div class="container admin-reports">
+  <div class="terminal-screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h1>uconnect@neo:/admin$ reports<span class="terminal-cursor"></span></h1>
+      <div class="admin-badge">ADMIN</div>
+    </div>
+
+    <% if (!reportedPosts || reportedPosts.length === 0) { %>
+      <pre class="terminal-pre">no reports found.</pre>
+    <% } else { %>
+      <pre class="terminal-pre"><% reportedPosts.forEach(p => { %>@<%= p.author?.username %>: <%= p.content ? p.content.slice(0, 140) : '[media]' %> | reports:<%= p.reportCount %>
+<% }) %></pre>
+    <% } %>
+
+    <div style="margin-top:12px;">
+      <a href="/admin" class="btn small">back</a>
+    </div>
+  </div>
+</div>

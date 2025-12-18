@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/auth.css" rel="stylesheet">
+    <style>
+        .email-tips {
+            background-color: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .email-tips h4 {
+            color: #0c5460;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .email-tips ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .email-tips li {
+            margin-bottom: 8px;
+            color: #0c5460;
+            line-height: 1.5;
+        }
+
+        .verification-status {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .verification-steps ol {
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .verification-steps li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="auth-page">
+    <!-- Navigation -->
+    <%- include('../partials/navbar') %>
+
+    <!-- Flash Messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">
+                        <span style="font-size: 2rem;">📧</span>
+                        <h1>Verify Your Email</h1>
+                    </div>
+                    <p><%= typeof message !== 'undefined' ? message : 'We need to verify your email address before you can access your account.' %></p>
+                </div>
+
+                <div class="verification-status">
+                    <div class="status-icon">
+                        <span style="font-size: 3rem;">📧</span>
+                    </div>
+                    <h3>📧 Check Your Email Inbox!</h3>
+                    <p>We've sent a verification email to your address. Please check your inbox (and spam folder) for the verification link.</p>
+                </div>
+
+                <div class="verification-steps">
+                    <h4>What to do next:</h4>
+                    <ol>
+                        <li><strong>Check your email inbox</strong> for a message from UConnect</li>
+                        <li><strong>Look in your spam folder</strong> if you don't see it</li>
+                        <li><strong>Click the verification link</strong> in the email</li>
+                        <li><strong>Return here to sign in</strong> once verified</li>
+                    </ol>
+                </div>
+
+                <div class="email-tips">
+                    <h4>💡 Email Tips:</h4>
+                    <ul>
+                        <li>The email will arrive from <strong>UConnect Campus</strong></li>
+                        <li>Subject line: <strong>"🎓 Verify Your UConnect Account"</strong></li>
+                        <li>The verification link expires in <strong>24 hours</strong></li>
+                        <li>If no email arrives, check your spam/junk folder</li>
+                    </ul>
+                </div>
+
+                <!-- Resend Verification Form -->
+                <div class="resend-section">
+                    <h4>Need a new verification link?</h4>
+                    <form method="POST" action="/auth/resend-verification" class="resend-form">
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                <span style="margin-right: 5px;">📧</span>
+                                Email Address
+                            </label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="form-input"
+                                placeholder="your.name@university.edu.in"
+                                required
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-secondary btn-full">
+                            <span style="margin-right: 5px;">📧</span>
+                            Resend Verification Link
+                        </button>
+                    </form>
+                </div>
+
+                <div class="auth-footer">
+                    <p>Already verified? <a href="/auth/login">Sign in here</a></p>
+                    <p>Need to register? <a href="/auth/register">Create an account</a></p>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3>Need Help?</h3>
+                <div class="help-items">
+                    <div class="help-item">
+                        <span style="margin-right: 10px;">❓</span>
+                        <div>
+                            <h4>Link not working?</h4>
+                            <p>Make sure you're using the most recent verification link from the console.</p>
+                        </div>
+                    </div>
+                    <div class="help-item">
+                        <span style="margin-right: 10px;">⏰</span>
+                        <div>
+                            <h4>Link expired?</h4>
+                            <p>Verification links expire after 24 hours. Request a new one above.</p>
+                        </div>
+                    </div>
+                    <div class="help-item">
+                        <span style="margin-right: 10px;">📧</span>
+                        <div>
+                            <h4>Wrong email address?</h4>
+                            <p>You'll need to register again with the correct email address.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <%- include('../partials/footer') %>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

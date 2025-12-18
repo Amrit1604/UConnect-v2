@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post - Neo Design</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #000000;
+            --white: #FFFFFF;
+            --red: #FF0000;
+            --red-dark: #B22222;
+            --red-light: #FF4444;
+            --gray-dark: #1A1A1A;
+            --gray-medium: #2E2E2E;
+            --gray-light: #F5F5F5;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            font-family: var(--font-display);
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animated Background */
+        .parallax-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .parallax-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .parallax-layer.layer-1 {
+            background: radial-gradient(circle at 20% 50%, rgba(255, 0, 0, 0.1) 0%, transparent 50%);
+            animation-delay: 0s;
+        }
+
+        .parallax-layer.layer-2 {
+            background: radial-gradient(circle at 80% 50%, rgba(255, 0, 0, 0.05) 0%, transparent 50%);
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .blob-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            filter: blur(80px);
+            opacity: 0.4;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            animation: blob 25s ease-in-out infinite;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--red);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            opacity: 0.03;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--red);
+            bottom: 20%;
+            right: 10%;
+            animation-delay: -10s;
+            opacity: 0.03;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--red);
+            top: 50%;
+            left: 50%;
+            animation-delay: -5s;
+            opacity: 0.03;
+        }
+
+        @keyframes blob {
+            0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            25% { transform: translate(50px, -50px) scale(1.2) rotate(90deg); }
+            50% { transform: translate(-30px, 30px) scale(0.8) rotate(180deg); }
+            75% { transform: translate(30px, 50px) scale(1.1) rotate(270deg); }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 120px 24px 60px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 3px solid var(--white);
+            padding: 48px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s var(--ease-out-expo);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Red accent border on hover */
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 3px solid var(--red);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .form-container:hover::before {
+            opacity: 1;
+        }
+
+        /* Header */
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--red);
+        }
+
+        .form-header h1 {
+            font-size: 48px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--white);
+            margin-bottom: 12px;
+        }
+
+        .form-header p {
+            color: var(--gray-light);
+            font-size: 16px;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--white);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--glass-bg);
+            border: 3px solid var(--glass-border);
+            color: var(--white);
+            font-size: 15px;
+            transition: all 0.3s var(--ease-out-expo);
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--red);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FFFFFF' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .form-select option {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        /* Character Counter */
+        .char-counter {
+            text-align: right;
+            font-size: 13px;
+            margin-top: 8px;
+            color: var(--gray-light);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        /* Form Row */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Media Controls */
+        .media-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .media-controls .form-select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 28px;
+            border: 3px solid var(--white);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out-expo);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-family: inherit;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            background: transparent;
+        }
+
+        .btn-primary {
+            background: var(--red);
+            border-color: var(--red);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--red-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255, 0, 0, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--white);
+            border: 3px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--red);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--white);
+            border: 3px solid transparent;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--glass-border);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 3px solid var(--glass-border);
+        }
+
+        /* Selected Files */
+        .selected-files {
+            margin-top: 16px;
+        }
+
+        .selected-files-empty {
+            text-align: center;
+            padding: 32px;
+            background: var(--glass-bg);
+            border: 3px dashed var(--glass-border);
+            color: var(--gray-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .selected-files-empty i {
+            font-size: 32px;
+            opacity: 0.5;
+        }
+
+        .selected-files-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .selected-file-item {
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 16px;
+            align-items: center;
+            background: var(--glass-bg);
+            border: 3px solid var(--glass-border);
+            padding: 12px;
+            transition: all 0.3s var(--ease-out-expo);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .selected-file-item:hover {
+            border-color: var(--red);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .selected-file-preview {
+            width: 80px;
+            height: 80px;
+            background: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+        }
+
+        .selected-file-preview img,
+        .selected-file-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .selected-file-preview i {
+            font-size: 28px;
+            color: var(--gray-light);
+        }
+
+        .selected-file-badge {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: var(--red);
+            color: var(--white);
+            font-size: 10px;
+            padding: 2px 6px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .selected-file-info {
+            flex: 1;
+        }
+
+        .selected-file-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--white);
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+        }
+
+        .selected-file-meta {
+            font-size: 12px;
+            color: var(--gray-light);
+            letter-spacing: 0.05em;
+        }
+
+        .remove-file-btn {
+            background: transparent;
+            border: 3px solid var(--red);
+            color: var(--red);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s var(--ease-out-expo);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .remove-file-btn:hover {
+            background: var(--red);
+            color: var(--white);
+            transform: scale(1.05);
+        }
+
+        /* Form Help Text */
+        .form-help {
+            display: block;
+            font-size: 13px;
+            color: var(--gray-light);
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            border: 3px solid;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-danger {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .alert ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        /* Camera Hint */
+        .camera-hint {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: var(--red);
+            color: var(--white);
+            padding: 16px 24px;
+            border: 3px solid var(--white);
+            z-index: 1000;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 400px;
+            animation: slideInRight 0.4s var(--ease-out-expo);
+            letter-spacing: 0.05em;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .camera-hint button {
+            margin-left: auto;
+            background: transparent;
+            border: 2px solid var(--white);
+            color: var(--white);
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 4px 8px;
+            transition: all 0.2s;
+            font-weight: 700;
+        }
+
+        .camera-hint button:hover {
+            background: var(--white);
+            color: var(--red);
+        }
+
+        /* Loading State */
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Success message */
+        .success-message {
+            color: #00FF00;
+            font-size: 14px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 3px solid #00FF00;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 80px 16px 40px;
+            }
+
+            .form-container {
+                padding: 32px 24px;
+            }
+
+            .form-header h1 {
+                font-size: 32px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .selected-file-item {
+                grid-template-columns: 60px 1fr;
+                gap: 12px;
+            }
+
+            .selected-file-preview {
+                width: 60px;
+                height: 60px;
+            }
+
+            .remove-file-btn {
+                grid-column: 1 / -1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="parallax-bg">
+        <div class="parallax-layer layer-1"></div>
+        <div class="parallax-layer layer-2"></div>
+        <div class="blob-container">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <h1>✨ Create Post</h1>
+                <p>Share your thoughts with the campus community</p>
+            </div>
+
+            <form id="createPostForm" action="/posts/create" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="content" class="form-label">Your Post *</label>
+                    <textarea
+                        name="content"
+                        id="content"
+                        class="form-textarea"
+                        rows="6"
+                        required
+                        maxlength="2000"
+                        placeholder="Share your thoughts, start a discussion, ask questions..."></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> / 2000
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category" class="form-label">Category *</label>
+                    <select name="category" id="category" class="form-select" required>
+                        <option value="">Select a category</option>
+                        <option value="general">💬 General</option>
+                        <option value="academics">🎓 Academics</option>
+                        <option value="events">🎉 Events</option>
+                        <option value="sports">⚽ Sports</option>
+                        <option value="lost-found">🔍 Lost & Found</option>
+                        <option value="hostels">🏠 Hostels</option>
+                        <option value="canteen">🍕 Canteen</option>
+                        <option value="pgs">🏡 PGs</option>
+                        <option value="study">📚 Study Groups</option>
+                        <option value="staff">👨‍🏫 Staff</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Media (Optional)</label>
+                    <div class="media-controls">
+                        <select id="mediaType" class="form-select">
+                            <option value="none">None</option>
+                            <option value="images" selected>Images</option>
+                            <option value="video">Video</option>
+                        </select>
+
+                        <select id="mediaSource" class="form-select">
+                            <option value="gallery">Gallery</option>
+                            <option value="camera">Camera</option>
+                        </select>
+
+                        <button type="button" id="mediaBtn" class="btn btn-secondary">
+                            <i class="fas fa-images"></i> Choose Media
+                        </button>
+                    </div>
+
+                    <input type="file" name="images" id="images" multiple accept="image/*" style="display:none;">
+                    <input type="file" name="videos" id="videos" accept="video/*" style="display:none;">
+                    <small class="form-help">Images: up to 5 files (max 5MB each). Video: single file (max 50MB).</small>
+                    <div id="selectedFiles" class="selected-files"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="location" class="form-label">Location</label>
+                        <input
+                            type="text"
+                            name="location"
+                            id="location"
+                            class="form-input"
+                            placeholder="Where is this happening?">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority" class="form-label">Priority</label>
+                        <select name="priority" id="priority" class="form-select">
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tags" class="form-label">Tags</label>
+                    <input
+                        type="text"
+                        name="tags"
+                        id="tags"
+                        class="form-input"
+                        placeholder="urgent, help, study">
+                    <small class="form-help">Separate multiple tags with commas</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i> Create Post
+                    </button>
+                    <a href="#" class="btn btn-ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Character counter
+        const contentTextarea = document.getElementById('content');
+        const charCount = document.getElementById('charCount');
+
+        function updateCharCount() {
+            const length = contentTextarea.value.length;
+            charCount.textContent = length;
+
+            if (length > 1800) {
+                charCount.style.color = '#FF0000';
+            } else if (length > 1500) {
+                charCount.style.color = '#FF4444';
+            } else {
+                charCount.style.color = '#F5F5F5';
+            }
+        }
+
+        contentTextarea.addEventListener('input', updateCharCount);
+        updateCharCount();
+
+        // Form elements
+        const form = document.getElementById('createPostForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const imagesInput = document.getElementById('images');
+        const videosInput = document.getElementById('videos');
+        const mediaTypeSelect = document.getElementById('mediaType');
+        const mediaSourceSelect = document.getElementById('mediaSource');
+        const mediaBtn = document.getElementById('mediaBtn');
+        const selectedFilesDiv = document.getElementById('selectedFiles');
+
+        let selectedFiles = [];
+        let previewObjectUrls = [];
+
+        // Render empty state
+        function renderNoFilesState() {
+            selectedFilesDiv.innerHTML = '';
+            const emptyState = document.createElement('div');
+            emptyState.className = 'selected-files-empty';
+            emptyState.innerHTML = '<i class="fas fa-paperclip"></i><span>No media selected yet.</span>';
+            selectedFilesDiv.appendChild(emptyState);
+        }
+
+        renderNoFilesState();
+
+        // Update media button
+        function updateMediaButton() {
+            const type = mediaTypeSelect.value;
+            const source = mediaSourceSelect.value;
+
+            if (type === 'none') {
+                mediaBtn.style.display = 'none';
+            } else {
+                mediaBtn.style.display = 'inline-flex';
+                const icon = source === 'camera' ? 'fa-camera' : 'fa-images';
+                const text = source === 'camera' ? 'Take Photo' : 'Choose';
+                mediaBtn.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+            }
+        }
+
+        updateMediaButton();
+
+        // Reset media inputs
+        function resetMediaInputs() {
+            imagesInput.value = '';
+            videosInput.value = '';
+            selectedFiles = [];
+            previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+            previewObjectUrls = [];
+            renderNoFilesState();
+        }
+
+        // Media type change
+        mediaTypeSelect.addEventListener('change', function() {
+            resetMediaInputs();
+            updateMediaButton();
+        });
+
+        // Media source change
+        mediaSourceSelect.addEventListener('change', function() {
+            const source = mediaSourceSelect.value;
+            resetMediaInputs();
+
+            if (source === 'camera') {
+                imagesInput.setAttribute('capture', 'environment');
+                videosInput.setAttribute('capture', 'camcorder');
+            } else {
+                imagesInput.removeAttribute('capture');
+                videosInput.removeAttribute('capture');
+            }
+
+            updateMediaButton();
+        });
+
+        // Media button click
+        mediaBtn.addEventListener('click', function() {
+            const type = mediaTypeSelect.value;
+            const source = mediaSourceSelect.value;
+
+            if (source === 'camera') {
+                showCameraHint();
+            }
+
+            if (type === 'images') {
+                imagesInput.click();
+            } else if (type === 'video') {
+                videosInput.click();
+            }
+        });
+
+        // Show camera hint
+        function showCameraHint() {
+            const hint = document.createElement('div');
+            hint.className = 'camera-hint';
+            hint.innerHTML = `
+                📷 Camera opening...
+                <button type="button" aria-label="Close">✕</button>
+            `;
+
+            document.body.appendChild(hint);
+
+            hint.querySelector('button').addEventListener('click', () => {
+                hint.remove();
+            });
+
+            setTimeout(() => {
+                if (hint.parentNode) {
+                    hint.remove();
+                }
+            }, 5000);
+        }
+
+        // Display selected files
+        function displaySelectedFiles(files, type) {
+            previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+            previewObjectUrls = [];
+            selectedFilesDiv.innerHTML = '';
+
+            if (!files || files.length === 0) {
+                renderNoFilesState();
+                return;
+            }
+
+            const list = document.createElement('div');
+            list.className = 'selected-files-list';
+
+            files.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'selected-file-item';
+
+                const preview = document.createElement('div');
+                preview.className = 'selected-file-preview';
+
+                if (type === 'images' && file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    const objectUrl = URL.createObjectURL(file);
+                    previewObjectUrls.push(objectUrl);
+                    img.src = objectUrl;
+                    img.alt = file.name;
+                    preview.appendChild(img);
+                } else if (type === 'video' && file.type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.muted = true;
+                    video.loop = true;
+                    video.playsInline = true;
+                    const objectUrl = URL.createObjectURL(file);
+                    previewObjectUrls.push(objectUrl);
+                    video.src = objectUrl;
+                    video.play().catch(() => {});
+                    preview.appendChild(video);
+
+                    const badge = document.createElement('span');
+                    badge.className = 'selected-file-badge';
+                    badge.textContent = 'VIDEO';
+                    preview.appendChild(badge);
+                } else {
+                    preview.innerHTML = '<i class="fas fa-file"></i>';
+                }
+
+                const info = document.createElement('div');
+                info.className = 'selected-file-info';
+
+                const name = document.createElement('div');
+                name.className = 'selected-file-name';
+                name.textContent = file.name;
+                name.title = file.name;
+
+                const sizeInMb = (file.size / (1024 * 1024)).toFixed(1);
+                const extension = file.name.split('.').pop().toUpperCase();
+                const meta = document.createElement('div');
+                meta.className = 'selected-file-meta';
+                meta.textContent = `${sizeInMb} MB • ${extension}`;
+
+                info.appendChild(name);
+                info.appendChild(meta);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-file-btn';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i><span>Remove</span>';
+                removeBtn.addEventListener('click', () => removeFile(index));
+
+                item.appendChild(preview);
+                item.appendChild(info);
+                item.appendChild(removeBtn);
+                list.appendChild(item);
+            });
+
+            selectedFilesDiv.appendChild(list);
+        }
+
+        // Remove file
+        function removeFile(index) {
+            if (index < 0 || index >= selectedFiles.length) return;
+
+            selectedFiles.splice(index, 1);
+
+            if (selectedFiles.length === 0) {
+                imagesInput.value = '';
+                videosInput.value = '';
+                selectedFilesDiv.innerHTML = '<div class="success-message"><i class="fas fa-check-circle"></i> All files removed successfully!</div>';
+                setTimeout(() => renderNoFilesState(), 2000);
+            } else {
+                displaySelectedFiles(selectedFiles, mediaTypeSelect.value);
+                updateFileInput();
+            }
+        }
+
+        // Update file input
+        function updateFileInput() {
+            const type = mediaTypeSelect.value;
+            const input = type === 'images' ? imagesInput : videosInput;
+
+            if (selectedFiles.length === 0) {
+                imagesInput.value = '';
+                videosInput.value = '';
+                return;
+            }
+
+            if (window.DataTransfer && typeof DataTransfer === 'function') {
+                try {
+                    const dt = new DataTransfer();
+                    selectedFiles.forEach(file => dt.items.add(file));
+                    input.files = dt.files;
+                    return;
+                } catch (error) {
+                    console.warn('DataTransfer failed:', error);
+                }
+            }
+
+            input.value = '';
+        }
+
+        // Images input change
+        imagesInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+
+            if (files.length > 5) {
+                alert('Maximum 5 images allowed.');
+                e.target.value = '';
+                selectedFiles = [];
+                previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                previewObjectUrls = [];
+                renderNoFilesState();
+                return;
+            }
+
+            for (let file of files) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`File "${file.name}" is too large. Maximum size is 5MB.`);
+                    e.target.value = '';
+                    selectedFiles = [];
+                    previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                    previewObjectUrls = [];
+                    renderNoFilesState();
+                    return;
+                }
+            }
+
+            selectedFiles = [...files];
+            displaySelectedFiles(selectedFiles, 'images');
+        });
+
+        // Videos input change
+        videosInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+
+            if (files.length > 1) {
+                alert('Only one video allowed.');
+                e.target.value = '';
+                selectedFiles = [];
+                previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                previewObjectUrls = [];
+                renderNoFilesState();
+                return;
+            }
+
+            for (let file of files) {
+                if (file.size > 50 * 1024 * 1024) {
+                    alert(`Video "${file.name}" is too large. Maximum size is 50MB.`);
+                    e.target.value = '';
+                    selectedFiles = [];
+                    previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                    previewObjectUrls = [];
+                    renderNoFilesState();
+                    return;
+                }
+            }
+
+            selectedFiles = [...files];
+            displaySelectedFiles(selectedFiles, 'video');
+        });
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            const content = contentTextarea.value.trim();
+            const category = document.getElementById('category').value;
+
+            if (!content) {
+                e.preventDefault();
+                alert('Please write something in your post.');
+                contentTextarea.focus();
+                return;
+            }
+
+            if (!category) {
+                e.preventDefault();
+                alert('Please select a category.');
+                document.getElementById('category').focus();
+                return;
+            }
+
+            if (selectedFiles.length > 0) {
+                updateFileInput();
+
+                const type = mediaTypeSelect.value;
+                const input = type === 'images' ? imagesInput : videosInput;
+
+                if (input.files.length !== selectedFiles.length) {
+                    e.preventDefault();
+
+                    const formData = new FormData();
+
+                    const formElements = form.querySelectorAll('input, select, textarea');
+                    formElements.forEach(element => {
+                        if (element.type !== 'file' && element.name) {
+                            formData.append(element.name, element.value);
+                        }
+                    });
+
+                    selectedFiles.forEach(file => {
+                        if (type === 'images') {
+                            formData.append('images', file);
+                        } else {
+                            formData.append('videos', file);
+                        }
+                    });
+
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+                    fetch('/posts/create', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.href = '/posts';
+                        } else {
+                            throw new Error('Network response was not ok');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error creating post. Please try again.');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Create Post';
+                    });
+
+                    return;
+                }
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        });
+    </script>
+</body>
+</html>

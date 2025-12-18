@@ -1,0 +1,49 @@
+<link rel="stylesheet" href="/css/chat-neo.css">
+<div class="chat-inbox">
+  <h2>Messages</h2>
+  <div id="conversationsList">
+    <% if (conversations && conversations.length) { %>
+      <% conversations.forEach(c => { %>
+        <div class="conversation-item neo-chat-item" data-other-id="<%= c.otherUser._id %>">
+          <a class="open-chat-mini" href="/chat/<%= c.otherUser._id %>">
+            <img src="<%= c.otherUser.avatarUrl %>" alt="avatar" width="44" height="44" style="border-radius:8px; border:2px solid rgba(255,255,255,0.03); object-fit:cover" />
+            <div style="margin-left:10px">
+              <div class="username" style="font-weight:700">@<%= c.otherUser.username %></div>
+              <div class="last-message" style="font-size:13px;color:rgba(255,255,255,0.6)"><%= c.lastMessage ? (c.lastMessage.content && c.lastMessage.content.slice(0,60)) : 'No messages yet' %></div>
+            </div>
+          </a>
+          <% if (c.unreadCount && c.unreadCount>0) { %>
+            <div class="unread neo-unread"><%= c.unreadCount %></div>
+          <% } %>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="chat-empty">You have no conversations yet. Connect with people to start chatting.</div>
+    <% } %>
+  </div>
+</div>
+
+<script>window.__USER_ID__ = '<%= user._id %>';</script>
+<div class="chat-inbox" data-profile-user-id="<%= user ? user._id : '' %>">
+  <h2>Messages</h2>
+  <div id="conversationsList">
+    <% if (conversations && conversations.length>0) { %>
+      <% conversations.forEach(c => { %>
+        <div class="conversation-item neo-chat-item" data-other-id="<%= c.otherUser._id %>">
+          <a class="open-chat-mini" href="/chat/<%= c.otherUser._id %>">@<%= c.otherUser.username %></a>
+          <div class="last-message" style="color:rgba(255,255,255,0.6)"><%= c.lastMessage ? c.lastMessage.content : '' %></div>
+          <% if (c.unreadCount) { %>
+            <div class="unread neo-unread"><%= c.unreadCount %></div>
+          <% } %>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div>No conversations yet.</div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // Provide current user id to client chat script
+  window.__USER_ID__ = '<%= user ? user._id : '' %>';
+</script>

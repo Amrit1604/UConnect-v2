@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings | UConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/feed-neo.css" rel="stylesheet">
+    <link href="/css/settings-neo.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('../../partials/navbar') %>
+    <%- include('../../partials/flash-messages') %>
+
+    <div class="settings-page">
+        <div class="parallax-bg">
+            <div class="parallax-layer layer-1"></div>
+            <div class="parallax-layer layer-2"></div>
+            <div class="blob-container">
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+                <div class="blob blob-3"></div>
+            </div>
+        </div>
+
+        <div class="emoji-reactions">
+            <div class="emoji-float emoji-1">🛡️</div>
+            <div class="emoji-float emoji-2">📧</div>
+            <div class="emoji-float emoji-3">🔔</div>
+            <div class="emoji-float emoji-4">⚙️</div>
+            <div class="emoji-float emoji-5">🗑️</div>
+            <div class="emoji-float emoji-6">💾</div>
+            <div class="emoji-float emoji-7">⚡</div>
+        </div>
+
+        <main class="settings-layout-neo">
+            <div class="settings-header-neo">
+                <h1 class="settings-title-neo">🛡️ ACCOUNT SETTINGS</h1>
+                <p class="settings-subtitle-neo">Manage your account preferences and data</p>
+            </div>
+
+            <aside class="settings-sidebar-neo">
+                <nav class="settings-nav-neo">
+                    <a href="/users/settings/profile" class="settings-nav-item-neo">
+                        <span class="settings-nav-icon-neo">👤</span>
+                        <span>PROFILE</span>
+                    </a>
+                    <a href="/users/settings/password" class="settings-nav-item-neo">
+                        <span class="settings-nav-icon-neo">🔒</span>
+                        <span>PASSWORD</span>
+                    </a>
+                    <a href="/users/settings/account" class="settings-nav-item-neo active">
+                        <span class="settings-nav-icon-neo">🛡️</span>
+                        <span>ACCOUNT</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <div class="settings-main-neo">
+                <h2 class="section-title-neo">📧 EMAIL SETTINGS</h2>
+
+                <form method="POST" action="/users/settings/email">
+                    <div class="form-group-neo">
+                        <label for="email" class="form-label-neo">EMAIL ADDRESS</label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               class="form-input-neo"
+                               value="<%= user.email %>" 
+                               required>
+                        <small class="form-help-neo">Your campus email address</small>
+                    </div>
+
+                    <button type="submit" class="btn-primary-neo btn-neo">
+                        💾 UPDATE EMAIL
+                    </button>
+                </form>
+
+                <div style="margin-top: 60px;">
+                    <h2 class="section-title-neo">🔔 NOTIFICATIONS</h2>
+
+                    <form method="POST" action="/users/settings/notifications">
+                        <div class="privacy-section-neo">
+                            <div class="checkbox-group-neo">
+                                <input type="checkbox" 
+                                       id="emailNotifications" 
+                                       name="emailNotifications" 
+                                       class="checkbox-neo"
+                                       <%= user.notifications?.email !== false ? 'checked' : '' %>>
+                                <label for="emailNotifications" class="checkbox-label-neo">Email notifications</label>
+                            </div>
+                            <div class="checkbox-group-neo">
+                                <input type="checkbox" 
+                                       id="followNotifications" 
+                                       name="followNotifications" 
+                                       class="checkbox-neo"
+                                       <%= user.notifications?.newPosts !== false ? 'checked' : '' %>>
+                                <label for="followNotifications" class="checkbox-label-neo">New posts notifications</label>
+                            </div>
+                            <div class="checkbox-group-neo">
+                                <input type="checkbox" 
+                                       id="likeNotifications" 
+                                       name="likeNotifications" 
+                                       class="checkbox-neo"
+                                       <%= user.notifications?.likes !== false ? 'checked' : '' %>>
+                                <label for="likeNotifications" class="checkbox-label-neo">Like notifications</label>
+                            </div>
+                            <div class="checkbox-group-neo">
+                                <input type="checkbox" 
+                                       id="marketingEmails" 
+                                       name="marketingEmails" 
+                                       class="checkbox-neo"
+                                       <%= user.notifications?.weeklyDigest !== false ? 'checked' : '' %>>
+                                <label for="marketingEmails" class="checkbox-label-neo">Weekly digest emails</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary-neo btn-neo">
+                            💾 SAVE PREFERENCES
+                        </button>
+                    </form>
+                </div>
+
+                <div style="margin-top: 60px;">
+                    <div class="danger-zone-neo">
+                        <h3 class="danger-title-neo">⚠️ DANGER ZONE</h3>
+                        <p class="danger-text-neo">These actions are permanent and cannot be undone.</p>
+                        
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+                            <button type="button" class="btn-danger-neo" onclick="deactivateAccount()">
+                                🔒 DEACTIVATE ACCOUNT
+                            </button>
+                            <button type="button" class="btn-danger-neo" onclick="showDeleteModal()">
+                                🗑️ DELETE ACCOUNT PERMANENTLY
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: rgba(0,0,0,0.95); border: 2px solid var(--red); border-radius: 16px; padding: 40px; max-width: 500px; width: 90%;">
+            <h2 style="color: var(--red); font-size: 28px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase;">⚠️ DELETE ACCOUNT</h2>
+            <p style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">This action cannot be undone. All your data will be permanently deleted.</p>
+            
+            <form method="POST" action="/users/settings/delete-account">
+                <div class="form-group-neo">
+                    <label for="confirmEmail" class="form-label-neo">CONFIRM YOUR EMAIL</label>
+                    <input type="email" id="confirmEmail" name="confirmEmail" class="form-input-neo" required>
+                </div>
+
+                <div class="checkbox-group-neo" style="background: rgba(255,0,0,0.1); padding: 16px; border-radius: 10px;">
+                    <input type="checkbox" id="confirmDelete" name="confirmDelete" class="checkbox-neo" required>
+                    <label for="confirmDelete" class="checkbox-label-neo">I understand this action is permanent</label>
+                </div>
+
+                <div class="checkbox-group-neo" style="background: rgba(255,0,0,0.1); padding: 16px; border-radius: 10px;">
+                    <input type="checkbox" id="confirmDataLoss" name="confirmDataLoss" class="checkbox-neo" required>
+                    <label for="confirmDataLoss" class="checkbox-label-neo">I understand all my data will be lost</label>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn-secondary-neo btn-neo" onclick="hideDeleteModal()">CANCEL</button>
+                    <button type="submit" class="btn-danger-neo">🗑️ DELETE MY ACCOUNT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <%- include('../../partials/footer') %>
+
+    <script>
+        function deactivateAccount() {
+            if (confirm('Are you sure you want to deactivate your account? You can reactivate it later by logging in.')) {
+                fetch('/users/settings/deactivate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          alert('Account deactivated successfully');
+                          window.location.href = '/auth/logout';
+                      } else {
+                          alert('Failed to deactivate account');
+                      }
+                  });
+            }
+        }
+
+        function showDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+    </script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

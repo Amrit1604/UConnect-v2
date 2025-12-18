@@ -1,0 +1,179 @@
+/* Force admin pages to be full-width, edge-to-edge */
+body.admin-mode, body.admin-mode .main-content, body.admin-mode .container.admin-dashboard, body.admin-mode .container.admin-users, body.admin-mode .container.admin-posts, body.admin-mode .container.admin-reports, body.admin-mode .container.admin-analytics, body.admin-mode .container.admin-login-page {
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  width: 100vw !important;
+  background: var(--terminal-bg) !important;
+  box-sizing: border-box;
+}
+
+body.admin-mode {
+  background: var(--terminal-bg) !important;
+}
+
+body.admin-mode .main-content {
+  min-height: 100vh;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: var(--terminal-bg) !important;
+}
+
+body.admin-mode nav, body.admin-mode .navbar-neo, body.admin-mode .nav-container-neo {
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  left: 0;
+  right: 0;
+  border-radius: 0 !important;
+  background: #000 !important;
+  box-shadow: none !important;
+}
+
+body.admin-mode .nav-brand-neo, body.admin-mode .nav-center-neo, body.admin-mode .nav-actions-neo {
+  margin: 0 !important;
+  padding: 0 16px !important;
+}
+/* Admin (Neo) — styles inspired by DESIGN-NEO.md
+   Variables, glassmorphism, brutalist buttons, and bold typography
+*/
+:root{
+  --terminal-bg: #0b0f0b;
+  --panel-bg: #000;
+  --muted: #8a8f86;
+  --accent-green: #39ff14;
+  --accent-red: #ff3b3b;
+  --font-mono: 'Fira Mono', 'Source Code Pro', 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  --font-ui: 'Space Grotesk', system-ui, sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Overlay + eye-blink animation */
+.admin-overlay{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99999;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+}
+.admin-overlay.visible{ display:flex; }
+.admin-overlay.eye-blink{ animation: adminEyeBlink 420ms var(--ease-out-expo); }
+@keyframes adminEyeBlink{
+  0%{ background: rgba(0,0,0,0); transform: scale(1); }
+  55%{ background: rgba(0,0,0,1); transform: scale(1.06); }
+  100%{ background: rgba(0,0,0,0.92); transform: scale(1); }
+}
+
+/* Modal (glass + brutalist accents) */
+.admin-modal{
+  width:520px; max-width:calc(100% - 48px);
+  background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.55));
+  color:var(--muted);
+  border-radius:8px;
+  padding:18px;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.8);
+  border: 2px solid var(--glass-border);
+  backdrop-filter: blur(6px);
+  transform: translateZ(0) scale(0.995);
+  transition: transform 180ms var(--ease-out-expo), opacity 160ms ease;
+}
+.admin-overlay.visible .admin-modal{ transform: scale(1); }
+.admin-modal-inner{ text-align:left; font-family:var(--font-body); }
+.admin-modal-title{ font-family:var(--font-mono); font-weight:700; font-size:18px; margin:0 0 8px 0; color:var(--accent-green); }
+.admin-modal-sub{ color:var(--muted); margin:0 0 12px 0; font-family:var(--font-ui); }
+
+.admin-input{ width:100%; padding:10px 12px; border-radius:6px; outline:none; color:var(--accent-green);
+  background: rgba(0,0,0,0.3); border:1px solid rgba(57,255,20,0.06); box-shadow: inset 0 1px 0 rgba(0,0,0,0.6); font-family:var(--font-mono);
+}
+
+.admin-actions{ display:flex; gap:12px; justify-content:flex-end; margin-top:12px; }
+.admin-btn{ padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:700; font-family:var(--font-mono); border:1px solid rgba(255,255,255,0.03); background:transparent; color:var(--accent-green); }
+.admin-btn-ghost{ background:transparent; opacity:0.9; border-color: rgba(255,255,255,0.02); }
+.admin-btn-primary{ background:transparent; color:var(--terminal-bg); border:1px solid var(--accent-green); box-shadow: 0 6px 18px rgba(57,255,20,0.04); }
+.admin-btn:active{ transform: translateY(1px); }
+
+.admin-msg{ margin-top:10px; font-size:13px; }
+.admin-msg.error{ color: #ff6b6b; }
+.admin-msg.success{ color: #8cffb1; }
+
+/* Admin page layout (Neo tokens) */
+  width:100vw; max-width:none; margin:0; padding:0; font-family:var(--font-mono); color:var(--accent-green); background:var(--terminal-bg);
+}
+
+.admin-dashboard h1, .admin-users h1, .admin-posts h1{ font-family:var(--font-mono); font-weight:800; font-size:22px; margin-bottom:10px; color:var(--accent-green); }
+
+.grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:14px; margin-bottom:20px; }
+.card, .card.terminal{
+  background:var(--terminal-bg);
+  border:2px solid var(--accent-green);
+  border-radius:0;
+  box-shadow:none;
+  padding:8px 12px;
+  font-family:var(--font-mono);
+  color:var(--accent-green);
+}
+.card h3{ margin:0 0 8px 0; font-family:var(--font-mono); font-size:14px; color:var(--muted); }
+.card p{ margin:0; font-size:20px; color:var(--accent-green); font-weight:700; }
+
+.list{ list-style:none; padding:0; margin:0; }
+
+.admin-table{ width:100%; border-collapse:collapse; margin-top:12px; font-family:var(--font-mono); color:var(--muted); }
+.admin-table th, .admin-table td{ padding:10px 8px; border-bottom: 1px dashed rgba(57,255,20,0.04); text-align:left; }
+.admin-table tr:hover{ background: rgba(57,255,20,0.02); }
+
+.search-form{ display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+.search-form input, .search-form select{ padding:8px 10px; border-radius:6px; border:1px solid rgba(57,255,20,0.04); background: rgba(0,0,0,0.45); color:var(--accent-green); font-family:var(--font-mono); }
+
+.pagination{ margin-top:12px; display:flex; gap:8px; align-items:center; }
+.btn.small{ padding:6px 8px; font-size:12px; border:1px solid rgba(57,255,20,0.04); background:transparent; color:var(--accent-green); font-family:var(--font-mono); }
+.btn{ padding:8px 10px; border-radius:6px; font-weight:700; border:1px solid rgba(255,255,255,0.03); background:transparent; color:var(--accent-green); font-family:var(--font-mono); }
+.btn.danger{ background:transparent; color:var(--accent-red); border-color: rgba(255,0,0,0.06); }
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce){
+  .admin-overlay.eye-blink, .admin-modal{ animation:none; transition:none; }
+}
+
+/* Admin badge in nav */
+.admin-badge{ display:inline-block; background:transparent; color:var(--accent-green); border:2px solid var(--accent-green); padding:2px 8px; border-radius:0; margin-right:8px; font-family:var(--font-mono); font-weight:700; }
+
+/* Terminal specific helpers */
+.terminal-screen{
+  background:var(--terminal-bg);
+  border:2px solid var(--accent-green);
+  padding:0 0 0 0;
+  font-family:var(--font-mono);
+  color:var(--accent-green);
+  width:100vw;
+  min-height:100vh;
+  box-shadow:none;
+  border-radius:0;
+}
+.terminal-pre{
+  background:var(--terminal-bg);
+  padding:0 0 0 0;
+  border:none;
+  font-family:var(--font-mono);
+  color:var(--accent-green);
+  font-size:15px;
+  white-space:pre-wrap;
+}
+/* Blinking prompt/cursor */
+.terminal-cursor {
+  display:inline-block;
+  width:10px;
+  height:18px;
+  background:var(--accent-green);
+  margin-left:2px;
+  animation: blink-cursor 1s steps(1) infinite;
+  vertical-align:bottom;
+}
+@keyframes blink-cursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.muted{ color:var(--muted); }
+
+/* Chart container helper (for Chart.js) */
+.admin-chart-card{ padding:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12)); border-radius:10px; border:2px solid rgba(255,255,255,0.03); }
+
+

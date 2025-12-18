@@ -1,0 +1,129 @@
+<div class="container admin-dashboard">
+  <div class="terminal-screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h1>uconnect@neo:/admin$ dashboard<span class="terminal-cursor"></span></h1>
+      <div class="admin-badge">ADMIN</div>
+    </div>
+
+    <div class="grid">
+      <div class="card terminal">
+        <h3>total_users</h3>
+        <p><%= userStats ? userStats.totalUsers : 0 %></p>
+      </div>
+      <div class="card terminal">
+        <h3>verified_users</h3>
+        <p><%= userStats ? userStats.verifiedUsers : 0 %></p>
+      </div>
+      <div class="card terminal">
+        <h3>active_posts</h3>
+        <p><%= totalPosts || 0 %></p>
+      </div>
+      <div class="card terminal">
+        <h3>reported_posts</h3>
+        <p><%= reportedPosts || 0 %></p>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:8px;">
+      <a href="/admin/users" class="btn small">users</a>
+      <a href="/admin/posts" class="btn small">posts</a>
+      <a href="/admin/audit" class="btn small">audit</a>
+      <form action="/admin/logout" method="post" style="display:inline">
+        <button class="btn small" type="submit">logout</button>
+      </form>
+    </div>
+
+
+    <hr style="border-color:rgba(57,255,20,0.03); margin:14px 0; border-width:2px 0 0 0;" />
+
+    <div class="card terminal" style="margin-bottom:18px;">
+      <h4 class="muted">automated.tests (Jest)</h4>
+      <button class="btn" id="runJestBtn">Run All Tests</button>
+      <pre id="jestOutput" class="terminal-pre" style="margin-top:10px;">Press 'Run All Tests' to see results.</pre>
+      <div class="muted" style="margin-top:8px; font-size:13px;">To run all automated tests, click the button above. Test results will appear here.<br>Tests use <b>Jest</b> and cover core app, models, and routes.</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <div class="card">
+        <h4 class="muted">system.status</h4>
+        <pre id="adminStatus" class="terminal-pre">Loading</pre>
+      </div>
+
+      <div class="card">
+        <h4 class="muted">system.scripts</h4>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" id="runFixCampus">fixCampus</button>
+          <button class="btn" id="runTestGridFS">testGridFS</button>
+        </div>
+        <pre id="scriptOutput" class="terminal-pre" style="margin-top:10px;"></pre>
+      </div>
+    </div>
+
+    <hr style="border-color:rgba(57,255,20,0.03); margin:14px 0; border-width:2px 0 0 0;" />
+
+    <div>
+      <h4 class="muted">recent.users</h4>
+      <pre class="terminal-pre"><% recentUsers.forEach(u => { %><%= (u.username || u.name) + ' <' + u.email + '>' + '\n' %><% }) %></pre>
+    </div>
+
+    <div style="margin-top:12px;">
+      <h4 class="muted">recent.posts</h4>
+      <pre class="terminal-pre"><% recentPosts.forEach(p => { %>@<%= p.author?.username %>: <%= p.content ? (p.content.replace(/\n/g, ' ').slice(0,140)) : '[media]' %>\n<% }) %></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // Fetch status
+    fetch('/admin/api/status', { credentials: 'same-origin' })
+      .then(res => res.json())
+      .then(data => {
+        const el = document.getElementById('adminStatus');
+        if (el) {
+          el.textContent = JSON.stringify(data, null, 2);
+        }
+      }).catch(()=>{});
+
+    const runBtn1 = document.getElementById('runFixCampus');
+    const runBtn2 = document.getElementById('runTestGridFS');
+    const output = document.getElementById('scriptOutput');
+
+    async function runScript(name) {
+      if (!confirm('Run ' + name + ' — this may modify data. Continue?')) return;
+      try {
+        const res = await fetch('/admin/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ script: name })
+        });
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = 'Error: ' + (err && err.message ? err.message : String(err));
+      }
+    }
+    if (runBtn1) runBtn1.addEventListener('click', () => runScript('fixCampus'));
+    if (runBtn2) runBtn2.addEventListener('click', () => runScript('testGridFS'));
+    // Jest test runner
+    const runJestBtn = document.getElementById('runJestBtn');
+    const jestOutput = document.getElementById('jestOutput');
+    if (runJestBtn && jestOutput) {
+      runJestBtn.addEventListener('click', async () => {
+        jestOutput.textContent = 'Running tests...';
+        try {
+          const res = await fetch('/admin/api/run-jest', { method: 'POST', headers: { 'Accept': 'application/json' } });
+          const data = await res.json();
+          if (data.success && data.report) {
+            jestOutput.textContent =
+              `Total: ${data.report.numTotalTests}\nPassed: ${data.report.numPassedTests}\nFailed: ${data.report.numFailedTests}\n${data.report.testResults.map(tr => `${tr.name}\n  ${tr.assertionResults.map(a => (a.status === 'passed' ? '✔' : '✖') + ' ' + a.title).join('\n  ')}`).join('\n')}`;
+          } else {
+            jestOutput.textContent = 'Test run failed: ' + (data.error || 'Unknown error');
+          }
+        } catch (e) {
+          jestOutput.textContent = 'Test run error: ' + (e && e.message ? e.message : String(e));
+        }
+      });
+    }
+  })();
+</script>

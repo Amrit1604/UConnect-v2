@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings | UConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/feed-neo.css" rel="stylesheet">
+    <link href="/css/settings-neo.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('../../partials/navbar') %>
+    <%- include('../../partials/flash-messages') %>
+
+    <!-- Neo Settings Page -->
+    <div class="settings-page">
+        <!-- Background Effects -->
+        <div class="parallax-bg">
+            <div class="parallax-layer layer-1"></div>
+            <div class="parallax-layer layer-2"></div>
+            <div class="blob-container">
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+                <div class="blob blob-3"></div>
+            </div>
+        </div>
+
+        <!-- Floating Emoji Reactions -->
+        <div class="emoji-reactions">
+            <div class="emoji-float emoji-1">⚙️</div>
+            <div class="emoji-float emoji-2">🔒</div>
+            <div class="emoji-float emoji-3">🛡️</div>
+            <div class="emoji-float emoji-4">👤</div>
+            <div class="emoji-float emoji-5">✨</div>
+            <div class="emoji-float emoji-6">🎨</div>
+            <div class="emoji-float emoji-7">💎</div>
+        </div>
+
+        <main class="settings-layout-neo">
+            <!-- Settings Header -->
+            <div class="settings-header-neo">
+                <h1 class="settings-title-neo">⚙️ SETTINGS</h1>
+                <p class="settings-subtitle-neo">Customize your UConnect experience</p>
+            </div>
+
+            <!-- Sidebar Navigation -->
+            <aside class="settings-sidebar-neo">
+                <nav class="settings-nav-neo">
+                    <a href="/users/settings/profile" class="settings-nav-item-neo active">
+                        <span class="settings-nav-icon-neo">👤</span>
+                        <span>PROFILE</span>
+                    </a>
+                    <a href="/users/settings/password" class="settings-nav-item-neo">
+                        <span class="settings-nav-icon-neo">🔒</span>
+                        <span>PASSWORD</span>
+                    </a>
+                    <a href="/users/settings/account" class="settings-nav-item-neo">
+                        <span class="settings-nav-icon-neo">🛡️</span>
+                        <span>ACCOUNT</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="settings-main-neo">
+                <h2 class="section-title-neo">👤 PROFILE SETTINGS</h2>
+
+                <!-- Profile Form -->
+                <form method="POST" action="/users/settings/profile" id="profileForm">
+                    <!-- Avatar Section -->
+                    <div class="avatar-section-neo">
+                        <%
+                        let avatarUrl = '/images/default-avatar.png';
+                        if (user.avatarType === 'upload' && user.avatar) {
+                            avatarUrl = '/uploads/avatars/' + user.avatar;
+                        } else if (user.avatarSeed) {
+                            avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed;
+                        }
+                        %>
+                        <img src="<%= avatarUrl %>"
+                             alt="Current Avatar"
+                             class="current-avatar-neo"
+                             id="avatarPreview"
+                             onerror="this.src='/images/default-avatar.png'">
+                        <h3 class="avatar-title-neo">PROFILE PICTURE</h3>
+                        <p class="avatar-description-neo">Your profile picture helps others recognize you on campus</p>
+                        <div class="avatar-buttons-neo">
+                            <button type="button" class="avatar-btn-neo" id="randomAvatarBtn">
+                                🎲 RANDOM AVATAR
+                            </button>
+                            <button type="button" class="avatar-btn-neo" id="uploadPhotoBtn">
+                                📁 UPLOAD PHOTO
+                            </button>
+                            <% if (user.avatarType === 'upload' && user.avatar) { %>
+                                <button type="button" class="avatar-btn-neo danger" id="removeAvatarBtn">
+                                    🗑️ REMOVE
+                                </button>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="form-group-neo">
+                        <label for="username" class="form-label-neo">USERNAME</label>
+                        <input type="text"
+                               id="username"
+                               name="username"
+                               class="form-input-neo"
+                               value="<%= user.username %>"
+                               required
+                               maxlength="20"
+                               pattern="[a-zA-Z0-9_]+">
+                        <small class="form-help-neo">Only letters, numbers, and underscores allowed (3-20 characters)</small>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="form-group-neo">
+                        <label for="bio" class="form-label-neo">BIO</label>
+                        <textarea id="bio"
+                                  name="bio"
+                                  class="form-textarea-neo"
+                                  maxlength="200"
+                                  placeholder="Tell other students about yourself..."><%= user.bio || '' %></textarea>
+                        <small class="form-help-neo" id="bioHelp">Share a bit about yourself (0/200 characters)</small>
+                    </div>
+
+                    <!-- Privacy Settings -->
+                    <div class="privacy-section-neo">
+                        <h3 class="privacy-title-neo">🔒 PRIVACY SETTINGS</h3>
+                        <div class="checkbox-group-neo">
+                            <input type="checkbox"
+                                   id="profilePublic"
+                                   name="profilePublic"
+                                   class="checkbox-neo"
+                                   <%= user.privacy?.profilePublic !== false ? 'checked' : '' %>>
+                            <label for="profilePublic" class="checkbox-label-neo">Make my profile visible to other students</label>
+                        </div>
+                        <div class="checkbox-group-neo">
+                            <input type="checkbox"
+                                   id="showEmail"
+                                   name="showEmail"
+                                   class="checkbox-neo"
+                                   <%= user.privacy?.showEmail === true ? 'checked' : '' %>>
+                            <label for="showEmail" class="checkbox-label-neo">Show my email to other students</label>
+                        </div>
+                        <div class="checkbox-group-neo">
+                            <input type="checkbox"
+                                   id="allowMessages"
+                                   name="allowMessages"
+                                   class="checkbox-neo"
+                                   <%= user.privacy?.allowMessages !== false ? 'checked' : '' %>>
+                            <label for="allowMessages" class="checkbox-label-neo">Allow other students to message me</label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary-neo btn-neo">
+                        💾 SAVE CHANGES
+                    </button>
+                </form>
+
+                <!-- Hidden forms for avatar actions -->
+                <form method="POST" action="/users/settings/avatar" enctype="multipart/form-data" id="avatarUploadForm" style="display: none;">
+                    <input type="file" id="avatarFile" name="avatar" accept="image/*">
+                </form>
+
+                <form method="POST" action="/users/settings/avatar-api" id="randomAvatarForm" style="display: none;">
+                    <input type="hidden" id="avatarSeed" name="avatarSeed" value="">
+                </form>
+
+                <form method="POST" action="/users/settings/remove-avatar" id="removeAvatarForm" style="display: none;">
+                </form>
+
+                <!-- Danger Zone -->
+                <div class="danger-zone-neo">
+                    <h3 class="danger-title-neo">⚠️ DANGER ZONE</h3>
+                    <p class="danger-text-neo">These actions are permanent and cannot be undone.</p>
+                    <a href="/users/settings/account" class="btn-danger-neo">
+                        🗑️ DELETE ACCOUNT
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <%- include('../../partials/footer') %>
+
+    <script>
+        // Avatar functionality
+        function generateRandomAvatar() {
+            console.log('🎲 Generating random avatar...');
+            const timestamp = Date.now().toString(36);
+            const randomPart = Math.random().toString(36).substring(2, 15);
+            const randomSeed = timestamp + randomPart;
+            const avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${randomSeed}`;
+
+            const avatarPreview = document.getElementById('avatarPreview');
+            const avatarSeed = document.getElementById('avatarSeed');
+            const randomForm = document.getElementById('randomAvatarForm');
+
+            if (avatarPreview && avatarSeed && randomForm) {
+                console.log('✅ Setting new avatar with seed:', randomSeed);
+                avatarPreview.src = avatarUrl;
+                avatarSeed.value = randomSeed;
+                randomForm.submit();
+            }
+        }
+
+        function uploadAvatar(input) {
+            console.log('📁 Uploading avatar...');
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarPreview = document.getElementById('avatarPreview');
+                    if (avatarPreview) {
+                        avatarPreview.src = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+                const uploadForm = document.getElementById('avatarUploadForm');
+                if (uploadForm) {
+                    uploadForm.submit();
+                }
+            }
+        }
+
+        function removeAvatar() {
+            console.log('🗑️ Removing avatar...');
+            const removeForm = document.getElementById('removeAvatarForm');
+            if (removeForm) {
+                removeForm.submit();
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const randomAvatarBtn = document.getElementById('randomAvatarBtn');
+            const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+            const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+            const avatarFileInput = document.getElementById('avatarFile');
+
+            if (randomAvatarBtn) {
+                randomAvatarBtn.addEventListener('click', generateRandomAvatar);
+            }
+
+            if (uploadPhotoBtn && avatarFileInput) {
+                uploadPhotoBtn.addEventListener('click', function() {
+                    avatarFileInput.click();
+                });
+            }
+
+            if (avatarFileInput) {
+                avatarFileInput.addEventListener('change', function() {
+                    uploadAvatar(this);
+                });
+            }
+
+            if (removeAvatarBtn) {
+                removeAvatarBtn.addEventListener('click', removeAvatar);
+            }
+
+            // Bio character counter
+            const bioTextarea = document.getElementById('bio');
+            const bioHelp = document.getElementById('bioHelp');
+            if (bioTextarea && bioHelp) {
+                function updateCharCount() {
+                    const count = bioTextarea.value.length;
+                    bioHelp.textContent = `Share a bit about yourself (${count}/200 characters)`;
+                    if (count > 180) {
+                        bioHelp.style.color = 'var(--red)';
+                    } else {
+                        bioHelp.style.color = 'rgba(255, 255, 255, 0.5)';
+                    }
+                }
+                bioTextarea.addEventListener('input', updateCharCount);
+                updateCharCount();
+            }
+        });
+    </script>
+    <script src="/js/main.js"></script>
+</body>
+</html>
+    <style>
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .settings-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            color: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .settings-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .settings-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .settings-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+
+        .settings-sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .settings-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .settings-nav-item {
+            margin-bottom: 10px;
+        }
+
+        .settings-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .settings-nav-link:hover,
+        .settings-nav-link.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .settings-nav-icon {
+            font-size: 1.2rem;
+        }
+
+        .settings-main {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-help {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .avatar-section {
+            border: 2px dashed #e1e5e9;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-section:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .current-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #e1e5e9;
+            margin-bottom: 20px;
+        }
+
+        .avatar-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #ced4da;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .danger-zone {
+            border: 2px solid #dc3545;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            background: #fff5f5;
+        }
+
+        .danger-zone h3 {
+            color: #dc3545;
+            margin: 0 0 15px 0;
+            font-size: 1.3rem;
+        }
+
+        .danger-zone p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .privacy-section {
+            background: #f8f9ff;
+            border: 2px solid #e1e5e9;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .privacy-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 10px;
+            }
+
+            .settings-content {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-sidebar {
+                order: 2;
+                margin-top: 20px;
+            }
+
+            .settings-main {
+                order: 1;
+            }
+
+            .avatar-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('../../partials/navbar') %>
+    <%- include('../../partials/flash-messages') %>
+
+    <main class="main-content">
+        <div class="settings-container">
+            <!-- Settings Header -->
+            <div class="settings-header">
+                <h1>⚙️ Settings</h1>
+                <p>Customize your UConnect experience</p>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="settings-content">
+                <!-- Sidebar Navigation -->
+                <div class="settings-sidebar">
+                    <ul class="settings-nav">
+                        <li class="settings-nav-item">
+                            <a href="/users/settings/profile" class="settings-nav-link active">
+                                <span class="settings-nav-icon">👤</span>
+                                Profile Settings
+                            </a>
+                        </li>
+                        <li class="settings-nav-item">
+                            <a href="/users/settings/password" class="settings-nav-link">
+                                <span class="settings-nav-icon">🔒</span>
+                                Password & Security
+                            </a>
+                        </li>
+                        <li class="settings-nav-item">
+                            <a href="/users/settings/account" class="settings-nav-link">
+                                <span class="settings-nav-icon">🛡️</span>
+                                Account Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Main Settings Panel -->
+                <div class="settings-main">
+                    <h2 class="section-title">
+                        👤 Profile Settings
+                    </h2>
+
+                    <!-- Profile Form -->
+                    <form method="POST" action="/users/settings/profile" id="profileForm">
+                        <!-- Avatar Section -->
+                        <div class="avatar-section">
+                            <img src="<%= user.avatarUrl %>?t=<%= Date.now() %>" alt="Current Avatar" class="current-avatar" id="avatarPreview">
+                            <h3>Profile Picture</h3>
+                            <p>Your profile picture helps others recognize you on campus</p>
+                            <div class="avatar-buttons">
+                                <button type="button" class="btn btn-secondary" id="randomAvatarBtn">
+                                    🎲 Random Avatar
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="uploadPhotoBtn">
+                                    📁 Upload Photo
+                                </button>
+                                <button type="button" class="btn btn-danger" style="display: none;" id="removeAvatarBtn">
+                                    🗑️ Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Username (Privacy-focused) -->
+                        <div class="form-group">
+                            <label for="username" class="form-label">Username (Privacy Mode)</label>
+                            <input type="text" id="username" name="username" class="form-input"
+                                   value="<%= user.username %>" required maxlength="20" pattern="[a-zA-Z0-9_]+">
+                            <div class="form-help">This is how you appear to other students (for privacy). Only letters, numbers, and underscores allowed.</div>
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="form-group">
+                            <label for="bio" class="form-label">Bio</label>
+                            <textarea id="bio" name="bio" class="form-input" rows="4" maxlength="200"
+                                      placeholder="Tell other students about yourself..."><%= user.bio || '' %></textarea>
+                            <div class="form-help">Share a bit about yourself (max 200 characters)</div>
+                        </div>
+
+                        <!-- Privacy Settings -->
+                        <div class="privacy-section">
+                            <h3 class="privacy-title">🔒 Privacy Settings</h3>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="profilePublic" name="profilePublic" class="checkbox"
+                                       <%= user.privacy?.profilePublic !== false ? 'checked' : '' %>>
+                                <label for="profilePublic">Make my profile visible to other students</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="showEmail" name="showEmail" class="checkbox"
+                                       <%= user.privacy?.showEmail === true ? 'checked' : '' %>>
+                                <label for="showEmail">Show my email to other students</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="allowMessages" name="allowMessages" class="checkbox"
+                                       <%= user.privacy?.allowMessages !== false ? 'checked' : '' %>>
+                                <label for="allowMessages">Allow other students to message me</label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary">
+                            💾 Save Changes
+                        </button>
+                    </form>
+
+                    <!-- Hidden forms for avatar actions -->
+                    <form method="POST" action="/users/settings/avatar" enctype="multipart/form-data" id="avatarUploadForm" style="display: none;">
+                        <input type="file" id="avatarFile" name="avatar" accept="image/*">
+                    </form>
+
+                    <form method="POST" action="/users/settings/avatar-api" id="randomAvatarForm" style="display: none;">
+                        <input type="hidden" id="avatarSeed" name="avatarSeed" value="">
+                    </form>
+
+                    <form method="POST" action="/users/settings/remove-avatar" id="removeAvatarForm" style="display: none;">
+                    </form>
+
+                    <!-- Danger Zone -->
+                    <div class="danger-zone">
+                        <h3>⚠️ Danger Zone</h3>
+                        <p>These actions are permanent and cannot be undone.</p>
+                        <a href="/users/settings/account" class="btn btn-danger">
+                            🗑️ Delete Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../../partials/footer') %>
+
+    <script>
+        // 🔥 GODLY POWERS: Avatar functionality
+        function generateRandomAvatar() {
+            console.log('🎲 RANDOM AVATAR BUTTON CLICKED!');
+
+            // Generate a more random seed using timestamp + random
+            const timestamp = Date.now().toString(36);
+            const randomPart = Math.random().toString(36).substring(2, 15);
+            const randomSeed = timestamp + randomPart;
+            const avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${randomSeed}`;
+
+            console.log('🔥 GODLY POWERS: Generating random avatar with seed:', randomSeed);
+            console.log('🔥 Avatar URL:', avatarUrl);
+            console.log('🔥 Timestamp used:', timestamp);
+
+            // Update preview
+            const avatarPreview = document.getElementById('avatarPreview');
+            const avatarSeed = document.getElementById('avatarSeed');
+            const randomForm = document.getElementById('randomAvatarForm');
+
+            if (!avatarPreview) {
+                console.error('❌ Avatar preview element not found!');
+                return;
+            }
+            if (!avatarSeed) {
+                console.error('❌ Avatar seed input not found!');
+                return;
+            }
+            if (!randomForm) {
+                console.error('❌ Random avatar form not found!');
+                return;
+            }
+
+            console.log('🔄 Updating avatar preview...');
+            avatarPreview.src = avatarUrl;
+            avatarSeed.value = randomSeed;
+
+            // Hide remove button for API avatars
+            const removeBtn = document.getElementById('removeAvatarBtn');
+            if (removeBtn) {
+                removeBtn.style.display = 'none';
+            }
+
+            console.log('🚀 Submitting random avatar form...');
+            console.log('🚀 Form action:', randomForm.action);
+            console.log('🚀 Seed value being sent:', avatarSeed.value);
+            // Submit the random avatar form
+            randomForm.submit();
+        }
+
+        function uploadAvatar(input) {
+            console.log('📁 UPLOAD AVATAR TRIGGERED!');
+            console.log('📁 Input files:', input.files);
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                console.log('🔥 GODLY POWERS: Uploading avatar file:', file.name);
+                console.log('📁 File size:', file.size);
+                console.log('📁 File type:', file.type);
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    console.log('📁 File loaded successfully');
+                    const avatarPreview = document.getElementById('avatarPreview');
+                    const removeBtn = document.getElementById('removeAvatarBtn');
+
+                    if (avatarPreview) {
+                        avatarPreview.src = e.target.result;
+                        console.log('✅ Avatar preview updated');
+                    }
+                    if (removeBtn) {
+                        removeBtn.style.display = 'inline-flex';
+                        console.log('✅ Remove button shown');
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                console.log('🚀 Submitting upload form...');
+                // Submit the upload form
+                const uploadForm = document.getElementById('avatarUploadForm');
+                if (uploadForm) {
+                    console.log('✅ Upload form found, submitting...');
+                    uploadForm.submit();
+                } else {
+                    console.error('❌ Upload form not found!');
+                }
+            } else {
+                console.error('❌ No file selected');
+            }
+        }
+
+        function removeAvatar() {
+            console.log('�️ REMOVE AVATAR CLICKED!');
+
+            // Clear file input
+            const avatarFile = document.getElementById('avatarFile');
+            if (avatarFile) {
+                avatarFile.value = '';
+            }
+
+            // Hide remove button
+            const removeBtn = document.getElementById('removeAvatarBtn');
+            if (removeBtn) {
+                removeBtn.style.display = 'none';
+            }
+
+            console.log('🚀 Submitting remove form...');
+            // Submit the remove form
+            const removeForm = document.getElementById('removeAvatarForm');
+            if (removeForm) {
+                removeForm.submit();
+            } else {
+                console.error('❌ Remove form not found!');
+            }
+        }
+
+        // Debug: Check if all elements are present on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔥 Page loaded, checking elements...');
+
+            const elements = {
+                'avatarPreview': document.getElementById('avatarPreview'),
+                'avatarFile': document.getElementById('avatarFile'),
+                'avatarSeed': document.getElementById('avatarSeed'),
+                'randomAvatarForm': document.getElementById('randomAvatarForm'),
+                'avatarUploadForm': document.getElementById('avatarUploadForm'),
+                'removeAvatarForm': document.getElementById('removeAvatarForm'),
+                'removeAvatarBtn': document.getElementById('removeAvatarBtn'),
+                'randomAvatarBtn': document.getElementById('randomAvatarBtn'),
+                'uploadPhotoBtn': document.getElementById('uploadPhotoBtn')
+            };
+
+            Object.keys(elements).forEach(key => {
+                if (elements[key]) {
+                    console.log(`✅ ${key} found`);
+                } else {
+                    console.error(`❌ ${key} NOT FOUND!`);
+                }
+            });
+
+            // ⚡ THUNDER GOD DEBUG: Check if file input is clickable
+            const fileInput = document.getElementById('avatarFile');
+            if (fileInput) {
+                console.log('⚡ File input properties:');
+                console.log('⚡ File input type:', fileInput.type);
+                console.log('⚡ File input accept:', fileInput.accept);
+                console.log('⚡ File input style display:', fileInput.style.display);
+                console.log('⚡ File input disabled:', fileInput.disabled);
+                console.log('⚡ File input readOnly:', fileInput.readOnly);
+            }
+
+            Object.keys(elements).forEach(key => {
+                if (elements[key]) {
+                    console.log(`✅ ${key} found`);
+                } else {
+                    console.error(`❌ ${key} NOT FOUND!`);
+                }
+            });
+
+            // Add event listeners for avatar buttons
+            const randomAvatarBtn = document.getElementById('randomAvatarBtn');
+            const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+            const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+            const avatarFileInput = document.getElementById('avatarFile');
+
+            if (randomAvatarBtn) {
+                randomAvatarBtn.addEventListener('click', function() {
+                    console.log('🎲 Random Avatar button clicked via event listener!');
+                    generateRandomAvatar();
+                });
+                console.log('✅ Random Avatar button event listener added');
+            }
+
+            if (uploadPhotoBtn) {
+                uploadPhotoBtn.addEventListener('click', function() {
+                    console.log('📁 Upload Photo button clicked via event listener!');
+                    const fileInput = document.getElementById('avatarFile');
+                    if (fileInput) {
+                        console.log('📁 Triggering file input click...');
+                        console.log('📁 File input element:', fileInput);
+                        console.log('📁 File input visible:', fileInput.offsetParent !== null);
+                        console.log('📁 File input in DOM:', document.contains(fileInput));
+
+                        // ⚡ THUNDER GOD FORCE CLICK!
+                        try {
+                            fileInput.click();
+                            console.log('⚡ File input click executed successfully!');
+                        } catch (error) {
+                            console.error('❌ Error clicking file input:', error);
+                        }
+                    } else {
+                        console.error('❌ File input not found!');
+                    }
+                });
+                console.log('✅ Upload Photo button event listener added');
+            }
+
+            if (removeAvatarBtn) {
+                removeAvatarBtn.addEventListener('click', function() {
+                    console.log('🗑️ Remove Avatar button clicked via event listener!');
+                    removeAvatar();
+                });
+                console.log('✅ Remove Avatar button event listener added');
+            }
+
+            // ⚡ GODLY POWERS: Add file input change listener
+            if (avatarFileInput) {
+                avatarFileInput.addEventListener('change', function() {
+                    console.log('📁 File input changed via event listener!');
+                    uploadAvatar(this);
+                });
+                console.log('✅ File input change event listener added');
+            }
+
+            console.log('🔥 Element check complete');
+        });
+
+        // Character counter for bio
+        document.getElementById('bio').addEventListener('input', function() {
+            const maxLength = 200;
+            const currentLength = this.value.length;
+            const helpText = this.nextElementSibling;
+            helpText.textContent = `Share a bit about yourself (${currentLength}/${maxLength} characters)`;
+
+            if (currentLength > maxLength - 20) {
+                helpText.style.color = '#dc3545';
+            } else {
+                helpText.style.color = '#666';
+            }
+        });
+
+        // Username validation
+        document.getElementById('username').addEventListener('input', function() {
+            const username = this.value.toLowerCase();
+            const helpText = this.nextElementSibling;
+
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                helpText.textContent = 'Username can only contain letters, numbers, and underscores';
+                helpText.style.color = '#dc3545';
+            } else if (username.length < 3) {
+                helpText.textContent = 'Username must be at least 3 characters';
+                helpText.style.color = '#dc3545';
+            } else {
+                helpText.textContent = 'This is how you appear to other students (for privacy). Only letters, numbers, and underscores allowed.';
+                helpText.style.color = '#666';
+            }
+        });
+
+        console.log('🔥 GODLY POWERS: Profile settings loaded successfully!');
+    </script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

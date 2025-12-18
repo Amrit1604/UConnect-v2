@@ -1,0 +1,37 @@
+<div class="container admin-users">
+  <div class="terminal-screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h1>uconnect@neo:/admin$ users<span class="terminal-cursor"></span></h1>
+      <div class="admin-badge">ADMIN</div>
+    </div>
+
+    <form method="get" action="/admin/users" style="margin-bottom:14px;">
+      <input type="text" name="search" value="<%= search %>" placeholder="search users..." style="margin-right:8px; padding:6px; border-radius:0; border:2px solid var(--accent-green); background:var(--terminal-bg); color:var(--accent-green); font-family:var(--font-mono);">
+      <select name="filter" style="margin-right:8px; padding:6px; border-radius:0; border:2px solid var(--accent-green); background:var(--terminal-bg); color:var(--accent-green); font-family:var(--font-mono);">
+        <option value="all" <%= filter === 'all' ? 'selected' : '' %>>all</option>
+        <option value="verified" <%= filter === 'verified' ? 'selected' : '' %>>verified</option>
+        <option value="unverified" <%= filter === 'unverified' ? 'selected' : '' %>>unverified</option>
+        <option value="active" <%= filter === 'active' ? 'selected' : '' %>>active</option>
+        <option value="inactive" <%= filter === 'inactive' ? 'selected' : '' %>>inactive</option>
+      </select>
+      <button class="btn small">search</button>
+    </form>
+
+    <pre class="terminal-pre"><% users.forEach(u => { %>@<%= u.username %> | <%= u.email %> | <%= u.campus %> | verified:<%= u.isVerified ? 'yes' : 'no' %> | active:<%= u.isActive ? 'yes' : 'no' %> | <form method="post" action="/admin/users/<%= u._id %>/toggle-status" style="display:inline"><button class="btn small"><%= u.isActive ? 'deactivate' : 'activate' %></button></form> <form method="post" action="/admin/users/<%= u._id %>/verify" style="display:inline"><button class="btn small">verify</button></form> <form method="post" action="/admin/users/<%= u._id %>/delete" style="display:inline" onsubmit="return confirm('Delete user <%= u.username %> and all their posts?')"><button class="btn small danger">delete</button></form>
+<% }) %></pre>
+
+    <div style="display:flex; gap:8px; align-items:center; margin-top:12px;">
+      <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>&search=<%= search %>&filter=<%= filter %>" class="btn small">prev</a>
+      <% } %>
+      <span>page <%= currentPage %> of <%= totalPages %></span>
+      <% if (hasNextPage) { %>
+        <a href="?page=<%= currentPage + 1 %>&search=<%= search %>&filter=<%= filter %>" class="btn small">next</a>
+      <% } %>
+    </div>
+
+    <div style="margin-top:12px;">
+      <a href="/admin" class="btn small">back</a>
+    </div>
+  </div>
+</div>

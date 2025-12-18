@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | UConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/profile-neo.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Neo Profile Page -->
+    <div class="profile-page">
+        <!-- Background Effects (Same as feed-neo.ejs) -->
+        <div class="parallax-bg">
+            <div class="parallax-layer layer-1"></div>
+            <div class="parallax-layer layer-2"></div>
+            <div class="blob-container">
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+                <div class="blob blob-3"></div>
+            </div>
+        </div>
+
+        <!-- Floating Emoji Reactions -->
+        <div class="emoji-reactions">
+            <div class="emoji-float emoji-1">😂</div>
+            <div class="emoji-float emoji-2">❤️</div>
+            <div class="emoji-float emoji-3">🔥</div>
+            <div class="emoji-float emoji-4">😢</div>
+            <div class="emoji-float emoji-5">😡</div>
+            <div class="emoji-float emoji-6">👍</div>
+            <div class="emoji-float emoji-7">🎉</div>
+        </div>
+
+        <main class="profile-layout-neo">
+            <!-- Profile Header -->
+            <div class="profile-header-neo">
+                <div class="profile-top-neo">
+                    <%
+                    // Prefer server-side virtual that already resolves GridFS/API/default
+                    let avatarUrl = profileUser.avatarUrl || '/images/default-avatar.png';
+                    // Cache-busting query to avoid stale browser cache after change
+                    const cacheBuster = (profileUser.updatedAt ? new Date(profileUser.updatedAt).getTime() : Date.now());
+                    %>
+                    <img src="<%= avatarUrl %>?v=<%= cacheBuster %>"
+                         alt="<%= profileUser.displayName || profileUser.name || profileUser.username %>"
+                         class="profile-avatar-large-neo"
+                         onerror="this.src='/images/default-avatar.png'">
+
+                    <div class="profile-details-neo">
+                        <h1 class="profile-name-large-neo"><%= profileUser.displayName || profileUser.name || profileUser.username %></h1>
+                        <div class="profile-username-large-neo">@<%= profileUser.username %></div>
+
+                        <% if (profileUser.bio) { %>
+                            <p class="profile-bio-neo"><%= profileUser.bio %></p>
+                        <% } %>
+
+                        <div class="profile-meta-neo">
+                            <div class="profile-meta-item-neo">
+                                <span class="profile-meta-icon-neo">📧</span>
+                                <span><%= profileUser.email %></span>
+                            </div>
+                            <div class="profile-meta-item-neo">
+                                <span class="profile-meta-icon-neo">🏫</span>
+                                <span><%= profileUser.campus || profileUser.email.split('@')[1] %></span>
+                            </div>
+                            <div class="profile-meta-item-neo">
+                                <span class="profile-meta-icon-neo">📅</span>
+                                <span>Joined <%= new Date(profileUser.createdAt).toLocaleDateString() %></span>
+                            </div>
+                        </div>
+
+                        <div class="profile-stats-large-neo">
+                            <div class="stat-item-large-neo">
+                                <span class="stat-value-large-neo"><%= posts.length %></span>
+                                <span class="stat-label-large-neo">POSTS</span>
+                            </div>
+                            <div class="stat-item-large-neo">
+                                <span class="stat-value-large-neo"><%= profileUser.stats?.totalLikesReceived || 0 %></span>
+                                <span class="stat-label-large-neo">LIKES</span>
+                            </div>
+                            <div class="stat-item-large-neo">
+                                <span class="stat-value-large-neo"><%= profileUser.stats?.commentsCount || 0 %></span>
+                                <span class="stat-label-large-neo">COMMENTS</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions-neo">
+                            <a href="/users/settings/profile" class="profile-action-btn-neo primary">
+                                ⚙️ EDIT PROFILE
+                            </a>
+                            <a href="/posts/create" class="profile-action-btn-neo">
+                                ✨ CREATE POST
+                            </a>
+                            <a href="/users/settings/account" class="profile-action-btn-neo">
+                                🛡️ SETTINGS
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posts Section -->
+            <div class="profile-content-neo">
+                <div class="content-header-neo">
+                    <h2 class="content-title-neo">📝 MY POSTS</h2>
+                    <% if (posts && posts.length > 0) { %>
+                        <button class="delete-mode-toggle-neo" id="deleteModeToggle">
+                            🗑️ DELETE POSTS
+                        </button>
+                    <% } %>
+                </div>
+
+                <% if (posts && posts.length > 0) { %>
+                    <div class="profile-posts-grid-neo" id="postsGrid">
+                        <% posts.forEach(post => { %>
+                            <div class="profile-post-card-neo" data-post-id="<%= post._id %>">
+                                <input type="checkbox" class="post-checkbox-neo" value="<%= post._id %>">
+
+                                <div class="profile-post-header-neo">
+                                    <span class="profile-post-date-neo">
+                                        🕒 <%= new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                                    </span>
+                                    <% if (post.category) { %>
+                                        <span class="profile-post-category-neo"><%= post.category.toUpperCase() %></span>
+                                    <% } %>
+                                </div>
+
+                                <% if (post.title) { %>
+                                    <h3 class="profile-post-title-neo"><%= post.title %></h3>
+                                <% } %>
+
+                                <% if (post.content) { %>
+                                    <p class="profile-post-content-neo">
+                                        <%= post.content.substring(0, 150) %><% if (post.content.length > 150) { %>...<% } %>
+                                    </p>
+                                <% } %>
+
+                                <div class="profile-post-stats-neo">
+                                    <span class="profile-post-stat-neo">❤️ <%= post.likes?.length || 0 %></span>
+                                    <span class="profile-post-stat-neo">💬 <%= post.comments?.length || 0 %></span>
+                                    <a href="/posts/<%= post._id %>" class="profile-post-link-neo">📖 VIEW POST</a>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <div class="profile-empty-state-neo">
+                        <div class="empty-icon-large-neo">📝</div>
+                        <h3 class="empty-title-large-neo">NO POSTS YET</h3>
+                        <p class="empty-text-large-neo">Share your first thought with the campus community!</p>
+                        <a href="/posts/create" class="profile-action-btn-neo primary">✨ CREATE YOUR FIRST POST</a>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Bulk Actions Bar -->
+            <div class="bulk-actions-bar-neo" id="bulkActionsBar">
+                <span class="bulk-actions-info-neo" id="selectedCount">0 selected</span>
+                <button class="bulk-action-btn-neo cancel" id="cancelDelete">CANCEL</button>
+                <button class="bulk-action-btn-neo delete" id="deleteSelected">🗑️ DELETE SELECTED</button>
+            </div>
+        </main>
+    </div>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        // Delete Mode Functionality
+        const deleteModeToggle = document.getElementById('deleteModeToggle');
+        const postsGrid = document.getElementById('postsGrid');
+        const bulkActionsBar = document.getElementById('bulkActionsBar');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const cancelDeleteBtn = document.getElementById('cancelDelete');
+        const deleteSelectedBtn = document.getElementById('deleteSelected');
+        let deleteMode = false;
+
+        if (deleteModeToggle) {
+            deleteModeToggle.addEventListener('click', function() {
+                deleteMode = !deleteMode;
+
+                if (deleteMode) {
+                    postsGrid.classList.add('delete-mode');
+                    deleteModeToggle.classList.add('active');
+                    deleteModeToggle.textContent = '✕ CANCEL';
+                } else {
+                    postsGrid.classList.remove('delete-mode');
+                    deleteModeToggle.classList.remove('active');
+                    deleteModeToggle.textContent = '🗑️ DELETE POSTS';
+                    bulkActionsBar.classList.remove('active');
+                    uncheckAll();
+                }
+            });
+        }
+
+        // Handle checkbox changes
+        document.querySelectorAll('.post-checkbox-neo').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.profile-post-card-neo');
+                if (this.checked) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+                updateBulkActionsBar();
+            });
+        });
+
+        // Cancel Delete
+        if (cancelDeleteBtn) {
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteMode = false;
+                postsGrid.classList.remove('delete-mode');
+                deleteModeToggle.classList.remove('active');
+                deleteModeToggle.textContent = '🗑️ DELETE POSTS';
+                bulkActionsBar.classList.remove('active');
+                uncheckAll();
+            });
+        }
+
+        // Delete Selected Posts
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', async function() {
+                const selectedCheckboxes = document.querySelectorAll('.post-checkbox-neo:checked');
+                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+                if (selectedIds.length === 0) {
+                    alert('Please select posts to delete');
+                    return;
+                }
+
+                const confirmation = confirm(`Are you sure you want to delete ${selectedIds.length} post(s)? This action cannot be undone.`);
+
+                if (confirmation) {
+                    try {
+                        // Delete posts one by one
+                        for (const postId of selectedIds) {
+                            const response = await fetch(`/posts/${postId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`Failed to delete post ${postId}`);
+                            }
+                        }
+
+                        // Refresh page after successful deletion
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                        alert('Failed to delete posts. Please try again.');
+                    }
+                }
+            });
+        }
+
+        function updateBulkActionsBar() {
+            const selectedCount = document.querySelectorAll('.post-checkbox-neo:checked').length;
+            selectedCountSpan.textContent = `${selectedCount} selected`;
+
+            if (selectedCount > 0) {
+                bulkActionsBar.classList.add('active');
+            } else {
+                bulkActionsBar.classList.remove('active');
+            }
+        }
+
+        function uncheckAll() {
+            document.querySelectorAll('.post-checkbox-neo').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('.profile-post-card-neo').classList.remove('selected');
+            });
+        }
+    </script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

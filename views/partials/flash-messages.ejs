@@ -1,0 +1,51 @@
+<% if (messages && (messages.success || messages.error || messages.warning || messages.info)) { %>
+    <div class="flash-messages">
+        <% if (messages.success) { %>
+            <% messages.success.forEach(message => { %>
+                <div class="flash-message flash-success">
+                    <span>✅</span>
+                    <span><%= message %></span>
+                    <button class="flash-close" type="button" aria-label="Dismiss message">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            <% }) %>
+        <% } %>
+
+        <% if (messages.error) { %>
+            <% messages.error.forEach(message => { %>
+                <div class="flash-message flash-error">
+                    <span>❌</span>
+                    <span><%= message %></span>
+                    <button class="flash-close" type="button" aria-label="Dismiss message">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            <% }) %>
+        <% } %>
+
+        <% if (messages.warning) { %>
+            <% messages.warning.forEach(message => { %>
+                <div class="flash-message flash-warning">
+                    <span>⚠️</span>
+                    <span><%= message %></span>
+                    <button class="flash-close" type="button" aria-label="Dismiss message">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            <% }) %>
+        <% } %>
+
+        <% if (messages.info) { %>
+            <% messages.info.forEach(message => { %>
+                <div class="flash-message flash-info">
+                    <span>ℹ️</span>
+                    <span><%= message %></span>
+                    <button class="flash-close" type="button" aria-label="Dismiss message">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+<% } %>
