@@ -683,9 +683,9 @@ router.post('/deactivate', async (req, res) => {
     try {
         console.log('🔒 DEACTIVATE REQUEST: User ID:', req.user.id);
         const Post = require('../models/Post');
-        
+
         const user = await User.findByIdAndUpdate(
-            req.user.id, 
+            req.user.id,
             {
                 isActive: false,
                 deactivatedAt: new Date()

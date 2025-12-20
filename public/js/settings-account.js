@@ -6,14 +6,14 @@ console.log('🛡️ Account Settings JS Loaded');
 
 function deactivateAccount() {
     console.log('🔒 Deactivate button clicked');
-    
+
     if (confirm('Are you sure you want to deactivate your account? You can reactivate it later by logging in.')) {
         console.log('✅ User confirmed deactivation');
         console.log('📡 Sending deactivation request...');
-        
+
         fetch('/users/settings/deactivate', {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json'
             },
             credentials: 'same-origin'

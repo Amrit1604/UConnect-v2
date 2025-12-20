@@ -239,12 +239,12 @@ router.get('/login', redirectIfAuthenticated, (req, res) => {
   if (req.query.deleted === 'true') {
     req.flash('success', '👋 Account deleted successfully! Thank you for using UConnect. You\'re welcome back anytime!');
   }
-  
+
   // Check for account deactivation (pause)
   if (req.query.deactivated === 'true') {
     req.flash('info', '🔒 Your account has been paused. Log in with your password to reactivate it.');
   }
-  
+
   res.render('auth/login-neo', {
     title: 'Login to UConnect',
     errors: [],
@@ -405,14 +405,14 @@ router.get('/verify-email', async (req, res) => {
     }
 
     console.log('\n⏱️ VERIFICATION REQUEST RECEIVED');
-    
+
     // Atomically fetch and delete pending registration to prevent race conditions
     console.log(`🔍 Looking up and claiming pending registration... (${Date.now() - startTime}ms)`);
     const pendingReg = await PendingRegistration.findOneAndDelete({ verificationToken: token });
-    
+
     if (!pendingReg) {
       console.log('❌ No pending registration found (already verified or expired)');
-      
+
       // Check if user already exists (might have just been verified)
       const email = req.query.email; // We'll add this to the URL
       if (email) {
@@ -422,7 +422,7 @@ router.get('/verify-email', async (req, res) => {
           return res.redirect('/auth/login');
         }
       }
-      
+
       req.flash('error', 'Invalid or expired verification link. Please register again.');
       return res.redirect('/auth/register');
     }
@@ -550,14 +550,14 @@ router.get('/verify-email', async (req, res) => {
 
   } catch (error) {
     console.error('Email verification error:', error);
-    
+
     // Handle duplicate key error gracefully (link clicked multiple times)
     if (error.code === 11000) {
       console.log('⚠️ User already exists (duplicate click detected)');
       req.flash('success', 'Your account is already verified! You can log in now.');
       return res.redirect('/auth/login');
     }
-    
+
     req.flash('error', 'An error occurred during verification. Please try again.');
     res.redirect('/auth/verify-email');
   }
@@ -591,7 +591,7 @@ router.post('/resend-verification',
 
       // Check if there's a pending registration in MongoDB
       const pendingReg = await PendingRegistration.findOne({ email });
-      
+
       if (!pendingReg) {
         req.flash('error', 'No pending registration found for this email. Please register again.');
         return res.redirect('/auth/register');

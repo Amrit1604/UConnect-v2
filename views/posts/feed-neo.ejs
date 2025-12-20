@@ -181,8 +181,8 @@
                                         </div>
                                     <% } else if (firstMedia.type === 'video') { %>
                                         <div class="post-media-neo">
-                                            <video class="post-video-neo" controls>
-                                                <source src="<%= firstMedia.url || '/uploads/posts/' + firstMedia.filename %>"
+                                            <video class="post-video-neo" controls playsinline preload="metadata">
+                                                <source src="<%= firstMedia.url %>"
                                                         type="<%= firstMedia.mimetype || 'video/mp4' %>">
                                                 Your browser does not support the video tag.
                                             </video>

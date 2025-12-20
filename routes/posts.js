@@ -9,7 +9,8 @@ const { body, validationResult } = require('express-validator');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const { requireAuth, requireOwnership, logActivity } = require('../middleware/auth');
-const { uploadPostImage, uploadPostMedia } = require('../utils/gridfs'); // Changed to GridFS
+const { uploadPostMedia, handlePostMediaUpload } = require('../middleware/uploadSupabase');
+const { deleteFile } = require('../services/supabaseStorage');
 
 const router = express.Router();
 
@@ -252,7 +253,7 @@ router.get('/create', requireAuth, (req, res) => {
 });
 
 // POST /posts/create - 🎯 ULTIMATE CREATE POST WITH IMAGES, VIDEO & REAL-TIME
-router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity('create post'), async (req, res) => {
+router.post('/create', requireAuth, uploadPostMedia, handlePostMediaUpload, postValidation, logActivity('create post'), async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -269,49 +270,42 @@ router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity
 
     const { content, category, tags, location, priority } = req.body;
 
-    // Prepare arrays
+    // Prepare arrays from Supabase uploads
     const images = [];
     const media = [];
 
-    console.log('📁 Received files:', req.files ? Object.keys(req.files) : 'none');
+    console.log('📁 Uploaded media:', req.uploadedMedia ? 'available' : 'none');
 
-    // req.files is an object with possible keys 'images' and 'videos'
-    if (req.files) {
-      if (Array.isArray(req.files.images)) {
-        console.log(`🖼️ Processing ${req.files.images.length} images`);
-        for (const file of req.files.images) {
+    // Use data from Supabase upload middleware
+    if (req.uploadedMedia) {
+      if (req.uploadedMedia.images && req.uploadedMedia.images.length > 0) {
+        console.log(`📸 ${req.uploadedMedia.images.length} images uploaded to Supabase`);
+        for (const img of req.uploadedMedia.images) {
           images.push({
-            filename: file.filename,
-            originalName: file.originalname,
-            size: file.size,
-            mimetype: file.mimetype,
-            url: `/gridfs/file/${file.id}`,
-            gridFSId: file.id,
-            storageType: 'gridfs'
+            filename: img.filename,
+            originalName: img.originalName,
+            size: img.size,
+            mimetype: img.mimetype,
+            url: img.url,
+            path: img.path,
+            storageType: 'supabase'
           });
-          console.log(`📸 Image uploaded to GridFS: ${file.filename} (ID: ${file.id})`);
         }
       }
 
-      if (Array.isArray(req.files.videos)) {
-        console.log(`🎥 Processing ${req.files.videos.length} videos`);
-        for (const file of req.files.videos) {
-          // basic server-side size check (50MB)
-          if (file.size > 50 * 1024 * 1024) {
-            console.warn('⛔ Skipped oversized video:', file.originalname);
-            continue;
-          }
-
+      if (req.uploadedMedia.videos && req.uploadedMedia.videos.length > 0) {
+        console.log(`🎥 ${req.uploadedMedia.videos.length} videos uploaded to Supabase`);
+        for (const vid of req.uploadedMedia.videos) {
           media.push({
             type: 'video',
-            filename: file.filename,
-            originalName: file.originalname,
-            size: file.size,
-            mimetype: file.mimetype,
-            url: `/gridfs/file/${file.id}`,
-            gridFSId: file.id
+            filename: vid.filename,
+            originalName: vid.originalName,
+            size: vid.size,
+            mimetype: vid.mimetype,
+            url: vid.url,
+            path: vid.path,
+            storageType: 'supabase'
           });
-          console.log(`🎥 Video uploaded to GridFS: ${file.filename} (ID: ${file.id})`);
         }
       }
     }

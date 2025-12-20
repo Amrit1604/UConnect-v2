@@ -159,7 +159,7 @@ const uploadChatMedia = multer({
     ];
 
     const isAllowed = allowedMimeTypes.some(type => file.mimetype.startsWith(type));
-    
+
     if (isAllowed) {
       cb(null, true);
     } else {

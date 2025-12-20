@@ -11,7 +11,8 @@ const fsSync = require('fs');
 const User = require('../models/User');
 const Post = require('../models/Post');
 const { requireAuth, sensitiveOperationLimit, logActivity } = require('../middleware/auth');
-const { uploadAvatar, deleteFile } = require('../utils/gridfs');
+const { uploadAvatar, handleAvatarUpload } = require('../middleware/uploadSupabase');
+const { deleteFile } = require('../services/supabaseStorage');
 
 const router = express.Router();
 
@@ -514,34 +515,40 @@ router.post('/settings/profile',
 // POST /users/settings/avatar - Update avatar
 router.post('/settings/avatar',
   uploadAvatar,
+  handleAvatarUpload,
   logActivity('update avatar'),
   async (req, res) => {
     try {
-      if (!req.file) {
+      if (!req.uploadedAvatar) {
         req.flash('error', 'Please select an image file');
         return res.redirect('/users/settings/profile');
       }
 
       const user = await User.findById(req.user._id);
 
-      // If user had a previous GridFS avatar, delete it
-      if (user.avatarGridFSId && user.avatarType === 'gridfs') {
+      // Delete old Supabase avatar if exists
+      if (user.avatarPath && user.avatarType === 'supabase') {
         try {
-          await deleteFile(user.avatarGridFSId);
-          console.log('🗑️ Deleted old GridFS avatar:', user.avatarGridFSId);
+          await deleteFile(user.avatarPath);
+          console.log('🗑️ Deleted old Supabase avatar:', user.avatarPath);
         } catch (e) {
-          console.log('Old GridFS avatar deletion failed:', e.message);
+          console.log('Old Supabase avatar deletion failed (non-fatal):', e.message);
         }
       }
+      // Delete old GridFS avatar if exists (legacy)
+      else if (user.avatarGridFSId && user.avatarType === 'gridfs') {
+        console.log('⚠️ Old GridFS avatar remains (migration needed)');
+      }
 
-      // Set new GridFS avatar info from multer-gridfs-storage result
-      user.avatarGridFSId = req.file.id;
+      // Set new Supabase avatar info
+      user.avatarSupabaseUrl = req.uploadedAvatar.url;
+      user.avatarPath = req.uploadedAvatar.path;
       user.avatar = null; // clear any legacy filename
-      user.avatarType = 'gridfs';
+      user.avatarGridFSId = null; // clear legacy GridFS
+      user.avatarType = 'supabase';
       await user.save();
 
-      console.log('✅ Avatar uploaded to GridFS:', req.file.id);
-      console.log('📂 Avatar URL will be:', user.avatarUrl);
+      console.log('✅ Avatar uploaded to Supabase:', req.uploadedAvatar.url);
 
       // Update session with new avatar info
       req.session.user = user.toObject({ virtuals: true });

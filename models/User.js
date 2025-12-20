@@ -79,12 +79,22 @@ const userSchema = new mongoose.Schema({
 
   avatarType: {
     type: String,
-    enum: ['upload', 'api', 'default', 'gridfs'],
+    enum: ['upload', 'api', 'default', 'gridfs', 'supabase'],
     default: 'api'
   },
 
   avatarGridFSId: {
     type: mongoose.Schema.Types.ObjectId,
+    default: null
+  },
+
+  avatarSupabaseUrl: {
+    type: String, // Supabase direct URL
+    default: null
+  },
+
+  avatarPath: {
+    type: String, // Supabase file path for deletion
     default: null
   },
 
@@ -294,13 +304,15 @@ userSchema.statics.getStats = async function() {
 
 // Virtual for avatar URL
 userSchema.virtual('avatarUrl').get(function() {
-  // Priority 1: GridFS avatar
+  // Priority 1: Supabase avatar (direct URL)
+  if (this.avatarSupabaseUrl && this.avatarType === 'supabase') {
+    return this.avatarSupabaseUrl;
+  }
+
+  // Priority 2: GridFS avatar (legacy)
   if (this.avatarGridFSId && this.avatarType === 'gridfs') {
     return `/gridfs/file/${this.avatarGridFSId}`;
   }
-
-  // Priority 2: Legacy 'upload' type is no longer supported (no local storage)
-  // Fallback to API avatar if legacy value remains
 
   // Priority 3: API avatar with saved seed
   if (this.avatarSeed) {

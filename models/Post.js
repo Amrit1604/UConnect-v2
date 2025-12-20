@@ -122,10 +122,14 @@ const postSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId, // GridFS file ID if stored in MongoDB
       default: null
     },
+    path: {
+      type: String, // Supabase file path for deletion
+      default: null
+    },
     storageType: {
       type: String,
-      enum: ['local', 'gridfs'], // Track where image is stored
-      default: 'local'
+      enum: ['local', 'gridfs', 'supabase'], // Track where image is stored
+      default: 'supabase'
     }
   }],
 
@@ -153,6 +157,15 @@ const postSchema = new mongoose.Schema({
     },
     url: {
       type: String
+    },
+    path: {
+      type: String, // Supabase file path for deletion
+      default: null
+    },
+    storageType: {
+      type: String,
+      enum: ['gridfs', 'supabase'],
+      default: 'supabase'
     }
   }],
 

@@ -100,6 +100,7 @@ app.use("/", require("./routes/pages"));
 
 app.use('/settings', settingsRoutes);
 app.use('/gridfs', gridfsRoutes);
+app.use('/media', require('./routes/media')); // Supabase media proxy
 app.use('/chat', chatRoutes);
 app.use('/notifications', notificationsRoutes);
 app.use('/friends', friendsRoutes);

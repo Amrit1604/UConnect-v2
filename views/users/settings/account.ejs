@@ -63,11 +63,11 @@
                 <form method="POST" action="/users/settings/email">
                     <div class="form-group-neo">
                         <label for="email" class="form-label-neo">EMAIL ADDRESS</label>
-                        <input type="email" 
-                               id="email" 
-                               name="email" 
+                        <input type="email"
+                               id="email"
+                               name="email"
                                class="form-input-neo"
-                               value="<%= user.email %>" 
+                               value="<%= user.email %>"
                                required>
                         <small class="form-help-neo">Your campus email address</small>
                     </div>
@@ -83,33 +83,33 @@
                     <form method="POST" action="/users/settings/notifications">
                         <div class="privacy-section-neo">
                             <div class="checkbox-group-neo">
-                                <input type="checkbox" 
-                                       id="emailNotifications" 
-                                       name="emailNotifications" 
+                                <input type="checkbox"
+                                       id="emailNotifications"
+                                       name="emailNotifications"
                                        class="checkbox-neo"
                                        <%= user.notifications?.email !== false ? 'checked' : '' %>>
                                 <label for="emailNotifications" class="checkbox-label-neo">Email notifications</label>
                             </div>
                             <div class="checkbox-group-neo">
-                                <input type="checkbox" 
-                                       id="followNotifications" 
-                                       name="followNotifications" 
+                                <input type="checkbox"
+                                       id="followNotifications"
+                                       name="followNotifications"
                                        class="checkbox-neo"
                                        <%= user.notifications?.newPosts !== false ? 'checked' : '' %>>
                                 <label for="followNotifications" class="checkbox-label-neo">New posts notifications</label>
                             </div>
                             <div class="checkbox-group-neo">
-                                <input type="checkbox" 
-                                       id="likeNotifications" 
-                                       name="likeNotifications" 
+                                <input type="checkbox"
+                                       id="likeNotifications"
+                                       name="likeNotifications"
                                        class="checkbox-neo"
                                        <%= user.notifications?.likes !== false ? 'checked' : '' %>>
                                 <label for="likeNotifications" class="checkbox-label-neo">Like notifications</label>
                             </div>
                             <div class="checkbox-group-neo">
-                                <input type="checkbox" 
-                                       id="marketingEmails" 
-                                       name="marketingEmails" 
+                                <input type="checkbox"
+                                       id="marketingEmails"
+                                       name="marketingEmails"
                                        class="checkbox-neo"
                                        <%= user.notifications?.weeklyDigest !== false ? 'checked' : '' %>>
                                 <label for="marketingEmails" class="checkbox-label-neo">Weekly digest emails</label>
@@ -126,7 +126,7 @@
                     <div class="danger-zone-neo">
                         <h3 class="danger-title-neo">⚠️ DANGER ZONE</h3>
                         <p class="danger-text-neo">These actions are permanent and cannot be undone.</p>
-                        
+
                         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
                             <button type="button" class="btn-danger-neo" id="deactivateAccountBtn">
                                 🔒 DEACTIVATE ACCOUNT
@@ -146,7 +146,7 @@
         <div style="background: rgba(0,0,0,0.95); border: 2px solid var(--red); border-radius: 16px; padding: 40px; max-width: 500px; width: 90%;">
             <h2 style="color: var(--red); font-size: 28px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase;">⚠️ DELETE ACCOUNT</h2>
             <p style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">This action cannot be undone. All your data will be permanently deleted.</p>
-            
+
             <form method="POST" action="/users/settings/delete-account">
                 <div class="form-group-neo">
                     <label for="confirmEmail" class="form-label-neo">CONFIRM YOUR EMAIL</label>
