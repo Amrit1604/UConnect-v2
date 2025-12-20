@@ -406,22 +406,32 @@ router.get('/verify-email', async (req, res) => {
 
     console.log('\n⏱️ VERIFICATION REQUEST RECEIVED');
     
-    // Fetch pending registration from MongoDB using token
-    console.log(`🔍 Looking up pending registration by token... (${Date.now() - startTime}ms)`);
-    const pendingReg = await PendingRegistration.findOne({ verificationToken: token });
+    // Atomically fetch and delete pending registration to prevent race conditions
+    console.log(`🔍 Looking up and claiming pending registration... (${Date.now() - startTime}ms)`);
+    const pendingReg = await PendingRegistration.findOneAndDelete({ verificationToken: token });
     
     if (!pendingReg) {
-      console.log('❌ No pending registration found for this token');
+      console.log('❌ No pending registration found (already verified or expired)');
+      
+      // Check if user already exists (might have just been verified)
+      const email = req.query.email; // We'll add this to the URL
+      if (email) {
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (existingUser && existingUser.isVerified) {
+          req.flash('success', 'Your account is already verified! You can log in now.');
+          return res.redirect('/auth/login');
+        }
+      }
+      
       req.flash('error', 'Invalid or expired verification link. Please register again.');
       return res.redirect('/auth/register');
     }
 
-    console.log(`✅ Pending registration found (${Date.now() - startTime}ms)`);
+    console.log(`✅ Pending registration claimed (${Date.now() - startTime}ms)`);
     console.log(`📧 Email: ${pendingReg.email}`);
 
     // Check if token has expired (backup check, TTL should handle this)
     if (new Date() > pendingReg.expiresAt) {
-      await PendingRegistration.deleteOne({ _id: pendingReg._id });
       req.flash('error', 'Verification token has expired. Please register again.');
       return res.redirect('/auth/register');
     }
@@ -443,7 +453,7 @@ router.get('/verify-email', async (req, res) => {
 
       if (existingUser) {
         console.log('⚠️  User already exists in database');
-        await PendingRegistration.deleteOne({ _id: pendingReg._id });
+        // No need to delete pendingReg - already deleted with findOneAndDelete
         req.flash('warning', 'An account with this email or username already exists. Please try logging in.');
         return res.redirect('/auth/login');
       }
@@ -525,9 +535,8 @@ router.get('/verify-email', async (req, res) => {
       console.log(`✅ User saved successfully! (${Date.now() - startTime}ms)`);
       console.log(`📊 User saved. Avatar URL: ${newUser.avatarUrl}`);
 
-      // Delete pending registration from MongoDB
-      await PendingRegistration.deleteOne({ _id: pendingReg._id });
-      console.log('🗑️ Pending registration cleaned up from database');
+      // Pending registration already deleted with findOneAndDelete - no need to delete again
+      console.log('✅ Pending registration was cleaned up atomically');
 
       console.log('✅ USER SUCCESSFULLY CREATED IN MONGODB!');
       console.log(`🆔 User ID: ${newUser._id}`);
@@ -541,6 +550,14 @@ router.get('/verify-email', async (req, res) => {
 
   } catch (error) {
     console.error('Email verification error:', error);
+    
+    // Handle duplicate key error gracefully (link clicked multiple times)
+    if (error.code === 11000) {
+      console.log('⚠️ User already exists (duplicate click detected)');
+      req.flash('success', 'Your account is already verified! You can log in now.');
+      return res.redirect('/auth/login');
+    }
+    
     req.flash('error', 'An error occurred during verification. Please try again.');
     res.redirect('/auth/verify-email');
   }
