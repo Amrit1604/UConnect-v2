@@ -33,7 +33,10 @@
 
                 <!-- Theme Toggle -->
                 <button class="theme-toggle" type="button" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false" title="Toggle theme">
-                    <span aria-hidden="true" data-theme-icon>🌙</span>
+                    <span aria-hidden="true" data-theme-icon>
+                        <span class="sun-icon">☀️</span>
+                        <span class="moon-icon">🌙</span>
+                    </span>
                 </button>
 
                 <!-- User Menu -->
@@ -73,7 +76,10 @@
             <div class="nav-menu">
                 <div class="nav-links">
                     <button class="theme-toggle" type="button" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false" title="Toggle theme">
-                        <span aria-hidden="true" data-theme-icon>🌙</span>
+                        <span aria-hidden="true" data-theme-icon>
+                            <span class="sun-icon">☀️</span>
+                            <span class="moon-icon">🌙</span>
+                        </span>
                     </button>
                     <a href="/auth/login" class="nav-link">Login</a>
                     <a href="/auth/register" class="btn btn-primary">Join Now</a>
@@ -106,7 +112,10 @@
                 Settings
             </a>
             <button class="mobile-menu-item theme-toggle-mobile" type="button" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false">
-                <span aria-hidden="true" data-theme-icon>🌙</span>
+                <span aria-hidden="true" data-theme-icon>
+                    <span class="sun-icon">☀️</span>
+                    <span class="moon-icon">🌙</span>
+                </span>
                 Toggle Theme
             </button>
             <% if (user.role === 'admin') { %>

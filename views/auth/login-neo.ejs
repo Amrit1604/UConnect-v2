@@ -43,9 +43,11 @@
             <!-- Right: Action Buttons -->
             <div class="nav-actions-neo">
                 <!-- Theme Toggle Button -->
-                <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
-                    <span class="theme-icon moon">🌙</span>
-                    <span class="theme-icon sun">☀️</span>
+                <button class="theme-toggle-btn" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false">
+                    <span data-theme-icon>
+                        <span class="sun-icon">☀️</span>
+                        <span class="moon-icon">🌙</span>
+                    </span>
                 </button>
 
                 <a href="/auth/register" class="nav-btn-ghost">SIGN UP</a>
@@ -208,6 +210,7 @@
     </main>
 
     <!-- JavaScript -->
+    <script src="/js/main.js"></script>
     <script src="/js/landing-neo.js"></script>
     <script src="/js/auth.js"></script>
 </body>

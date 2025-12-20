@@ -787,33 +787,13 @@ console.log(
 );
 
 // ============================================
-// THEME TOGGLE
+// THEME TOGGLE - REMOVED (handled by main.js)
 // ============================================
 
 function initThemeToggle() {
-    const themeToggle = document.getElementById('themeToggle');
-    if (!themeToggle) return;
-
-    // Check for saved theme preference or default to 'dark'
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-
-    if (currentTheme === 'light') {
-        document.body.classList.add('light-theme');
-    }
-
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
-
-        // Save preference
-        const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
-        localStorage.setItem('theme', theme);
-
-        // Add animation feedback
-        themeToggle.style.transform = 'scale(0.9)';
-        setTimeout(() => {
-            themeToggle.style.transform = '';
-        }, 200);
-    });
+    // Theme toggle is now handled by main.js to avoid conflicts
+    // This function is kept for compatibility but does nothing
+    return;
 }
 
 // ============================================

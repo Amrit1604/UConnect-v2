@@ -3,6 +3,8 @@
  * Core functionality and interactions
  */
 
+console.log('🚀 main.js loaded successfully!');
+
 // Global state
 const CampusConnect = {
   user: null,
@@ -56,8 +58,13 @@ function initializeApp() {
 }
 
 function initializeColorThemeToggle() {
+  console.log('🎨 Initializing theme toggle...');
+
   const themeToggles = document.querySelectorAll('[data-theme-toggle="landing"]');
+  console.log('🎨 Found theme toggles:', themeToggles.length);
+
   if (!themeToggles.length) {
+    console.log('🎨 No theme toggles found with [data-theme-toggle="landing"]');
     return;
   }
 
@@ -65,41 +72,54 @@ function initializeColorThemeToggle() {
   const root = document.documentElement;
 
   const applyTheme = theme => {
-    root.setAttribute('data-theme', theme);
-    localStorage.setItem(COLOR_THEME_STORAGE_KEY, theme);
+    console.log('🎨 Applying theme:', theme);
 
-    themeIcons.forEach(icon => {
-      icon.textContent = theme === 'dark' ? '☀️' : '🌙';
-    });
+    if (theme === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      document.body.classList.remove('light-theme');
+      console.log('🎨 Set data-theme="dark" and removed light-theme class from body');
+    } else {
+      root.removeAttribute('data-theme');
+      document.body.classList.add('light-theme');
+      console.log('🎨 Removed data-theme attribute and added light-theme class to body');
+    }
+
+    localStorage.setItem(COLOR_THEME_STORAGE_KEY, theme);
+    console.log('🎨 Saved to localStorage:', theme);
+
+    // Icons are now controlled by CSS - no need to change textContent
+    console.log('🎨 Icons controlled by CSS');
 
     themeToggles.forEach(toggle => {
       toggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+      console.log('🎨 Updated aria-pressed to:', toggle.getAttribute('aria-pressed'));
     });
   };
 
-  const savedTheme = localStorage.getItem(COLOR_THEME_STORAGE_KEY);
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+  // Check for saved theme preference or default to 'light'
+  const savedTheme = localStorage.getItem(COLOR_THEME_STORAGE_KEY) || 'light';
+  console.log('🎨 Saved theme from localStorage:', savedTheme);
+  applyTheme(savedTheme);
 
   themeToggles.forEach(toggle => {
+    console.log('🎨 Adding click listener to toggle');
     toggle.addEventListener('click', () => {
-      const isDark = root.getAttribute('data-theme') === 'dark';
-      applyTheme(isDark ? 'light' : 'dark');
+      console.log('🎨 Theme toggle clicked!');
+      const currentTheme = root.getAttribute('data-theme') || 'light';
+      console.log('🎨 Current theme:', currentTheme);
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      console.log('🎨 New theme will be:', newTheme);
+      applyTheme(newTheme);
+
+      // Add animation feedback
+      toggle.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        toggle.style.transform = '';
+      }, 200);
     });
   });
 
-  if (window.matchMedia) {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = event => {
-      applyTheme(event.matches ? 'dark' : 'light');
-    };
-
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', handleChange);
-    } else if (typeof mediaQuery.addListener === 'function') {
-      mediaQuery.addListener(handleChange);
-    }
-  }
+  console.log('🎨 Theme toggle initialization complete');
 }
 
 /**

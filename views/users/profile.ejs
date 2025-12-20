@@ -3,282 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | UConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title><%= profileUser.displayName || profileUser.name || profileUser.username %> | UConnect</title>
+
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="<%= profileUser.bio || 'Check out this user profile on UConnect' %>">
+    <meta name="keywords" content="campus, students, social media, university, college, community, profile">
+    <meta name="author" content="<%= profileUser.displayName || profileUser.name || profileUser.username %>">
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="<%= profileUser.displayName || profileUser.name || profileUser.username %> | UConnect">
+    <meta property="og:description" content="<%= profileUser.bio || 'Check out this user profile on UConnect' %>">
+    <meta property="og:type" content="profile">
+    <meta property="og:url" content="<%= typeof url !== 'undefined' ? url : '' %>">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+    <!-- CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="/css/main.css" rel="stylesheet">
     <link href="/css/profile-neo.css" rel="stylesheet">
+    <link href="/css/profile-light-theme.css" rel="stylesheet">
 </head>
-<body>
-    <%- include('../partials/navbar') %>
-    <%- include('../partials/flash-messages') %>
-
-    <!-- Neo Profile Page -->
-    <div class="profile-page">
-        <!-- Background Effects (Same as feed-neo.ejs) -->
-        <div class="parallax-bg">
-            <div class="parallax-layer layer-1"></div>
-            <div class="parallax-layer layer-2"></div>
-            <div class="blob-container">
-                <div class="blob blob-1"></div>
-                <div class="blob blob-2"></div>
-                <div class="blob blob-3"></div>
+<body class="<%= (typeof bodyClass !== 'undefined' ? bodyClass : '') + (isAdminSession ? ' admin-mode' : '') %>">
+    <!-- Navigation (render for logged-in users; admin pages may still have a compact nav) -->
+    <% if (user) { %>
+    <nav class="navbar-neo <%= isAdminSession ? 'admin-mode-nav' : '' %>">
+        <div class="nav-container-neo">
+            <!-- Left: Logo -->
+            <div class="nav-brand-neo">
+                <a href="/" class="brand-link-neo">
+                    <div class="logo-brutalist">U</div>
+                    <span class="brand-text">CONNECT</span>
+                </a>
             </div>
-        </div>
 
-        <!-- Floating Emoji Reactions -->
-        <div class="emoji-reactions">
-            <div class="emoji-float emoji-1">😂</div>
-            <div class="emoji-float emoji-2">❤️</div>
-            <div class="emoji-float emoji-3">🔥</div>
-            <div class="emoji-float emoji-4">😢</div>
-            <div class="emoji-float emoji-5">😡</div>
-            <div class="emoji-float emoji-6">👍</div>
-            <div class="emoji-float emoji-7">🎉</div>
-        </div>
-
-        <main class="profile-layout-neo">
-            <!-- Profile Header -->
-            <div class="profile-header-neo">
-                <div class="profile-top-neo">
-                    <%
-                    // Prefer server-side virtual that already resolves GridFS/API/default
-                    let avatarUrl = profileUser.avatarUrl || '/images/default-avatar.png';
-                    // Cache-busting query to avoid stale browser cache after change
-                    const cacheBuster = (profileUser.updatedAt ? new Date(profileUser.updatedAt).getTime() : Date.now());
-                    %>
-                    <img src="<%= avatarUrl %>?v=<%= cacheBuster %>"
-                         alt="<%= profileUser.displayName || profileUser.name || profileUser.username %>"
-                         class="profile-avatar-large-neo"
-                         onerror="this.src='/images/default-avatar.png'">
-
-                    <div class="profile-details-neo">
-                        <h1 class="profile-name-large-neo"><%= profileUser.displayName || profileUser.name || profileUser.username %></h1>
-                        <div class="profile-username-large-neo">@<%= profileUser.username %></div>
-
-                        <% if (profileUser.bio) { %>
-                            <p class="profile-bio-neo"><%= profileUser.bio %></p>
-                        <% } %>
-
-                        <div class="profile-meta-neo">
-                            <div class="profile-meta-item-neo">
-                                <span class="profile-meta-icon-neo">📧</span>
-                                <span><%= profileUser.email %></span>
-                            </div>
-                            <div class="profile-meta-item-neo">
-                                <span class="profile-meta-icon-neo">🏫</span>
-                                <span><%= profileUser.campus || profileUser.email.split('@')[1] %></span>
-                            </div>
-                            <div class="profile-meta-item-neo">
-                                <span class="profile-meta-icon-neo">📅</span>
-                                <span>Joined <%= new Date(profileUser.createdAt).toLocaleDateString() %></span>
-                            </div>
-                        </div>
-
-                        <div class="profile-stats-large-neo">
-                            <div class="stat-item-large-neo">
-                                <span class="stat-value-large-neo"><%= posts.length %></span>
-                                <span class="stat-label-large-neo">POSTS</span>
-                            </div>
-                            <div class="stat-item-large-neo">
-                                <span class="stat-value-large-neo"><%= profileUser.stats?.totalLikesReceived || 0 %></span>
-                                <span class="stat-label-large-neo">LIKES</span>
-                            </div>
-                            <div class="stat-item-large-neo">
-                                <span class="stat-value-large-neo"><%= profileUser.stats?.commentsCount || 0 %></span>
-                                <span class="stat-label-large-neo">COMMENTS</span>
-                            </div>
-                        </div>
-
-                        <div class="profile-actions-neo">
-                            <a href="/users/settings/profile" class="profile-action-btn-neo primary">
-                                ⚙️ EDIT PROFILE
-                            </a>
-                            <a href="/posts/create" class="profile-action-btn-neo">
-                                ✨ CREATE POST
-                            </a>
-                            <a href="/users/settings/account" class="profile-action-btn-neo">
-                                🛡️ SETTINGS
-                            </a>
-                        </div>
+            <% if (user) { %>
+                <!-- Center: Navigation Links + Search -->
+                <div class="nav-center-neo">
+                    <a href="/posts" class="nav-link-neo <%= currentPath === '/posts' ? 'active' : '' %>">FEED</a>
+                    <a href="/posts/create" class="nav-link-neo <%= currentPath === '/posts/create' ? 'active' : '' %>">CREATE</a>
+                    <!-- <a href="/users/campus" class="nav-link-neo <%= currentPath === '/users/campus' ? 'active' : '' %>">CAMPUS</a> -->
+                    <a href="/users/explore" class="nav-link-neo <%= currentPath === '/users/explore' ? 'active' : '' %>">EXPLORE</a>
+                    <!-- User Search -->
+                    <div class="nav-search-neo" style="position: relative; margin-left: 16px;">
+                        <input type="text" id="userSearchInput" placeholder="Search users" aria-label="Search users" class="nav-search-input" style="padding:8px 12px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.3);color:var(--white);min-width:220px;">
+                        <div id="userSearchResults" class="nav-search-results" style="position:absolute;top:42px;left:0;right:0;background:rgba(10,10,10,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;display:none;z-index:1000;"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Posts Section -->
-            <div class="profile-content-neo">
-                <div class="content-header-neo">
-                    <h2 class="content-title-neo">📝 MY POSTS</h2>
-                    <% if (posts && posts.length > 0) { %>
-                        <button class="delete-mode-toggle-neo" id="deleteModeToggle">
-                            🗑️ DELETE POSTS
+                <!-- Right: Action Buttons -->
+                <div class="nav-actions-neo">
+                    <!-- External apps dropdown (compact to avoid crowding) -->
+                    <div class="nav-external-cta">
+                      <button class="nav-external-toggle" aria-expanded="false" title="External apps">🌐</button>
+                      <div class="nav-external-menu" aria-hidden="true">
+                        <a href="https://key-vora.vercel.app/" class="nav-external-link" target="_blank" rel="noopener noreferrer">KeyVora</a>
+                        <a href="https://recrutix-v1.onrender.com/" class="nav-external-link" target="_blank" rel="noopener noreferrer">Recrutix</a>
+                        <a href="https://amrit1604.github.io/THE-NINE-TAILS-KITCHEN/" class="nav-external-link" target="_blank" rel="noopener noreferrer">Hungry ?</a>
+                      </div>
+                    </div>
+                    <!-- Notifications bell -->
+                    <a href="/notifications" class="nav-link-neo" style="position:relative;margin-right:8px" id="navNotificationsLink">
+                      🔔 <span id="navNotificationsCount" style="background:var(--red);color:var(--white);border-radius:999px;padding:2px 6px;font-size:12px;margin-left:6px;display:none">0</span>
+                    </a>
+                    <!-- Popup container will be injected by /js/notifications.js -->
+
+                    <!-- Chat toggle (open friends/inbox sidebar) -->
+                    <a href="#" class="nav-link-neo" id="navChatToggle" style="margin-right:6px">💬</a>
+                    <!-- Theme Toggle Button -->
+                    <button class="theme-toggle" data-theme-toggle="landing" aria-label="Toggle theme" aria-pressed="false">
+                        <span aria-hidden="true" data-theme-icon>
+                            <span class="sun-icon">☀️</span>
+                            <span class="moon-icon">🌙</span>
+                        </span>
+                    </button>
+
+                    <!-- User Avatar -->
+                    <a href="/users/profile" class="nav-avatar-link">
+                        <%
+                          const navAvatarUrl = (user && user.avatarUrl) ? user.avatarUrl : (user && user.avatarSeed ? 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed : '/images/default-avatar.png');
+                          const navAvatarVer = user && user.updatedAt ? new Date(user.updatedAt).getTime() : Date.now();
+                        %>
+                        <img src="<%= navAvatarUrl %>?v=<%= navAvatarVer %>"
+                             alt="<%= user && (user.name || user.username) %>"
+                             class="nav-avatar"
+                             onerror="this.src='/images/default-avatar.png'">
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn-neo" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            <% } else { %>
+                <!-- Center: Navigation Links (Guest) -->
+                <div class="nav-center-neo">
+                    <a href="/" class="nav-link-neo">HOME</a>
+                    <a href="#features" class="nav-link-neo">FEATURES</a>
+                    <a href="#about" class="nav-link-neo">ABOUT</a>
+                </div>
+
+                <!-- Right: Action Buttons (Guest) -->
+                <div class="nav-actions-neo">
+                    <!-- External apps dropdown (guest) -->
+                    <div class="nav-external-cta">
+                      <button class="nav-external-toggle" aria-expanded="false" title="External apps">🌐</button>
+                      <div class="nav-external-menu" aria-hidden="true">
+                        <a href="https://key-vora.vercel.app/" class="nav-external-link" target="_blank" rel="noopener noreferrer">KeyVora</a>
+                        <a href="https://recrutix-v1.onrender.com/" class="nav-external-link" target="_blank" rel="noopener noreferrer">Recrutix</a>
+                        <a href="https://amrit1604.github.io/THE-NINE-TAILS-KITCHEN/" class="nav-external-link" target="_blank" rel="noopener noreferrer">Hungry ?</a>
+                      </div>
+                    </div>
+                  <button class="theme-toggle-btn" id="themeToggle" data-theme-toggle="landing" aria-label="Toggle theme">
+                        <span aria-hidden="true" data-theme-icon>
+                            <span class="sun-icon">☀️</span>
+                            <span class="moon-icon">🌙</span>
+                        </span>
+                    </button>
+                    <a href="/auth/login" class="nav-btn-ghost">SIGN IN</a>
+                    <a href="/auth/register" class="nav-btn-primary magnetic-btn">JOIN NOW</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn-neo" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            <% } %>
+        </div>
+    </nav>
+    <% } %>
+
+    <!-- Flash Messages -->
+    <% if (messages && (messages.success || messages.error || messages.warning || messages.info)) { %>
+        <div class="flash-messages">
+            <% if (messages.success) { %>
+                <% messages.success.forEach(message => { %>
+                    <div class="flash-message flash-success">
+                        <i class="fas fa-check-circle"></i>
+                        <span><%= message %></span>
+                        <button class="flash-close" type="button" aria-label="Dismiss message">
+                            <i class="fas fa-times" aria-hidden="true"></i>
                         </button>
-                    <% } %>
-                </div>
-
-                <% if (posts && posts.length > 0) { %>
-                    <div class="profile-posts-grid-neo" id="postsGrid">
-                        <% posts.forEach(post => { %>
-                            <div class="profile-post-card-neo" data-post-id="<%= post._id %>">
-                                <input type="checkbox" class="post-checkbox-neo" value="<%= post._id %>">
-
-                                <div class="profile-post-header-neo">
-                                    <span class="profile-post-date-neo">
-                                        🕒 <%= new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
-                                    </span>
-                                    <% if (post.category) { %>
-                                        <span class="profile-post-category-neo"><%= post.category.toUpperCase() %></span>
-                                    <% } %>
-                                </div>
-
-                                <% if (post.title) { %>
-                                    <h3 class="profile-post-title-neo"><%= post.title %></h3>
-                                <% } %>
-
-                                <% if (post.content) { %>
-                                    <p class="profile-post-content-neo">
-                                        <%= post.content.substring(0, 150) %><% if (post.content.length > 150) { %>...<% } %>
-                                    </p>
-                                <% } %>
-
-                                <div class="profile-post-stats-neo">
-                                    <span class="profile-post-stat-neo">❤️ <%= post.likes?.length || 0 %></span>
-                                    <span class="profile-post-stat-neo">💬 <%= post.comments?.length || 0 %></span>
-                                    <a href="/posts/<%= post._id %>" class="profile-post-link-neo">📖 VIEW POST</a>
-                                </div>
-                            </div>
-                        <% }) %>
                     </div>
-                <% } else { %>
-                    <div class="profile-empty-state-neo">
-                        <div class="empty-icon-large-neo">📝</div>
-                        <h3 class="empty-title-large-neo">NO POSTS YET</h3>
-                        <p class="empty-text-large-neo">Share your first thought with the campus community!</p>
-                        <a href="/posts/create" class="profile-action-btn-neo primary">✨ CREATE YOUR FIRST POST</a>
+                <% }) %>
+            <% } %>
+
+            <% if (messages.error) { %>
+                <% messages.error.forEach(message => { %>
+                    <div class="flash-message flash-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><%= message %></span>
+                        <button class="flash-close" type="button" aria-label="Dismiss message">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
                     </div>
-                <% } %>
-            </div>
+                <% }) %>
+            <% } %>
 
-            <!-- Bulk Actions Bar -->
-            <div class="bulk-actions-bar-neo" id="bulkActionsBar">
-                <span class="bulk-actions-info-neo" id="selectedCount">0 selected</span>
-                <button class="bulk-action-btn-neo cancel" id="cancelDelete">CANCEL</button>
-                <button class="bulk-action-btn-neo delete" id="deleteSelected">🗑️ DELETE SELECTED</button>
-            </div>
-        </main>
-    </div>
+            <% if (messages.warning) { %>
+                <% messages.warning.forEach(message => { %>
+                    <div class="flash-message flash-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span><%= message %></span>
+                        <button class="flash-close" type="button" aria-label="Dismiss message">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                <% }) %>
+            <% } %>
 
-    <%- include('../partials/footer') %>
+            <% if (messages.info) { %>
+                <% messages.info.forEach(message => { %>
+                    <div class="flash-message flash-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span><%= message %></span>
+                        <button class="flash-close" type="button" aria-label="Dismiss message">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+    <% } %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <%- include('users/profile-body') %>
+    </main>
+
+    <!-- Theme initialization script - runs immediately to prevent flash -->
+    <script>
+      (function() {
+        // Apply theme immediately to prevent flash
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.body.classList.remove('light-theme');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+          document.body.classList.add('light-theme');
+        }
+        console.log('🎨 Theme applied immediately:', savedTheme);
+
+        // Show body after theme is applied
+        document.body.classList.add('theme-loaded');
+      })();
+    </script>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+    <script src="/js/admin-entry.js"></script>
+    <script src="/js/landing-neo.js"></script>
+    <script src="/js/admin.js"></script>
+    <script src="/js/notifications.js"></script>
+    <script src="/js/chat-navbar.js"></script>
+    <script src="/js/mini-gossip.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
 
     <script>
-        // Delete Mode Functionality
-        const deleteModeToggle = document.getElementById('deleteModeToggle');
-        const postsGrid = document.getElementById('postsGrid');
-        const bulkActionsBar = document.getElementById('bulkActionsBar');
-        const selectedCountSpan = document.getElementById('selectedCount');
-        const cancelDeleteBtn = document.getElementById('cancelDelete');
-        const deleteSelectedBtn = document.getElementById('deleteSelected');
-        let deleteMode = false;
+      // Debounced user search in navbar
+      (function(){
+        const input = document.getElementById('userSearchInput');
+        const results = document.getElementById('userSearchResults');
+        if (!input || !results) return;
 
-        if (deleteModeToggle) {
-            deleteModeToggle.addEventListener('click', function() {
-                deleteMode = !deleteMode;
+        let t = null;
+        const render = (items) => {
+          if (!items || items.length === 0) {
+            results.innerHTML = '<div style="padding:10px;color:rgba(255,255,255,0.6);">No users found</div>';
+            results.style.display = 'block';
+            return;
+          }
+          results.innerHTML = items.map(u => {
+            const avatar = (u.avatarUrl || '/images/default-avatar.png') + '?v=' + Date.now();
+            const name = u.name || u.username;
+            return `
+              <a href="/users/${u.username}" class="search-item" style="display:flex;align-items:center;gap:10px;padding:10px 12px;color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <img src="${avatar}" alt="@${u.username}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.src='/images/default-avatar.png'">
+                <div style="display:flex;flex-direction:column;line-height:1.1;">
+                  <span style="font-weight:600;">@${u.username}</span>
+                  <span style="font-size:12px;color:rgba(255,255,255,0.6);">${name}</span>
+                </div>
+              </a>`
+          }).join('');
+          results.style.display = 'block';
+        };
 
-                if (deleteMode) {
-                    postsGrid.classList.add('delete-mode');
-                    deleteModeToggle.classList.add('active');
-                    deleteModeToggle.textContent = '✕ CANCEL';
-                } else {
-                    postsGrid.classList.remove('delete-mode');
-                    deleteModeToggle.classList.remove('active');
-                    deleteModeToggle.textContent = '🗑️ DELETE POSTS';
-                    bulkActionsBar.classList.remove('active');
-                    uncheckAll();
-                }
-            });
-        }
+        const search = async (q) => {
+          try {
+            const res = await fetch(`/users/search?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            if (data && data.success) render(data.results);
+          } catch (e) {
+            console.warn('Search failed');
+          }
+        };
 
-        // Handle checkbox changes
-        document.querySelectorAll('.post-checkbox-neo').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const card = this.closest('.profile-post-card-neo');
-                if (this.checked) {
-                    card.classList.add('selected');
-                } else {
-                    card.classList.remove('selected');
-                }
-                updateBulkActionsBar();
-            });
+        input.addEventListener('input', function(){
+          const q = input.value.trim();
+          clearTimeout(t);
+          if (!q) { results.style.display = 'none'; results.innerHTML=''; return; }
+          t = setTimeout(() => search(q), 250);
         });
 
-        // Cancel Delete
-        if (cancelDeleteBtn) {
-            cancelDeleteBtn.addEventListener('click', function() {
-                deleteMode = false;
-                postsGrid.classList.remove('delete-mode');
-                deleteModeToggle.classList.remove('active');
-                deleteModeToggle.textContent = '🗑️ DELETE POSTS';
-                bulkActionsBar.classList.remove('active');
-                uncheckAll();
-            });
-        }
-
-        // Delete Selected Posts
-        if (deleteSelectedBtn) {
-            deleteSelectedBtn.addEventListener('click', async function() {
-                const selectedCheckboxes = document.querySelectorAll('.post-checkbox-neo:checked');
-                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-
-                if (selectedIds.length === 0) {
-                    alert('Please select posts to delete');
-                    return;
-                }
-
-                const confirmation = confirm(`Are you sure you want to delete ${selectedIds.length} post(s)? This action cannot be undone.`);
-
-                if (confirmation) {
-                    try {
-                        // Delete posts one by one
-                        for (const postId of selectedIds) {
-                            const response = await fetch(`/posts/${postId}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-
-                            if (!response.ok) {
-                                throw new Error(`Failed to delete post ${postId}`);
-                            }
-                        }
-
-                        // Refresh page after successful deletion
-                        window.location.reload();
-                    } catch (error) {
-                        console.error('Delete error:', error);
-                        alert('Failed to delete posts. Please try again.');
-                    }
-                }
-            });
-        }
-
-        function updateBulkActionsBar() {
-            const selectedCount = document.querySelectorAll('.post-checkbox-neo:checked').length;
-            selectedCountSpan.textContent = `${selectedCount} selected`;
-
-            if (selectedCount > 0) {
-                bulkActionsBar.classList.add('active');
-            } else {
-                bulkActionsBar.classList.remove('active');
-            }
-        }
-
-        function uncheckAll() {
-            document.querySelectorAll('.post-checkbox-neo').forEach(checkbox => {
-                checkbox.checked = false;
-                checkbox.closest('.profile-post-card-neo').classList.remove('selected');
-            });
-        }
+        document.addEventListener('click', function(e){
+          if (!results.contains(e.target) && e.target !== input) {
+            results.style.display = 'none';
+          }
+        });
+      })();
     </script>
-    <script src="/js/main.js"></script>
+
+    <!-- Global Socket.IO realtime handlers -->
+    <script>
+      (function(){
+        if (!(window.io)) return; // socket.io not present on some pages
+        const socket = io();
+
+        // Realtime follow/unfollow updates
+        socket.on('user:follow_update', (payload) => {
+          try {
+            const pageRoot = document.querySelector('[data-profile-user-id]');
+            const followersEl = document.getElementById('followersCount');
+            if (pageRoot && followersEl) {
+              const profileId = pageRoot.getAttribute('data-profile-user-id');
+              if (profileId && (payload.targetId === profileId)) {
+                followersEl.textContent = payload.followersCount;
+              }
+            }
+          } catch (_) {}
+        });
+
+        // Realtime likes updates on feed
+        socket.on('post-liked', (data) => {
+          try {
+            const card = document.querySelector(`[data-post-id="${data.postId}"]`);
+            if (!card) return;
+            const likeBtn = card.querySelector('.like-btn');
+            const countSpan = likeBtn && likeBtn.querySelector('.action-count');
+            if (countSpan) countSpan.textContent = data.likes; // update only count
+            // Do NOT toggle liked class here; the actor's client updates locally.
+          } catch (_) {}
+        });
+
+        // Realtime new comments
+        socket.on('new-comment', (data) => {
+          try {
+            const card = document.querySelector(`[data-post-id="${data.postId}"]`);
+            if (!card) return;
+            // Update comment count on the action bar
+            const countSpan = card.querySelector('.comment-btn .action-count, .comment-btn span');
+            if (countSpan) {
+              const n = parseInt(countSpan.textContent || '0', 10) || 0;
+              countSpan.textContent = n + 1;
+            }
+            // Append to quick comments list if present
+            const list = card.querySelector('.quick-comments-list');
+            if (list && data.comment) {
+              const c = data.comment;
+              const avatar = (c.author && c.author.avatarUrl) ? c.author.avatarUrl : '/images/default-avatar.png';
+              const wrapper = document.createElement('div');
+              wrapper.className = 'quick-comment-item';
+              wrapper.innerHTML = `
+                <a href="/users/${c.author.username}" class="author-link-neo" data-username="${c.author.username}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
+                  <img src="${avatar}" alt="${c.author.username}" class="quick-comment-avatar" onerror="this.src='/images/default-avatar.png'">
+                </a>
+                <div class="quick-comment-content">
+                  <a href="/users/${c.author.username}" class="author-link-neo" data-username="${c.author.username}" style="font-weight:600;color:inherit;text-decoration:none;">@${c.author.username}</a>
+                  <p></p>
+                </div>`;
+              const p = wrapper.querySelector('p');
+              if (p) p.textContent = c.content || '';
+              list.prepend(wrapper);
+            }
+          } catch (_) {}
+        });
+      })();
+    </script>
+
+    <!-- Page-specific Configuration and JavaScript -->
+    <script>
+        // Gossip Box Configuration - Set anonId if available
+        window.GOSSIP_CONFIG = window.GOSSIP_CONFIG || {};
+        <% if (typeof anonId !== 'undefined') { %>
+        window.GOSSIP_CONFIG.anonId = '<%= anonId %>';
+        console.log('✅ GOSSIP_CONFIG set:', window.GOSSIP_CONFIG);
+        <% } %>
+    </script>
+
+    <!-- Additional page-specific JavaScript -->
+    <% if (typeof additionalJS !== 'undefined') { %>
+        <% additionalJS.forEach(js => { %>
+            <script src="<%= js %>"></script>
+        <% }) %>
+    <% } %>
+
+    <%- include('partials/admin-modal') %>
+
 </body>
 </html>

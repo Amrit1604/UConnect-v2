@@ -1,6 +1,6 @@
 :root {
   /* Light Theme Colors */
-  --primary-color: #B22222;
+  --primary-color: #FF0000;
   --primary-hover: #8B1A1A;
   --primary-light: #D63031;
   --secondary-color: #2E2E2E;
@@ -148,7 +148,7 @@
 
 /* Dark Theme Variables */
 [data-theme="dark"] {
-  --primary-color: #FF6B6B;
+  --primary-color: #FF0000;
   --primary-hover: #FF5252;
   --primary-light: #FF8A80;
   --secondary-color: #E0E0E0;
@@ -184,6 +184,44 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
 }
 
+/* Light Theme Variables (explicitly defined for clarity) */
+[data-theme="light"] {
+  --primary-color: #B22222;
+  --primary-hover: #8B1A1A;
+  --primary-light: #D63031;
+  --secondary-color: #2E2E2E;
+  --background-color: #FAF9F6;
+  --surface-color: #FFFFFF;
+  --text-primary: #2E2E2E;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --border-color: #D9D9D9;
+  --border-light: #E8E8E8;
+  --success-color: #00B894;
+  --warning-color: #FDCB6E;
+  --error-color: #E17055;
+  --info-color: #74B9FF;
+
+  /* Hero specific colors */
+  --hero-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  --hero-text-color: var(--text-primary);
+  --hero-description-color: var(--text-secondary);
+
+  /* Card colors */
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --card-hover-bg: rgba(255, 255, 255, 0.98);
+  --card-border: rgba(59, 130, 246, 0.2);
+  --card-hover-border: rgba(59, 130, 246, 0.4);
+  --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  --card-hover-shadow: 0 25px 50px rgba(59, 130, 246, 0.25);
+
+  /* Light theme shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
 /* Removed stray custom property declarations outside of a selector */
 
 /* Reset and Base Styles */
@@ -212,6 +250,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color var(--transition-normal), color var(--transition-normal);
+  /* Hide body initially to prevent theme flash */
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Show body after theme is applied */
+body.theme-loaded {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Typography */
@@ -448,6 +495,35 @@ a:hover {
   transform: scale(0.95);
 }
 
+/* Theme toggle icons */
+.theme-toggle .sun-icon {
+  display: none;
+}
+
+.theme-toggle .moon-icon {
+  display: inline;
+}
+
+[data-theme="dark"] .theme-toggle .sun-icon {
+  display: inline;
+}
+
+[data-theme="dark"] .theme-toggle .moon-icon {
+  display: none;
+}
+
+/* Dark theme theme toggle */
+[data-theme="dark"] .theme-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary-color);
+}
+
 .theme-toggle-mobile {
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -456,6 +532,23 @@ a:hover {
 .theme-toggle-mobile:hover {
   background-color: var(--border-light);
   color: var(--primary-color);
+}
+
+/* Mobile theme toggle icons */
+.theme-toggle-mobile .sun-icon {
+  display: none;
+}
+
+.theme-toggle-mobile .moon-icon {
+  display: inline;
+}
+
+[data-theme="dark"] .theme-toggle-mobile .sun-icon {
+  display: inline;
+}
+
+[data-theme="dark"] .theme-toggle-mobile .moon-icon {
+  display: none;
 }
 
 /* Mobile Menu */

@@ -25,16 +25,51 @@
             --glass-border: rgba(255, 255, 255, 0.12);
             --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+            /* Theme-aware variables */
+            --background-color: var(--black);
+            --text-primary: var(--white);
+            --text-secondary: var(--gray-light);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary-color: var(--red);
+        }
+
+        /* Light theme overrides */
+        .light-theme,
+        [data-theme="light"] {
+            --background-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: rgba(0, 0, 0, 0.6);
+            --card-bg: rgba(0, 0, 0, 0.03);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --primary-color: #B22222;
+        }
+
+        /* Dark theme overrides */
+        [data-theme="dark"] {
+            --background-color: var(--black);
+            --text-primary: var(--white);
+            --text-secondary: var(--gray-light);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary-color: var(--red);
         }
 
         body {
             font-family: var(--font-display);
-            background: var(--black);
-            color: var(--white);
+            background: var(--background-color);
+            color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        body.theme-loaded {
+            opacity: 1;
         }
 
         /* Animated Background */
@@ -133,10 +168,10 @@
 
         /* Form Container */
         .form-container {
-            background: var(--glass-bg);
+            background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 3px solid var(--white);
+            border: 3px solid var(--border-color);
             padding: 48px;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
             animation: slideUp 0.6s var(--ease-out-expo);
@@ -196,12 +231,12 @@
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: var(--white);
+            color: var(--text-primary);
             margin-bottom: 12px;
         }
 
         .form-header p {
-            color: var(--gray-light);
+            color: var(--text-secondary);
             font-size: 16px;
         }
 
@@ -215,7 +250,7 @@
             font-weight: 700;
             font-size: 14px;
             margin-bottom: 10px;
-            color: var(--white);
+            color: var(--text-primary);
             letter-spacing: 0.1em;
             text-transform: uppercase;
         }
@@ -225,9 +260,9 @@
         .form-select {
             width: 100%;
             padding: 14px 18px;
-            background: var(--glass-bg);
+            /* background: var(--glass-bg); */
             border: 3px solid var(--glass-border);
-            color: var(--white);
+            color: var(--text-primary);
             font-size: 15px;
             transition: all 0.3s var(--ease-out-expo);
             font-family: inherit;
@@ -257,8 +292,8 @@
         }
 
         .form-select option {
-            background: var(--black);
-            color: var(--white);
+            background: var(--background-color);
+            color: var(--text-primary);
         }
 
         /* Character Counter */
@@ -266,7 +301,7 @@
             text-align: right;
             font-size: 13px;
             margin-top: 8px;
-            color: var(--gray-light);
+            color: var(--text-secondary);
             font-weight: 600;
             letter-spacing: 0.05em;
         }
@@ -295,7 +330,7 @@
         /* Buttons */
         .btn {
             padding: 14px 28px;
-            border: 3px solid var(--white);
+            border: 3px solid var(--text-primary);
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
@@ -313,7 +348,7 @@
         .btn-primary {
             background: var(--red);
             border-color: var(--red);
-            color: var(--white);
+            color: var(--text-primary);
         }
 
         .btn-primary:hover {
@@ -328,7 +363,7 @@
 
         .btn-secondary {
             background: var(--glass-bg);
-            color: var(--white);
+            color: var(--text-primary);
             border: 3px solid var(--glass-border);
         }
 
@@ -339,7 +374,7 @@
 
         .btn-ghost {
             background: transparent;
-            color: var(--white);
+            color: var(--text-primary);
             border: 3px solid transparent;
         }
 
@@ -371,7 +406,7 @@
             padding: 32px;
             background: var(--glass-bg);
             border: 3px dashed var(--glass-border);
-            color: var(--gray-light);
+            color: var(--text-secondary);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -438,7 +473,7 @@
 
         .selected-file-preview i {
             font-size: 28px;
-            color: var(--gray-light);
+            color: var(--text-secondary);
         }
 
         .selected-file-badge {
@@ -446,7 +481,7 @@
             bottom: 4px;
             right: 4px;
             background: var(--red);
-            color: var(--white);
+            color: var(--text-primary);
             font-size: 10px;
             padding: 2px 6px;
             font-weight: 700;
@@ -460,7 +495,7 @@
         .selected-file-name {
             font-weight: 700;
             font-size: 14px;
-            color: var(--white);
+            color: var(--text-primary);
             margin-bottom: 4px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -470,7 +505,7 @@
 
         .selected-file-meta {
             font-size: 12px;
-            color: var(--gray-light);
+            color: var(--text-secondary);
             letter-spacing: 0.05em;
         }
 
@@ -493,14 +528,14 @@
         .remove-file-btn:hover {
             background: var(--red);
             color: var(--white);
-            transform: scale(1.05);
+            /* Removed transform for better performance */
         }
 
         /* Form Help Text */
         .form-help {
             display: block;
             font-size: 13px;
-            color: var(--gray-light);
+            /* color: var(--gray-light); */
             margin-top: 8px;
             letter-spacing: 0.02em;
         }
@@ -541,9 +576,9 @@
             top: 24px;
             right: 24px;
             background: var(--red);
-            color: var(--white);
+            color: var(--text-primary);
             padding: 16px 24px;
-            border: 3px solid var(--white);
+            border: 3px solid var(--text-primary);
             z-index: 1000;
             font-size: 14px;
             font-weight: 600;
@@ -570,8 +605,8 @@
         .camera-hint button {
             margin-left: auto;
             background: transparent;
-            border: 2px solid var(--white);
-            color: var(--white);
+            border: 2px solid var(--text-primary);
+            color: var(--text-primary);
             cursor: pointer;
             font-size: 18px;
             line-height: 1;
@@ -581,7 +616,7 @@
         }
 
         .camera-hint button:hover {
-            background: var(--white);
+            background: var(--text-primary);
             color: var(--red);
         }
 
@@ -1158,6 +1193,13 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
         });
+
+        // Theme initialization to prevent flash
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.body.classList.add('theme-loaded');
+        })();
     </script>
 </body>
 </html>

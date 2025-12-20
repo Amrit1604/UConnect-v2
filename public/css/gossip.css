@@ -773,3 +773,272 @@
   outline: 2px solid var(--gossip-primary);
   outline-offset: 2px;
 }
+
+/* ========================================
+   LIGHT THEME OVERRIDES
+   ======================================== */
+
+/* Light theme CSS variables override */
+:root[data-theme="light"] {
+  --gossip-bg: #ffffff;
+  --gossip-bg-dark: #f8f9fa;
+  --gossip-surface: rgba(255, 255, 255, 0.95);
+  --gossip-border: rgba(178, 34, 34, 0.2);
+  --gossip-border-hover: rgba(178, 34, 34, 0.4);
+  --gossip-text-primary: #2e2e2e;
+  --gossip-text-secondary: #666666;
+  --gossip-text-muted: #999999;
+}
+
+/* Light theme page background */
+[data-theme="light"] .gossip-page {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  color: var(--gossip-text-primary);
+}
+
+/* Light theme container */
+[data-theme="light"] .gossip-container {
+  background: transparent;
+}
+
+/* Light theme header */
+[data-theme="light"] .gossip-title {
+  background: linear-gradient(90deg, #b22222, #8b1a1a);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .gossip-subtitle {
+  color: var(--gossip-text-muted);
+}
+
+/* Light theme create section */
+[data-theme="light"] .gossip-create-section {
+  background: rgba(178, 34, 34, 0.05);
+  border: 1px solid var(--gossip-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+[data-theme="light"] .create-label {
+  color: #b22222;
+}
+
+[data-theme="light"] .gossip-textarea {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--gossip-border);
+  color: var(--gossip-text-primary);
+}
+
+[data-theme="light"] .gossip-textarea:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--gossip-primary);
+  box-shadow: 0 0 20px rgba(178, 34, 34, 0.15);
+}
+
+[data-theme="light"] .gossip-textarea::placeholder {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .char-count {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .char-count.warning {
+  color: #b22222;
+}
+
+[data-theme="light"] .create-btn {
+  background: linear-gradient(90deg, #b22222, #8b1a1a);
+  color: #ffffff;
+}
+
+[data-theme="light"] .create-btn:hover:not(:disabled) {
+  box-shadow: 0 10px 30px rgba(178, 34, 34, 0.3);
+}
+
+/* Light theme gossip cards */
+[data-theme="light"] .gossip-card {
+  background: var(--gossip-surface);
+  border: 1px solid var(--gossip-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+[data-theme="light"] .gossip-card:hover {
+  border-color: var(--gossip-border-hover);
+  box-shadow: 0 10px 30px rgba(178, 34, 34, 0.1);
+}
+
+/* Light theme gossip header */
+[data-theme="light"] .gossip-anon-info {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .gossip-anon-id {
+  background: rgba(178, 34, 34, 0.1);
+  color: #b22222;
+}
+
+[data-theme="light"] .gossip-time {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .gossip-menu-btn {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .gossip-menu-btn:hover {
+  color: var(--gossip-primary);
+}
+
+[data-theme="light"] .gossip-delete-btn {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .gossip-delete-btn:hover {
+  color: var(--gossip-primary);
+}
+
+/* Light theme gossip content */
+[data-theme="light"] .gossip-content {
+  color: var(--gossip-text-secondary);
+}
+
+/* Light theme actions */
+[data-theme="light"] .gossip-actions {
+  border-bottom: 1px solid rgba(178, 34, 34, 0.1);
+}
+
+[data-theme="light"] .action-btn {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .action-btn:hover {
+  color: var(--gossip-primary);
+}
+
+[data-theme="light"] .action-btn.liked {
+  color: var(--gossip-primary);
+}
+
+/* Light theme comments section */
+[data-theme="light"] .comments-header {
+  color: #b22222;
+}
+
+[data-theme="light"] .comments-list::-webkit-scrollbar-track {
+  background: rgba(178, 34, 34, 0.05);
+}
+
+[data-theme="light"] .comments-list::-webkit-scrollbar-thumb {
+  background: rgba(178, 34, 34, 0.3);
+}
+
+[data-theme="light"] .comments-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(178, 34, 34, 0.5);
+}
+
+[data-theme="light"] .comment-item {
+  background: rgba(255, 255, 255, 0.6);
+  border-left: 3px solid var(--gossip-primary);
+}
+
+[data-theme="light"] .comment-item:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .comment-anon {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .comment-anon-id {
+  background: rgba(178, 34, 34, 0.1);
+  color: #b22222;
+}
+
+[data-theme="light"] .comment-action {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .comment-action:hover {
+  color: var(--gossip-primary);
+}
+
+[data-theme="light"] .comment-time {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .comment-text {
+  color: var(--gossip-text-secondary);
+}
+
+[data-theme="light"] .comment-likes {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .comment-likes.liked {
+  color: var(--gossip-primary);
+}
+
+/* Light theme add comment form */
+[data-theme="light"] .comment-input {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--gossip-border);
+  color: var(--gossip-text-primary);
+}
+
+[data-theme="light"] .comment-input:focus {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--gossip-primary);
+  box-shadow: 0 0 15px rgba(178, 34, 34, 0.1);
+}
+
+[data-theme="light"] .comment-input::placeholder {
+  color: var(--gossip-text-muted);
+}
+
+[data-theme="light"] .comment-submit-btn {
+  background: linear-gradient(90deg, #b22222, #8b1a1a);
+  color: #ffffff;
+}
+
+[data-theme="light"] .comment-submit-btn:hover:not(:disabled) {
+  box-shadow: 0 5px 15px rgba(178, 34, 34, 0.2);
+}
+
+/* Light theme empty state */
+[data-theme="light"] .empty-state {
+  color: var(--gossip-text-muted);
+}
+
+/* Light theme loading skeleton */
+[data-theme="light"] .loading-skeleton {
+  background: rgba(178, 34, 34, 0.1);
+  border: 1px solid var(--gossip-border);
+}
+
+/* Light theme delete menu */
+[data-theme="light"] .delete-menu {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--gossip-border-hover);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .delete-menu-item {
+  color: var(--gossip-text-primary);
+}
+
+[data-theme="light"] .delete-menu-item:hover {
+  background: rgba(178, 34, 34, 0.1);
+  color: var(--gossip-primary);
+}
+
+[data-theme="light"] .delete-menu-item.delete {
+  color: var(--gossip-primary);
+}
+
+[data-theme="light"] .delete-menu-item.delete:hover {
+  background: rgba(178, 34, 34, 0.2);
+}
