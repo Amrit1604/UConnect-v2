@@ -31,21 +31,12 @@ class EmailService {
     console.log('╚════════════════════════════════════════════════════════════╝');
     console.log('🌐 Environment:', process.env.NODE_ENV || 'development');
 
-    // Detect if running on Render (has RENDER env var) or production
-    const isRender = !!process.env.RENDER;
-    const isProduction = process.env.NODE_ENV === 'production' || isRender;
-    const hasResendKey = !!process.env.RESEND_API_KEY;
-
-    console.log('☁️ Running on Render:', isRender ? 'YES' : 'NO');
-    console.log('🔑 Resend API Key:', hasResendKey ? 'SET' : 'NOT SET');
-
-    // Decision: Use Resend on Render/production, SMTP in development
-    if ((isProduction || isRender) && hasResendKey) {
-      this.initializeResend();
-    } else if (hasResendKey && !process.env.EMAIL_USER) {
-      // If only Resend key is available, use Resend
+    // USE RESEND API EVERYWHERE (works on Render free tier and locally!)
+    if (process.env.RESEND_API_KEY) {
       this.initializeResend();
     } else {
+      // Fallback to SMTP only if Resend API key is not available
+      console.warn('⚠️ RESEND_API_KEY not found, falling back to SMTP...');
       this.initializeSMTP();
     }
     console.log('');

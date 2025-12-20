@@ -37,7 +37,7 @@ const requireAuth = async (req, res, next) => {
     if (!user || !user.isActive) {
       // Use flash BEFORE destroying session
       if (req.session && typeof req.flash === 'function') {
-        req.flash('error', 'Your account is no longer active');
+        req.flash('error', 'Your account is inactive. If you deactivated it, log in again to reactivate.');
       }
       // Destroy session after flash
       if (req.session) {

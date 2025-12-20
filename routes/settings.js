@@ -569,12 +569,23 @@ router.post('/export-data', async (req, res) => {
 
 // Delete Account - GODLY POWERS UNLEASHED! 🔥
 router.post('/delete-account', [
-    body('confirmDeletion')
+    body('confirmEmail')
+        .isEmail()
+        .withMessage('Please enter a valid email')
+        .custom((value, { req }) => {
+            const entered = String(value || '').trim().toLowerCase();
+            const actual = String(req.user?.email || '').trim().toLowerCase();
+            if (!actual || entered !== actual) {
+                throw new Error('Email does not match your account email');
+            }
+            return true;
+        }),
+    body('confirmDelete')
         .equals('on')
         .withMessage('You must confirm account deletion'),
-    body('exportedData')
+    body('confirmDataLoss')
         .equals('on')
-        .withMessage('You must confirm data export status')
+        .withMessage('You must confirm data loss')
 ], async (req, res) => {
     try {
         console.log('🔥 GODLY POWERS: Account deletion request received');
@@ -587,27 +598,63 @@ router.post('/delete-account', [
 
         const { deleteReason } = req.body;
         const userId = req.user.id;
-        const userEmail = req.user.email;
+        const username = req.user.username;
 
-        console.log(`🔥 GODLY POWERS: Deleting account for user ${userId} (${userEmail})`);
+        console.log(`🔥 GODLY POWERS: Deleting account for user ${userId} (@${username})`);
 
         // Log deletion reason for analytics (optional)
         if (deleteReason) {
             console.log(`💭 Deletion reason: ${deleteReason}`);
         }
 
-        // TODO: In production, you might want to:
-        // 1. Soft delete first (mark as deleted but keep data for X days)
-        // 2. Send confirmation email
-        // 3. Queue background job to clean up related data (posts, comments, etc.)
-        // 4. Remove user from all groups/chats
-        // 5. Anonymize user's posts instead of deleting
+        // Load required models for cleanup
+        const Post = require('../models/Post');
+        const Notification = require('../models/Notification');
+        const Friendship = require('../models/Friendship');
+        const FollowRequest = require('../models/FollowRequest');
 
-        // For now, we'll permanently delete the user
+        // Start cleanup process
+        console.log('🧹 Starting data cleanup...');
+
+        // 1. Delete user's posts
+        const deletedPosts = await Post.deleteMany({ author: userId });
+        console.log(`📝 Deleted ${deletedPosts.deletedCount} posts`);
+
+        // 2. Delete notifications related to user
+        const deletedNotifications = await Notification.deleteMany({
+            $or: [{ recipient: userId }, { sender: userId }]
+        });
+        console.log(`🔔 Deleted ${deletedNotifications.deletedCount} notifications`);
+
+        // 3. Delete friendships
+        const deletedFriendships = await Friendship.deleteMany({
+            $or: [{ user1: userId }, { user2: userId }]
+        });
+        console.log(`👥 Deleted ${deletedFriendships.deletedCount} friendships`);
+
+        // 4. Delete follow requests
+        const deletedFollowRequests = await FollowRequest.deleteMany({
+            $or: [{ sender: userId }, { receiver: userId }]
+        });
+        console.log(`📨 Deleted ${deletedFollowRequests.deletedCount} follow requests`);
+
+        // 5. Remove user from other users' followers/following lists
+        await User.updateMany(
+            { followers: userId },
+            { $pull: { followers: userId } }
+        );
+        await User.updateMany(
+            { following: userId },
+            { $pull: { following: userId } }
+        );
+        console.log('👥 Removed user from all follow lists');
+
+        // 6. Finally, delete the user account
         const deletedUser = await User.findByIdAndDelete(userId);
 
         if (deletedUser) {
-            console.log('🎉 GODLY SUCCESS: Account deleted successfully!');
+            console.log('🎉 GODLY SUCCESS: Account and all related data deleted successfully!');
+            console.log(`👋 Goodbye @${username}!`);
 
             // Destroy session and clear cookies
             req.session.destroy((err) => {
@@ -617,7 +664,7 @@ router.post('/delete-account', [
                 res.clearCookie('connect.sid');
 
                 // Redirect to login with deletion confirmation
-                res.redirect('/auth/login?message=Account deleted successfully. Thank you for using UConnect!');
+                res.redirect('/auth/login?deleted=true');
             });
         } else {
             console.log('💥 GODLY ERROR: User not found for deletion');
@@ -634,21 +681,43 @@ router.post('/delete-account', [
 // Deactivate Account (soft delete)
 router.post('/deactivate', async (req, res) => {
     try {
-        await User.findByIdAndUpdate(req.user.id, {
-            isActive: false,
-            deactivatedAt: new Date()
-        });
+        console.log('🔒 DEACTIVATE REQUEST: User ID:', req.user.id);
+        const Post = require('../models/Post');
+        
+        const user = await User.findByIdAndUpdate(
+            req.user.id, 
+            {
+                isActive: false,
+                deactivatedAt: new Date()
+            },
+            { new: true }
+        );
+
+        if (!user) {
+            console.error('❌ User not found for deactivation');
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        console.log('✅ Account deactivated successfully:', user.username);
+
+        // Deactivate user's posts in a reversible way
+        await Post.updateMany(
+            { author: user._id },
+            { $set: { isActive: false, deactivatedByUser: true } }
+        );
 
         // Destroy session
         req.session.destroy((err) => {
             if (err) {
-                console.error('Error destroying session:', err);
+                console.error('❌ Error destroying session:', err);
+                return res.status(500).json({ success: false, error: 'Session error' });
             }
-            res.json({ success: true });
+            res.clearCookie('connect.sid');
+            res.json({ success: true, message: 'Account deactivated successfully' });
         });
     } catch (error) {
-        console.error('Error deactivating account:', error);
-        res.json({ success: false, error: 'Error deactivating account' });
+        console.error('❌ Error deactivating account:', error);
+        res.status(500).json({ success: false, error: 'Error deactivating account' });
     }
 });
 

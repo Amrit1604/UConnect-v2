@@ -176,6 +176,12 @@ const postSchema = new mongoose.Schema({
     default: true
   },
 
+  // Used to differentiate user-initiated account deactivation from moderation/deletion
+  deactivatedByUser: {
+    type: Boolean,
+    default: false
+  },
+
   isReported: {
     type: Boolean,
     default: false

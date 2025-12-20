@@ -130,6 +130,11 @@ const userSchema = new mongoose.Schema({
     default: true
   },
 
+  deactivatedAt: {
+    type: Date,
+    default: null
+  },
+
   lastLogin: {
     type: Date,
     default: null

@@ -738,6 +738,7 @@ router.get('/settings/account', (req, res) => {
     title: 'Account Settings',
     bodyTemplate: 'users/settings/account-body',
     additionalCSS: ['/css/feed-neo.css', '/css/settings-neo.css'],
+    additionalJS: ['/js/settings-account.js'],
     user: req.user
   });
 });
@@ -831,19 +832,27 @@ router.post('/settings/deactivate',
 
       // Deactivate account
       user.isActive = false;
+      user.deactivatedAt = new Date();
       await user.save();
 
       // Deactivate all user's posts
       await Post.updateMany(
         { author: req.user._id },
-        { isActive: false }
+        { $set: { isActive: false, deactivatedByUser: true } }
       );
 
-      res.json({ success: true });
+      // Destroy session and return success
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Session destruction error during deactivation:', err);
+        }
+        res.clearCookie('connect.sid');
+        res.json({ success: true, redirect: '/auth/login?deactivated=true' });
+      });
 
     } catch (error) {
       console.error('Account deactivation error:', error);
-      res.json({ success: false });
+      res.json({ success: false, error: error.message });
     }
   }
 );
@@ -880,7 +889,8 @@ router.post('/settings/delete-account',
         try {
           await deleteFile(user.avatarGridFSId);
         } catch (error) {
-          console.log('GridFS avatar deletion failed:', error.message);
+          // Non-fatal cleanup: avatar may already be missing
+          console.warn('GridFS avatar deletion skipped:', error.message);
         }
       }
 
@@ -893,8 +903,8 @@ router.post('/settings/delete-account',
           console.error('Session destruction error:', err);
         }
         res.clearCookie('connect.sid');
-        req.flash('success', 'Your account has been permanently deleted');
-        res.redirect('/');
+        // Do NOT call req.flash here (session is gone). Redirect with a flag instead.
+        res.redirect('/auth/login?deleted=true');
       });
 
     } catch (error) {

@@ -229,6 +229,16 @@ router.post('/register',
 
 // GET /auth/login - Show login form (Neo Design)
 router.get('/login', redirectIfAuthenticated, (req, res) => {
+  // Check for account deletion confirmation
+  if (req.query.deleted === 'true') {
+    req.flash('success', '👋 Account deleted successfully! Thank you for using UConnect. You\'re welcome back anytime!');
+  }
+  
+  // Check for account deactivation (pause)
+  if (req.query.deactivated === 'true') {
+    req.flash('info', '🔒 Your account has been paused. Log in with your password to reactivate it.');
+  }
+  
   res.render('auth/login-neo', {
     title: 'Login to UConnect',
     errors: [],
@@ -273,15 +283,6 @@ router.post('/login',
         });
       }
 
-      // Check if account is active
-      if (!user.isActive) {
-        return res.render('auth/login-neo', {
-          title: 'Login to UConnect',
-          errors: [{ msg: 'Your account has been deactivated. Please contact support.' }],
-          formData: req.body
-        });
-      }
-
       // Verify password
       const isValidPassword = await user.comparePassword(password);
       if (!isValidPassword) {
@@ -290,6 +291,31 @@ router.post('/login',
           errors: [{ msg: 'Invalid email/username or password' }],
           formData: req.body
         });
+      }
+
+      // If user self-deactivated (paused), allow reactivation on successful login
+      if (!user.isActive) {
+        // Only auto-reactivate if it was a user-initiated pause
+        if (user.deactivatedAt) {
+          const Post = require('../models/Post');
+          user.isActive = true;
+          user.deactivatedAt = null;
+          await user.save();
+
+          // Restore only posts hidden due to user deactivation
+          await Post.updateMany(
+            { author: user._id, deactivatedByUser: true },
+            { $set: { isActive: true, deactivatedByUser: false } }
+          );
+
+          req.flash('success', 'Welcome back — your account has been reactivated.');
+        } else {
+          return res.render('auth/login-neo', {
+            title: 'Login to UConnect',
+            errors: [{ msg: 'Your account is inactive. Please contact support.' }],
+            formData: req.body
+          });
+        }
       }
 
       // Check if email is verified (admin accounts bypass verification)
@@ -361,6 +387,7 @@ router.post('/login',
 // GET /auth/verify-email - Verify email with token
 router.get('/verify-email', async (req, res) => {
   try {
+    const startTime = Date.now();
     const { token } = req.query;
 
     if (!token) {
@@ -371,17 +398,24 @@ router.get('/verify-email', async (req, res) => {
       });
     }
 
+    console.log('\n⏱️ VERIFICATION REQUEST RECEIVED');
+    
     // Check if there's a pending registration in session
     if (!req.session.pendingRegistration) {
+      console.log('❌ No pending registration in session');
       req.flash('error', 'No pending registration found. Please register again.');
       return res.redirect('/auth/register');
     }
+
+    console.log(`✅ Session found (${Date.now() - startTime}ms)`);
 
     // Check if token matches
     if (req.session.pendingRegistration.verificationToken !== token) {
       req.flash('error', 'Invalid verification token.');
       return res.redirect('/auth/verify-email');
     }
+
+    console.log(`✅ Token validated (${Date.now() - startTime}ms)`);
 
     // Check if token has expired
     if (new Date() > req.session.pendingRegistration.expiresAt) {
@@ -396,12 +430,14 @@ router.get('/verify-email', async (req, res) => {
       console.log(`👤 User: ${tempUserData.name}`);
 
       // Check if user already exists (someone might have registered with same data)
+      console.log(`🔍 Checking for existing user... (${Date.now() - startTime}ms)`);
       const existingUser = await User.findOne({
         $or: [
           { email: tempUserData.email },
           { username: tempUserData.username }
         ]
       });
+      console.log(`✅ DB check complete (${Date.now() - startTime}ms)`);
 
       if (existingUser) {
         console.log('⚠️  User already exists in database');
@@ -417,13 +453,14 @@ router.get('/verify-email', async (req, res) => {
 
       if (tempUserData.avatarType === 'upload' && tempUserData.tempAvatar) {
         try {
-          console.log(`💾 Processing uploaded avatar: ${tempUserData.tempAvatar.originalname}`);
+          console.log(`💾 Processing uploaded avatar: ${tempUserData.tempAvatar.originalname} (${Date.now() - startTime}ms)`);
 
           // Convert base64 back to Buffer
           const avatarBuffer = Buffer.from(tempUserData.tempAvatar.data, 'base64');
 
           // Save to GridFS
           const { saveBufferToGridFS } = require('../utils/gridfs');
+          console.log(`📤 Saving to GridFS... (${Date.now() - startTime}ms)`);
           avatarGridFSId = await saveBufferToGridFS(
             avatarBuffer,
             tempUserData.tempAvatar.originalname,
@@ -436,7 +473,7 @@ router.get('/verify-email', async (req, res) => {
           );
 
           avatarType = 'gridfs';
-          console.log(`✅ Avatar saved to GridFS: ${avatarGridFSId}`);
+          console.log(`✅ Avatar saved to GridFS: ${avatarGridFSId} (${Date.now() - startTime}ms)`);
         } catch (avatarError) {
           console.error('❌ Error processing avatar:', avatarError);
           // Fallback to API avatar if upload fails
@@ -480,8 +517,10 @@ router.get('/verify-email', async (req, res) => {
 
       const newUser = new User(userData);
 
-      console.log(`📊 Creating user with avatar type: ${avatarType}`);
+      console.log(`📊 Creating user with avatar type: ${avatarType} (${Date.now() - startTime}ms)`);
+      console.log(`💾 Saving user to MongoDB...`);
       await newUser.save();
+      console.log(`✅ User saved successfully! (${Date.now() - startTime}ms)`);
       console.log(`📊 User saved. Avatar URL: ${newUser.avatarUrl}`);
 
       // Clear pending registration from session
@@ -491,6 +530,7 @@ router.get('/verify-email', async (req, res) => {
       console.log(`🆔 User ID: ${newUser._id}`);
       console.log(`📧 Email: ${newUser.email}`);
       console.log(`👤 Username: @${newUser.username}`);
+      console.log(`⏱️ Total verification time: ${Date.now() - startTime}ms`);
       console.log('=====================================\n');
 
       req.flash('success', 'Email verified successfully! Your account has been created. You can now log in.');

@@ -128,10 +128,10 @@
                         <p class="danger-text-neo">These actions are permanent and cannot be undone.</p>
                         
                         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
-                            <button type="button" class="btn-danger-neo" onclick="deactivateAccount()">
+                            <button type="button" class="btn-danger-neo" id="deactivateAccountBtn">
                                 🔒 DEACTIVATE ACCOUNT
                             </button>
-                            <button type="button" class="btn-danger-neo" onclick="showDeleteModal()">
+                            <button type="button" class="btn-danger-neo" id="openDeleteAccountModalBtn">
                                 🗑️ DELETE ACCOUNT PERMANENTLY
                             </button>
                         </div>
@@ -164,7 +164,7 @@
                 </div>
 
                 <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <button type="button" class="btn-secondary-neo btn-neo" onclick="hideDeleteModal()">CANCEL</button>
+                    <button type="button" class="btn-secondary-neo btn-neo" id="cancelDeleteAccountModalBtn">CANCEL</button>
                     <button type="submit" class="btn-danger-neo">🗑️ DELETE MY ACCOUNT</button>
                 </div>
             </form>
@@ -173,32 +173,7 @@
 
     <%- include('../../partials/footer') %>
 
-    <script>
-        function deactivateAccount() {
-            if (confirm('Are you sure you want to deactivate your account? You can reactivate it later by logging in.')) {
-                fetch('/users/settings/deactivate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                }).then(response => response.json())
-                  .then(data => {
-                      if (data.success) {
-                          alert('Account deactivated successfully');
-                          window.location.href = '/auth/logout';
-                      } else {
-                          alert('Failed to deactivate account');
-                      }
-                  });
-            }
-        }
-
-        function showDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'flex';
-        }
-
-        function hideDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-        }
-    </script>
     <script src="/js/main.js"></script>
+    <script src="/js/settings-account.js"></script>
 </body>
 </html>

@@ -56,58 +56,26 @@
 
       window.addCommentToPost = function(postId, comment){
         const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-        if (!postElement || !comment) return;
+        if (postElement) {
+          // Support both neo and classic feeds
+          const commentsSection = postElement.querySelector('.quick-comments-list') || postElement.querySelector('.comments-list');
+          if (commentsSection) {
+            // Avoid duplicate insertion if comment already present
+            if (comment && comment._id && commentsSection.querySelector(`[data-comment-id="${comment._id}"]`)) return;
+            const commentElement = document.createElement('div');
+            commentElement.className = 'comment-item new-comment';
+            if (comment && comment._id) commentElement.setAttribute('data-comment-id', comment._id);
+            commentElement.innerHTML = `\n              <img src="${comment.author.avatarUrl || '/images/default-avatar.png'}" style="width:32px;height:32px;border-radius:50%;border:2px solid #e5e7eb;flex-shrink:0;" />\n              <div style=\"flex:1\">\n                <div style=\"display:flex;align-items:center;gap:8px;margin-bottom:4px;\">\n                  <strong style=\"font-weight:600;color:#1f2937\">${comment.author.username}</strong>\n                  <small style=\"color:#6b7280\">Just now</small>\n                </div>\n                <p style=\"margin:0;color:#374151\">${escapeHtml(comment.content)}</p>\n              </div>\n            `;
+            commentsSection.prepend(commentElement);
+            setTimeout(()=> commentElement.classList.remove('new-comment'), 2000);
 
-        // Support both neo and classic feeds
-        const commentsSection = postElement.querySelector('.comments-list') || postElement.querySelector('.quick-comments-list');
-        if (!commentsSection) return;
-
-        // Avoid duplicate insertion if comment already present
-        if (comment._id && commentsSection.querySelector(`[data-comment-id="${comment._id}"]`)) {
-          console.log('Comment already exists, skipping duplicate');
-          return;
-        }
-
-        // Check for "no comments" placeholder and remove it
-        const noCommentsPlaceholder = commentsSection.querySelector('[style*="text-align: center"]');
-        if (noCommentsPlaceholder && noCommentsPlaceholder.textContent.includes('No comments yet')) {
-          noCommentsPlaceholder.remove();
-        }
-
-        // Create the new comment element with proper styling
-        const commentElement = document.createElement('div');
-        commentElement.className = 'comment-item new-comment';
-        if (comment._id) commentElement.setAttribute('data-comment-id', comment._id);
-        
-        const avatarUrl = (comment.author && comment.author.avatarUrl) ? comment.author.avatarUrl : '/images/default-avatar.png';
-        const username = (comment.author && comment.author.username) ? comment.author.username : 'User';
-        const content = comment.content || '';
-        
-        commentElement.innerHTML = `
-          <img src="${avatarUrl}" alt="${username}" class="comment-author-avatar" onerror="this.src='/images/default-avatar.png'">
-          <div class="comment-content">
-            <div class="comment-header">
-              <strong class="comment-author">${escapeHtml(username)}</strong>
-              <small class="comment-time">Just now</small>
-            </div>
-            <p class="comment-text">${escapeHtml(content)}</p>
-          </div>
-        `;
-
-        // Insert at the END of the list (newest last) to maintain order
-        commentsSection.appendChild(commentElement);
-        
-        // Scroll to the new comment
-        commentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        
-        // Remove highlight after animation
-        setTimeout(() => commentElement.classList.remove('new-comment'), 2000);
-
-        // Update comment count in the action button
-        const commentCountSpan = postElement.querySelector('.comment-btn span');
-        if (commentCountSpan) {
-          const currentCount = parseInt(commentCountSpan.textContent) || 0;
-          commentCountSpan.textContent = currentCount + 1;
+            // Update comment count in the action button (only if actually inserted)
+            const commentCountSpan = postElement.querySelector('.comment-btn span');
+            if (commentCountSpan) {
+              const currentCount = parseInt(commentCountSpan.textContent) || 0;
+              commentCountSpan.textContent = currentCount + 1;
+            }
+          }
         }
       };
 

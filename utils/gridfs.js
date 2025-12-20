@@ -192,6 +192,12 @@ async function deleteFile(fileId) {
     console.log('✅ GridFS file deleted:', fileId);
     return true;
   } catch (error) {
+    // Common during cleanup: file already gone
+    const message = (error && error.message) ? error.message : String(error);
+    if (typeof message === 'string' && message.toLowerCase().includes('file not found')) {
+      console.warn('⚠️ GridFS file already missing, skipping delete:', fileId);
+      return false;
+    }
     console.error('❌ Error deleting GridFS file:', error);
     return false;
   }
