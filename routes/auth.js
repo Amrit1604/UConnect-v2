@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
+const PendingRegistration = require('../models/PendingRegistration');
 const { redirectIfAuthenticated, validateEduEmail, sensitiveOperationLimit } = require('../middleware/auth');
 const { uploadAvatarTemp } = require('../middleware/upload');
 const emailService = require('../services/emailService');
@@ -165,15 +166,20 @@ router.post('/register',
       }
 
       // Generate simple verification token (just random string, not JWT)
-      const crypto = require('crypto');
       const verificationToken = crypto.randomBytes(32).toString('hex');
 
-      // Store in session for verification (this is the main storage)
-      req.session.pendingRegistration = {
+      // Delete any existing pending registration for this email/username
+      await PendingRegistration.deleteMany({
+        $or: [{ email }, { username }]
+      });
+
+      // Store in MongoDB for device-independent verification
+      await PendingRegistration.create({
         ...tempUserData,
         verificationToken,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-      };
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours, auto-deleted by MongoDB TTL
+        createdAt: new Date()
+      });
 
       // Create environment-aware verification URL 🌍
       const baseUrl = getSmartBaseUrl(req);
@@ -400,31 +406,27 @@ router.get('/verify-email', async (req, res) => {
 
     console.log('\n⏱️ VERIFICATION REQUEST RECEIVED');
     
-    // Check if there's a pending registration in session
-    if (!req.session.pendingRegistration) {
-      console.log('❌ No pending registration in session');
-      req.flash('error', 'No pending registration found. Please register again.');
+    // Fetch pending registration from MongoDB using token
+    console.log(`🔍 Looking up pending registration by token... (${Date.now() - startTime}ms)`);
+    const pendingReg = await PendingRegistration.findOne({ verificationToken: token });
+    
+    if (!pendingReg) {
+      console.log('❌ No pending registration found for this token');
+      req.flash('error', 'Invalid or expired verification link. Please register again.');
       return res.redirect('/auth/register');
     }
 
-    console.log(`✅ Session found (${Date.now() - startTime}ms)`);
+    console.log(`✅ Pending registration found (${Date.now() - startTime}ms)`);
+    console.log(`📧 Email: ${pendingReg.email}`);
 
-    // Check if token matches
-    if (req.session.pendingRegistration.verificationToken !== token) {
-      req.flash('error', 'Invalid verification token.');
-      return res.redirect('/auth/verify-email');
-    }
-
-    console.log(`✅ Token validated (${Date.now() - startTime}ms)`);
-
-    // Check if token has expired
-    if (new Date() > req.session.pendingRegistration.expiresAt) {
-      delete req.session.pendingRegistration;
+    // Check if token has expired (backup check, TTL should handle this)
+    if (new Date() > pendingReg.expiresAt) {
+      await PendingRegistration.deleteOne({ _id: pendingReg._id });
       req.flash('error', 'Verification token has expired. Please register again.');
       return res.redirect('/auth/register');
     }
 
-    const tempUserData = req.session.pendingRegistration;
+    const tempUserData = pendingReg;
       console.log('\n🔍 PROCESSING EMAIL VERIFICATION...');
       console.log(`📧 Email: ${tempUserData.email}`);
       console.log(`👤 User: ${tempUserData.name}`);
@@ -441,7 +443,7 @@ router.get('/verify-email', async (req, res) => {
 
       if (existingUser) {
         console.log('⚠️  User already exists in database');
-        delete req.session.pendingRegistration;
+        await PendingRegistration.deleteOne({ _id: pendingReg._id });
         req.flash('warning', 'An account with this email or username already exists. Please try logging in.');
         return res.redirect('/auth/login');
       }
@@ -523,8 +525,9 @@ router.get('/verify-email', async (req, res) => {
       console.log(`✅ User saved successfully! (${Date.now() - startTime}ms)`);
       console.log(`📊 User saved. Avatar URL: ${newUser.avatarUrl}`);
 
-      // Clear pending registration from session
-      delete req.session.pendingRegistration;
+      // Delete pending registration from MongoDB
+      await PendingRegistration.deleteOne({ _id: pendingReg._id });
+      console.log('🗑️ Pending registration cleaned up from database');
 
       console.log('✅ USER SUCCESSFULLY CREATED IN MONGODB!');
       console.log(`🆔 User ID: ${newUser._id}`);
@@ -569,28 +572,30 @@ router.post('/resend-verification',
         return res.redirect('/auth/register');
       }
 
-      // Check if there's a pending registration in session
-      if (!req.session.pendingRegistration || req.session.pendingRegistration.email !== email) {
+      // Check if there's a pending registration in MongoDB
+      const pendingReg = await PendingRegistration.findOne({ email });
+      
+      if (!pendingReg) {
         req.flash('error', 'No pending registration found for this email. Please register again.');
         return res.redirect('/auth/register');
       }
 
       // Check if pending registration has expired
-      if (new Date() > req.session.pendingRegistration.expiresAt) {
-        delete req.session.pendingRegistration;
+      if (new Date() > pendingReg.expiresAt) {
+        await PendingRegistration.deleteOne({ _id: pendingReg._id });
         req.flash('error', 'Registration session expired. Please register again.');
         return res.redirect('/auth/register');
       }
 
-      const tempUserData = req.session.pendingRegistration;
+      const tempUserData = pendingReg;
 
       // Generate new simple verification token
-      const crypto = require('crypto');
       const verificationToken = crypto.randomBytes(32).toString('hex');
 
-      // Update session with new token
-      req.session.pendingRegistration.verificationToken = verificationToken;
-      req.session.pendingRegistration.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      // Update MongoDB with new token
+      pendingReg.verificationToken = verificationToken;
+      pendingReg.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await pendingReg.save();
 
       // Create environment-aware verification URL 🌍
       const baseUrl = getSmartBaseUrl(req);
