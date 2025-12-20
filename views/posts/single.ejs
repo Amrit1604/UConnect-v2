@@ -1,322 +1,192 @@
 <%- include('../partials/navbar') %>
 
-<div class="single-post-container">
-    <div class="single-post-wrapper">
-        <div class="post-card">
-            <div class="post-header">
-                <div class="post-author">
-                    <div class="author-avatar">
-                        <img src="<%= post.author.avatarUrl %>" alt="<%= post.author.username %>">
-                    </div>
-                    <div class="author-info">
-                        <a href="/users/<%= post.author.username ? post.author.username : post.author._id %>" class="author-name">
-                            <%= post.author.username %>
+<div class="posts-page">
+    <div class="feed-container">
+        <!-- Main Feed -->
+        <main class="feed-container">
+            <article class="post-card">
+                <!-- Post Header -->
+                <header class="post-header">
+                    <div class="post-author-info">
+                        <%
+                        let postAuthorAvatar = post.author.avatarUrl || (post.author.avatarSeed ? ('https://api.dicebear.com/9.x/adventurer/svg?seed=' + post.author.avatarSeed) : '/images/default-avatar.png');
+                        const authorCacheKey = post.author.updatedAt ? new Date(post.author.updatedAt).getTime() : '';
+                        %>
+                        <a href="/users/<%= post.author.username %>" class="post-author-info" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:12px;">
+                          <img src="<%= postAuthorAvatar %><%= authorCacheKey ? ('?v=' + authorCacheKey) : '' %>"
+                               alt="<%= post.author.username %>"
+                               class="post-author-avatar"
+                               onerror="this.src='/images/default-avatar.png'">
+                          <div>
+                              <span class="post-author-name">@<%= post.author.username %></span>
+                              <span class="post-time">
+                                  <%= new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
+                              </span>
+                          </div>
                         </a>
-                        <span class="post-time"><%= new Date(post.createdAt).toLocaleDateString() %></span>
                     </div>
-                </div>
-                <div class="post-options">
-                    <button class="options-btn">⋮</button>
-                </div>
-            </div>
+                    <% if (post.category) { %>
+                        <span class="post-category"><%= post.category.toUpperCase() %></span>
+                    <% } %>
+                </header>
 
-            <div class="post-content">
-                <p><%= post.content %></p>
-                <% if (post.tags && post.tags.length > 0) { %>
-                    <div class="post-tags">
-                        <% post.tags.forEach(tag => { %>
-                            <span class="tag">#<%= tag %></span>
-                        <% }); %>
-                    </div>
-                <% } %>
-            </div>
+                <!-- Post Content -->
+                <div class="post-content">
+                    <% if (post.title) { %>
+                        <h2 class="post-title"><%= post.title %></h2>
+                    <% } %>
+                    <% if (post.content) { %>
+                        <p class="post-text"><%= post.content %></p>
+                    <% } %>
 
-            <div class="post-stats">
-                <span class="likes-count"><%= post.likeCount || 0 %> likes</span>
-                <span class="comments-count"><%= post.commentCount || 0 %> comments</span>
-            </div>
-
-            <div class="post-actions">
-                <button class="action-btn like-btn" data-post-id="<%= post._id %>">
-                    <span>🤍</span>
-                    Like
-                </button>
-                <button class="action-btn comment-btn">
-                    <span>💬</span>
-                    Comment
-                </button>
-                <button class="action-btn share-btn">
-                    <span>↗️</span>
-                    Share
-                </button>
-                <% if (post.author && post.author._id.toString() === user._id.toString()) { %>
-                <button class="action-btn delete-btn" onclick="deletePost('<%= post._id %>')" title="Delete Post">
-                    <span>🗑️</span>
-                    Delete
-                </button>
-                <% } %>
-            </div>
-
-            <!-- Comments Section -->
-            <div class="comments-section">
-                <div class="comments-list">
-                    <% if (post.comments && post.comments.length > 0) { %>
-                        <% post.comments.forEach(comment => { %>
-                            <div class="comment">
-                                <div class="comment-avatar">
-                                    <img src="<%= comment.author.avatarUrl %>" alt="<%= comment.author.username %>">
-                                </div>
-                                <div class="comment-content">
-                                    <span class="comment-author username-hover"
-                                          data-user-id="<%= comment.author._id %>"
-                                          data-username="<%= comment.author.username %>"
-                                          data-post-id="<%= post._id %>">
-                                        <%= comment.author.username %>
-                                    </span>
-                                    <span class="comment-text"><%= comment.content %></span>
-                                    <span class="comment-time"><%= new Date(comment.createdAt).toLocaleDateString() %></span>
-                                </div>
+                    <!-- Post Media -->
+                    <% if (post.images && post.images.length > 0) { %>
+                        <div class="post-media">
+                            <% if (post.images[0].url) { %>
+                                <img src="<%= post.images[0].url %>"
+                                     alt="<%= post.images[0].originalName || 'Post image' %>"
+                                     class="post-image"
+                                     loading="lazy"
+                                     onerror="this.style.display='none'">
+                            <% } else if (post.images[0].filename) { %>
+                                <img src="/uploads/posts/<%= post.images[0].filename %>"
+                                     alt="<%= post.images[0].originalName || 'Post image' %>"
+                                     class="post-image"
+                                     loading="lazy"
+                                     onerror="this.style.display='none'">
+                            <% } else if (typeof post.images[0] === 'string') { %>
+                                <img src="/uploads/posts/<%= post.images[0] %>"
+                                     alt="Post image"
+                                     class="post-image"
+                                     loading="lazy"
+                                     onerror="this.style.display='none'">
+                            <% } %>
+                        </div>
+                    <% } else if (post.media && post.media.length > 0) { %>
+                        <% const firstMedia = post.media[0]; %>
+                        <% if (firstMedia.type === 'image') { %>
+                            <div class="post-media">
+                                <img src="<%= firstMedia.url || '/uploads/posts/' + firstMedia.filename %>"
+                                     alt="<%= firstMedia.originalName || 'Post image' %>"
+                                     class="post-image"
+                                     loading="lazy"
+                                     onerror="this.style.display='none'">
                             </div>
-                        <% }); %>
-                    <% } else { %>
-                        <p class="no-comments">No comments yet. Be the first to comment!</p>
+                        <% } else if (firstMedia.type === 'video') { %>
+                            <div class="post-media">
+                                <video class="post-video" controls>
+                                    <source src="<%= firstMedia.url || '/uploads/posts/' + firstMedia.filename %>"
+                                            type="<%= firstMedia.mimetype || 'video/mp4' %>">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        <% } %>
+                    <% } else if (post.videos && post.videos.length > 0) { %>
+                        <div class="post-media">
+                            <% if (post.videos[0].url) { %>
+                                <video class="post-video" controls>
+                                    <source src="<%= post.videos[0].url %>" type="<%= post.videos[0].mimetype || 'video/mp4' %>">
+                                    Your browser does not support the video tag.
+                                </video>
+                            <% } else if (post.videos[0].filename) { %>
+                                <video class="post-video" controls>
+                                    <source src="/uploads/posts/<%= post.videos[0].filename %>" type="<%= post.videos[0].mimetype || 'video/mp4' %>">
+                                    Your browser does not support the video tag.
+                                </video>
+                            <% } else if (typeof post.videos[0] === 'string') { %>
+                                <video class="post-video" controls>
+                                    <source src="/uploads/posts/<%= post.videos[0] %>" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            <% } %>
+                        </div>
+                    <% } %>
+
+                    <!-- Tags -->
+                    <% if (post.tags && post.tags.length > 0) { %>
+                        <div class="post-tags">
+                            <% post.tags.slice(0, 5).forEach(tag => { %>
+                                <span class="post-tag">#<%= tag %></span>
+                            <% }); %>
+                        </div>
                     <% } %>
                 </div>
 
-                <form class="comment-form" action="/posts/<%= post._id %>/comment" method="POST">
-                    <div class="comment-input-wrapper">
-                        <img src="<%= user.avatarUrl %>" alt="<%= user.username %>" class="comment-avatar">
-                        <input type="text" name="content" placeholder="Add a comment..." class="comment-input" required>
-                        <button type="submit" class="comment-submit">Post</button>
+                <!-- Post Actions -->
+                <footer class="post-actions">
+                    <button class="action-btn like-btn <%= post.likes && post.likes.includes(user._id.toString()) ? 'liked' : '' %>"
+                            data-action="like"
+                            data-post-id="<%= post._id %>">
+                        <span>❤️</span>
+                        <span class="action-count"><%= post.likes ? post.likes.length : 0 %></span>
+                    </button>
+                    <button class="action-btn comment-btn" data-action="comment">
+                        <span>💬</span>
+                        <span class="action-count"><%= post.comments ? post.comments.length : 0 %></span>
+                    </button>
+                    <button class="action-btn share-btn" data-post-id="<%= post._id %>" data-action="share">
+                        <span>🔗</span>
+                        <span>SHARE</span>
+                    </button>
+                    <% if (post.author && post.author._id.toString() === user._id.toString()) { %>
+                    <button class="action-btn delete-btn" onclick="deletePost('<%= post._id %>')" title="Delete Post">
+                        <span>🗑️</span>
+                        <span>DELETE</span>
+                    </button>
+                    <% } %>
+                </footer>
+
+                <!-- Comments Section -->
+                <div class="comments-section">
+                    <div class="comments-list">
+                        <% if (post.comments && post.comments.length > 0) { %>
+                            <% post.comments.forEach(comment => { %>
+                                <% if (comment && comment.author) { %>
+                                    <div class="comment-item" data-comment-id="<%= comment._id %>">
+                                        <img src="<%= (comment.author.avatarUrl || (comment.author.avatarSeed ? ('https://api.dicebear.com/9.x/adventurer/svg?seed=' + comment.author.avatarSeed) : '/images/default-avatar.png')) %><%= comment.author.updatedAt ? ('?v=' + new Date(comment.author.updatedAt).getTime()) : '' %>"
+                                             alt="<%= comment.author.username %>"
+                                             class="comment-author-avatar"
+                                             onerror="this.src='/images/default-avatar.png'">
+                                        <div class="comment-content">
+                                            <span class="comment-author">@<%= comment.author.username %></span>
+                                            <p><%= comment.content %></p>
+                                            <span class="comment-time"><%= new Date(comment.createdAt).toLocaleString() %></span>
+                                        </div>
+                                        <% if (comment.author._id.toString() === user._id.toString()) { %>
+                                            <button class="delete-comment-btn" data-comment-id="<%= comment._id %>" data-post-id="<%= post._id %>" title="Delete comment">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </button>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                            <% }); %>
+                        <% } else { %>
+                            <p class="no-comments">No comments yet. Be the first to comment!</p>
+                        <% } %>
                     </div>
-                </form>
-            </div>
-        </div>
+
+                    <form class="comment-form" data-post-id="<%= post._id %>">
+                        <div class="comment-input">
+                            <img src="<%= user.avatarUrl || (user.avatarSeed ? ('https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed) : '/images/default-avatar.png') %><%= user.updatedAt ? ('?v=' + new Date(user.updatedAt).getTime()) : '' %>"
+                                 alt="<%= user.username %>"
+                                 class="comment-avatar"
+                                 onerror="this.src='/images/default-avatar.png'">
+                            <input type="text"
+                                   class="comment-input"
+                                   placeholder="Add a comment..."
+                                   required>
+                            <button type="submit" class="comment-submit-btn">POST</button>
+                        </div>
+                    </form>
+                </div>
+            </article>
+        </main>
     </div>
 </div>
 
-<style>
-.single-post-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
 
-.single-post-wrapper {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    overflow: hidden;
-}
-
-.post-card {
-    padding: 20px;
-}
-
-.post-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.post-author {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.author-avatar img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.author-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.author-name {
-    font-weight: 600;
-    color: #333;
-    text-decoration: none;
-}
-
-.post-time {
-    font-size: 12px;
-    color: #8e8e8e;
-}
-
-.post-content {
-    margin-bottom: 15px;
-}
-
-.post-content p {
-    margin: 0 0 10px 0;
-    line-height: 1.5;
-}
-
-.post-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.tag {
-    background: #e3f2fd;
-    color: #1976d2;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-}
-
-.post-stats {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 15px;
-    font-size: 14px;
-    color: #8e8e8e;
-}
-
-.post-actions {
-    display: flex;
-    gap: 20px;
-    padding: 15px 0;
-    border-top: 1px solid #efefef;
-    border-bottom: 1px solid #efefef;
-}
-
-.action-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    color: #8e8e8e;
-    transition: color 0.2s;
-}
-
-.action-btn:hover {
-    color: #333;
-}
-
-.action-btn span {
-    font-size: 20px;
-}
-
-.comments-section {
-    margin-top: 20px;
-}
-
-.comment {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 15px;
-}
-
-.comment-avatar img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.comment-content {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.comment-author {
-    font-weight: 600;
-    color: #333;
-    font-size: 14px;
-}
-
-.comment-text {
-    font-size: 14px;
-    color: #333;
-}
-
-.comment-time {
-    font-size: 12px;
-    color: #8e8e8e;
-}
-
-.comment-form {
-    margin-top: 20px;
-}
-
-.comment-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    border: 1px solid #efefef;
-    border-radius: 24px;
-}
-
-.comment-input-wrapper img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.comment-input {
-    flex: 1;
-    border: none;
-    outline: none;
-    font-size: 14px;
-}
-
-.comment-submit {
-    background: #1976d2;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 16px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.no-comments {
-    text-align: center;
-    color: #8e8e8e;
-    font-style: italic;
-    margin: 20px 0;
-}
-
-/* 🔥 SNEAKY SECRET CHAT STYLES 🔥 */
-.username-hover {
-    transition: all 0.3s ease;
-    border-radius: 4px;
-    padding: 2px 4px;
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-}
-
-.username-hover:hover {
-    background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
-    transform: scale(1.02);
-}
-
-.comment {
-    border-radius: 8px;
-    padding: 8px;
-    transition: all 0.3s ease;
-}
-
-.comment:hover {
-    background: rgba(102, 126, 234, 0.05);
-}
-</style>
 
 <script src="/socket.io/socket.io.js"></script>
 

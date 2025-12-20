@@ -1,45 +1,169 @@
 <div class="notifications-page">
-  <h2>Notifications</h2>
+  <div class="notifications-header">
+    <h1>Notifications</h1>
+    <p>Stay updated with your latest activities</p>
+  </div>
 
   <% if (notifications && notifications.length) { %>
     <div class="notifications-list">
       <% notifications.forEach(n => { %>
-        <div class="notification-item" data-id="<%= n._id %>">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <strong><%= n.title %></strong>
-              <div style="color:var(--muted);font-size:13px;margin-top:4px"><%= n.message %></div>
-              <% if (n.type === 'follow_request' && n.relatedId) { %>
-                <div style="margin-top:8px">
-                  <button class="accept-btn" data-id="<%= n.relatedId %>">Accept</button>
-                  <button class="reject-btn" data-id="<%= n.relatedId %>">Reject</button>
-                </div>
+        <div class="notification-item <%= n.isRead ? 'read' : 'unread' %>" data-id="<%= n._id %>">
+          <div class="notification-content">
+            <div class="notification-icon">
+              <% if (n.type === 'follow_request') { %>
+                👤
+              <% } else if (n.type === 'like') { %>
+                ❤️
+              <% } else if (n.type === 'comment') { %>
+                💬
+              <% } else if (n.type === 'admin') { %>
+                ⚠️
+              <% } else { %>
+                🔔
               <% } %>
             </div>
-            <div style="font-size:12px;color:var(--muted)"><%= new Date(n.createdAt).toLocaleString() %></div>
+            <div class="notification-text">
+              <div class="notification-title"><%= n.title %></div>
+              <div class="notification-message"><%= n.message %></div>
+              <div class="notification-time"><%= new Date(n.createdAt).toLocaleString() %></div>
+            </div>
+          </div>
+          <div class="notification-actions">
+            <% if (n.type === 'follow_request' && n.relatedId) { %>
+              <div class="follow-actions">
+                <button class="accept-btn" data-id="<%= n.relatedId %>" data-notification-id="<%= n._id %>">Accept</button>
+                <button class="reject-btn" data-id="<%= n.relatedId %>" data-notification-id="<%= n._id %>">Reject</button>
+              </div>
+            <% } %>
+            <button class="delete-notification-btn" data-id="<%= n._id %>" title="Delete notification">🗑️</button>
           </div>
         </div>
       <% }) %>
     </div>
   <% } else { %>
-    <div class="chat-empty">No notifications</div>
+    <div class="empty-state">
+      <div class="empty-icon">🔔</div>
+      <h3>No notifications yet</h3>
+      <p>When you get notifications, they'll appear here</p>
+    </div>
   <% } %>
 
   <script>
     (function(){
+      // Handle follow request actions
       document.querySelectorAll('.accept-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed to accept');
+          const notificationId = btn.getAttribute('data-notification-id');
+          const followActions = btn.closest('.follow-actions');
+
+          try {
+            const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
+            if (res.ok) {
+              // Update button states
+              btn.textContent = 'Accepted';
+              btn.disabled = true;
+              btn.style.background = 'var(--red)';
+              btn.style.cursor = 'default';
+
+              const rejectBtn = followActions.querySelector('.reject-btn');
+              if (rejectBtn) {
+                rejectBtn.textContent = 'Rejected';
+                rejectBtn.disabled = true;
+                rejectBtn.style.opacity = '0.5';
+                rejectBtn.style.cursor = 'default';
+              }
+
+              // Mark notification as read
+              await fetch(`/notifications/api/mark-read`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: [notificationId] })
+              });
+
+              // Update notification item appearance
+              const notificationItem = btn.closest('.notification-item');
+              notificationItem.classList.remove('unread');
+              notificationItem.classList.add('read');
+            } else {
+              alert('Failed to accept request');
+            }
+          } catch (error) {
+            console.error('Error accepting request:', error);
+            alert('Failed to accept request');
+          }
         });
       });
 
       document.querySelectorAll('.reject-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed to reject');
+          const notificationId = btn.getAttribute('data-notification-id');
+          const followActions = btn.closest('.follow-actions');
+
+          try {
+            const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
+            if (res.ok) {
+              // Update button states
+              btn.textContent = 'Rejected';
+              btn.disabled = true;
+              btn.style.cursor = 'default';
+
+              const acceptBtn = followActions.querySelector('.accept-btn');
+              if (acceptBtn) {
+                acceptBtn.textContent = 'Accepted';
+                acceptBtn.disabled = true;
+                acceptBtn.style.opacity = '0.5';
+                acceptBtn.style.cursor = 'default';
+              }
+
+              // Mark notification as read
+              await fetch(`/notifications/api/mark-read`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: [notificationId] })
+              });
+
+              // Update notification item appearance
+              const notificationItem = btn.closest('.notification-item');
+              notificationItem.classList.remove('unread');
+              notificationItem.classList.add('read');
+            } else {
+              alert('Failed to reject request');
+            }
+          } catch (error) {
+            console.error('Error rejecting request:', error);
+            alert('Failed to reject request');
+          }
+        });
+      });
+
+      // Handle notification deletion
+      document.querySelectorAll('.delete-notification-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Are you sure you want to delete this notification?')) return;
+
+          const id = btn.getAttribute('data-id');
+          const notificationItem = btn.closest('.notification-item');
+
+          try {
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
+
+            const res = await fetch(`/notifications/api/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+              notificationItem.remove();
+            } else {
+              alert('Failed to delete notification');
+              btn.disabled = false;
+              btn.textContent = '🗑️';
+            }
+          } catch (error) {
+            console.error('Error deleting notification:', error);
+            alert('Failed to delete notification');
+            btn.disabled = false;
+            btn.textContent = '🗑️';
+          }
         });
       });
     })();

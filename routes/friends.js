@@ -53,4 +53,54 @@ router.get('/', async (req, res) => {
   }
 });
 
+// DELETE /friends/:friendshipId - Delete friendship (soft delete)
+router.delete('/:friendshipId', async (req, res) => {
+  try {
+    const friendship = await Friendship.findById(req.params.friendshipId);
+
+    if (!friendship || !friendship.isActive) {
+      return res.status(404).json({ success: false, message: 'Friendship not found' });
+    }
+
+    // Check if user is part of this friendship
+    if (!friendship.users.some(id => id.toString() === req.user._id.toString())) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Soft delete the friendship
+    friendship.isActive = false;
+    await friendship.save();
+
+    res.json({ success: true, message: 'Friend removed successfully' });
+  } catch (error) {
+    console.error('Delete friendship error:', error);
+    res.status(500).json({ success: false, message: 'Failed to remove friend' });
+  }
+});
+
+// DELETE /friends/:friendshipId - Delete friendship (soft delete)
+router.delete('/:friendshipId', async (req, res) => {
+  try {
+    const friendship = await Friendship.findById(req.params.friendshipId);
+
+    if (!friendship || !friendship.isActive) {
+      return res.status(404).json({ success: false, message: 'Friendship not found' });
+    }
+
+    // Check if user is part of this friendship
+    if (!friendship.users.some(id => id.toString() === req.user._id.toString())) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Soft delete the friendship
+    friendship.isActive = false;
+    await friendship.save();
+
+    res.json({ success: true, message: 'Friend removed successfully' });
+  } catch (error) {
+    console.error('Delete friendship error:', error);
+    res.status(500).json({ success: false, message: 'Failed to remove friend' });
+  }
+});
+
 module.exports = router;

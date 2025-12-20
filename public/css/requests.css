@@ -1,0 +1,239 @@
+/* ========================================
+   REQUESTS PAGE STYLES
+   ======================================== */
+
+.requests-page {
+    background: var(--black) !important;
+    color: var(--white);
+    min-height: 100vh;
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    margin-top: 100px; /* Account for fixed navbar */
+    padding-top: 40px; /* Additional top padding */
+}
+
+.requests-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 20px 0;
+}
+
+.requests-header h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--white);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.requests-header p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+    margin: 0;
+}
+
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.request-item {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.request-item:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.request-item.sent {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.request-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.request-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.request-text {
+    flex: 1;
+}
+
+.request-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--white);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.request-message {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.request-time {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.request-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    gap: 12px;
+}
+
+.request-status {
+    margin-top: 16px;
+}
+
+.status-pending {
+    background: rgba(255, 165, 0, 0.1);
+    color: #ffa500;
+    border: 1px solid rgba(255, 165, 0, 0.3);
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sent-requests-section {
+    margin-top: 48px;
+}
+
+.sent-requests-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* ========================================
+   REQUESTS LIGHT THEME OVERRIDE
+   ======================================== */
+
+body.light-theme .requests-page {
+    background: #FAFAFA !important;
+    color: var(--black);
+}
+
+body.light-theme .requests-header h1 {
+    color: var(--black);
+}
+
+body.light-theme .requests-header p {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+body.light-theme .request-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .request-item:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+body.light-theme .request-item.sent {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .request-title {
+    color: var(--black);
+}
+
+body.light-theme .request-message {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+body.light-theme .request-time {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+body.light-theme .sent-requests-section h2 {
+    color: var(--black);
+}
+
+body.light-theme .status-pending {
+    background: rgba(255, 165, 0, 0.1);
+    color: #cc8400;
+    border-color: rgba(255, 165, 0, 0.3);
+}
+
+/* ========================================
+   REQUESTS RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+    .requests-page {
+        padding: 16px;
+        margin-top: 120px; /* Slightly more space on mobile for navbar */
+        padding-top: 20px;
+    }
+
+    .requests-header h1 {
+        font-size: 28px;
+    }
+
+    .request-item {
+        padding: 16px;
+    }
+
+    .request-content {
+        gap: 12px;
+    }
+
+    .request-icon {
+        font-size: 20px;
+    }
+
+    .request-title {
+        font-size: 15px;
+    }
+
+    .request-message {
+        font-size: 13px;
+    }
+
+    .request-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .sent-requests-section h2 {
+        font-size: 20px;
+    }
+}

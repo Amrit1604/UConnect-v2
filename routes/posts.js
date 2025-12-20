@@ -548,8 +548,10 @@ router.get('/:id', requireAuth, async (req, res) => {
       }
     });
 
-    res.render('posts/single', {
+    res.render('layout', {
       title: 'Post Details',
+      bodyTemplate: 'posts/single',
+      additionalCSS: ['/css/feed-neo.css', '/css/posts.css'],
       post,
       user: req.user
     });

@@ -800,8 +800,218 @@ img, video { max-width: 100%; height: auto; }
     cursor: not-allowed;
 }
 
+/* Single Post Page Styles */
+.posts-page {
+    background: var(--black) !important;
+    color: var(--white);
+    min-height: 100vh;
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    margin-top: 100px; /* Account for fixed navbar */
+    padding-top: 40px; /* Additional top padding */
+}
+
+.feed-container {
+    background: var(--black) !important;
+}
+
+.post-author-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.post-author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-light);
+}
+
+.post-author-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin: 0;
+}
+
+.post-category {
+    background: var(--info-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.post-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.post-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+}
+
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.post-tag {
+    background: var(--border-light);
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.action-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-left: 6px;
+}
+
+.comments-list {
+    margin-bottom: 16px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.comment-author-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.comment-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.comment-time {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.no-comments {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 32px 0;
+}
+
+.comment-form {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+.comment-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 8px 16px;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.comment-input input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.comment-input input::placeholder {
+    color: var(--text-muted);
+}
+
+.comment-submit-btn {
+    background: var(--info-color);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.comment-submit-btn:hover {
+    background: var(--info-color);
+}
+
+.delete-comment-btn {
+    background: none;
+    border: none;
+    color: var(--error-color);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.delete-comment-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
+}
+
 /* Mobile Comment Styles */
 @media (max-width: 768px) {
+    .posts-page {
+        padding: 16px;
+        margin-top: 120px; /* Slightly more space on mobile for navbar */
+        padding-top: 20px;
+    }
+
     .comments-section {
         margin: 0 -16px;
     }
@@ -830,4 +1040,14 @@ img, video { max-width: 100%; height: auto; }
         padding: 8px 12px;
         font-size: 13px;
     }
+}
+
+/* Light Theme Override */
+body.light-theme .posts-page {
+    background: #FAFAFA !important;
+    color: var(--black);
+}
+
+body.light-theme .feed-container {
+    background: #FAFAFA !important;
 }

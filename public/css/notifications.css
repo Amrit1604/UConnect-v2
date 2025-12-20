@@ -1,0 +1,351 @@
+/* ========================================
+   NOTIFICATIONS PAGE STYLES
+   ======================================== */
+
+.notifications-page {
+    background: var(--black) !important;
+    color: var(--white);
+    min-height: 100vh;
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    margin-top: 100px; /* Account for fixed navbar */
+    padding-top: 40px; /* Additional top padding */
+}
+
+.notifications-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 20px 0;
+}
+
+.notifications-header h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--white);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.notifications-header p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+    margin: 0;
+}
+
+/* ========================================
+   NOTIFICATIONS LIST
+   ======================================== */
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.notification-item {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.notification-item:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.notification-item.unread {
+    border-left: 4px solid var(--red);
+    background: rgba(255, 0, 0, 0.05);
+}
+
+.notification-item.unread::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.notification-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.notification-text {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--white);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.notification-message {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.notification-time {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.notification-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    gap: 12px;
+}
+
+.follow-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.accept-btn,
+.reject-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--white);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.accept-btn:hover {
+    background: var(--red);
+    border-color: var(--red);
+    transform: translateY(-2px);
+}
+
+.reject-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.delete-notification-btn {
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid rgba(255, 0, 0, 0.3);
+    color: #ff6b6b;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: auto;
+}
+
+.delete-notification-btn:hover {
+    background: #ff6b6b;
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    margin-top: 32px;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 24px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: var(--white);
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.empty-state p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+    .notifications-page {
+        padding: 16px;
+        margin-top: 120px; /* Slightly more space on mobile for navbar */
+        padding-top: 20px;
+    }
+
+    .notifications-header h1 {
+        font-size: 28px;
+    }
+
+    .notification-item {
+        padding: 16px;
+    }
+
+    .notification-content {
+        gap: 12px;
+    }
+
+    .notification-icon {
+        font-size: 20px;
+    }
+
+    .notification-title {
+        font-size: 15px;
+    }
+
+    .notification-message {
+        font-size: 13px;
+    }
+
+    .notification-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .follow-actions {
+        order: 2;
+    }
+
+    .delete-notification-btn {
+        order: 1;
+        margin-left: 0;
+    }
+}
+
+/* ========================================
+   LIGHT THEME OVERRIDE
+   ======================================== */
+
+body.light-theme .notifications-page {
+    background: #FAFAFA !important;
+    color: var(--black);
+}
+
+body.light-theme .notifications-header h1 {
+    color: var(--black);
+}
+
+body.light-theme .notifications-header p {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+body.light-theme .notification-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .notification-item:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+body.light-theme .notification-item.unread {
+    border-left-color: var(--red);
+    background: rgba(255, 0, 0, 0.05);
+}
+
+body.light-theme .notification-title {
+    color: var(--black);
+}
+
+body.light-theme .notification-message {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+body.light-theme .notification-time {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+body.light-theme .accept-btn,
+body.light-theme .reject-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--black);
+}
+
+body.light-theme .accept-btn:hover {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+}
+
+body.light-theme .reject-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+body.light-theme .delete-notification-btn {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: rgba(255, 0, 0, 0.3);
+    color: #ff6b6b;
+}
+
+body.light-theme .empty-state {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .empty-state h3 {
+    color: var(--black);
+}
+
+body.light-theme .empty-state p {
+    color: rgba(0, 0, 0, 0.6);
+}

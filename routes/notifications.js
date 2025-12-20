@@ -42,6 +42,19 @@ router.post('/api/mark-read', async (req, res) => {
   }
 });
 
+// DELETE /notifications/api/:id - delete a notification
+router.delete('/api/:id', async (req, res) => {
+  try {
+    const notification = await Notification.findOne({ _id: req.params.id, recipient: req.user._id });
+    if (!notification) return res.status(404).json({ success: false, message: 'Notification not found' });
+    await Notification.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete notification error', err);
+    res.status(500).json({ success: false });
+  }
+});
+
 // GET /notifications - render user's notifications (must be AFTER API routes)
 router.get('/', async (req, res) => {
   try {
@@ -50,6 +63,7 @@ router.get('/', async (req, res) => {
     res.render('layout', {
       title: 'Notifications',
       bodyTemplate: 'notifications/notifications-body',
+      additionalCSS: ['/css/feed-neo.css', '/css/posts-neo.css', '/css/notifications.css'],
       additionalJS: ['/js/notifications.js'],
       notifications,
       user: req.user

@@ -1,148 +1,98 @@
-<link rel="stylesheet" href="/css/chat-neo.css">
-<div class="chat-requests neo-requests">
-  <h2>Follow Requests</h2>
+<div class="requests-page">
+  <div class="requests-header">
+    <h1>Friend Requests</h1>
+    <p>Manage your incoming friend requests</p>
+  </div>
 
-  <section class="received">
-    <h3>Received</h3>
-    <div id="receivedRequests">
-      <% if (receivedRequests && receivedRequests.length>0) { %>
-        <% receivedRequests.forEach(r => { %>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <div class="request-meta">
-              <strong>@<%= r.sender.username %></strong>
-              <p><%= r.message %></p>
-            </div>
-            <div class="request-actions">
-              <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
-              <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
+  <% if (receivedRequests && receivedRequests.length > 0) { %>
+    <div class="requests-list">
+      <% receivedRequests.forEach(r => { %>
+        <% if (!r.sender) return; %>
+        <div class="request-item">
+          <div class="request-content">
+            <div class="request-icon">👤</div>
+            <div class="request-text">
+              <div class="request-title">@<%= r.sender.username %> sent you a friend request</div>
+              <div class="request-message"><%= r.message || 'No message provided' %></div>
+              <div class="request-time"><%= new Date(r.createdAt).toLocaleString() %></div>
             </div>
           </div>
-        <% }) %>
-      <% } else { %>
-        <div class="chat-empty">No received requests</div>
-      <% } %>
+          <div class="request-actions">
+            <div class="follow-actions">
+              <button class="accept-btn" data-id="<%= r._id %>">Accept</button>
+              <button class="reject-btn" data-id="<%= r._id %>">Reject</button>
+            </div>
+          </div>
+        </div>
+      <% }) %>
     </div>
-  </section>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon">👥</div>
+      <h3>No friend requests</h3>
+      <p>When someone sends you a friend request, it'll appear here</p>
+    </div>
+  <% } %>
 
-  <section class="sent" style="margin-top:18px">
-    <h3>Sent</h3>
-    <div id="sentRequests">
-      <% if (sentRequests && sentRequests.length>0) { %>
+  <% if (sentRequests && sentRequests.length > 0) { %>
+    <div class="sent-requests-section">
+      <h2>Sent Requests</h2>
+      <div class="requests-list">
         <% sentRequests.forEach(r => { %>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <div>To: <strong>@<%= r.receiver.username %></strong> - <%= r.message %></div>
-          </div>
-        <% }) %>
-      <% } else { %>
-        <div class="chat-empty">No sent requests</div>
-      <% } %>
-    </div>
-  </section>
-
-  <script>window.__USER_ID__ = '<%= user ? user._id : '' %>';</script>
-  <script>
-    (function(){
-      document.querySelectorAll('.neo-accept-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed');
-        });
-      });
-
-      document.querySelectorAll('.neo-reject-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed');
-        });
-      });
-    })();
-  </script>
-</div>
-<div class="chat-requests">
-  <h2>Follow Requests</h2>
-
-  <div>
-    <h3>Received</h3>
-    <% if (receivedRequests && receivedRequests.length) { %>
-      <% receivedRequests.forEach(r => { %>
-        <div class="request-item" data-id="<%= r._id %>">
-          <div><strong><%= r.sender.username %></strong> - <%= r.message %></div>
-          <div style="margin-top:8px"><button class="accept-btn" data-id="<%= r._id %>">Accept</button><button class="reject-btn" data-id="<%= r._id %>">Reject</button><button class="block-btn" data-id="<%= r._id %>">Block</button></div>
-        </div>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <div><strong>@<%= r.sender.username %></strong> - <%= r.message %></div>
-            <div style="margin-top:8px">
-              <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
-              <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
-              <button class="block-btn" data-id="<%= r._id %>">Block</button>
+          <% if (!r.receiver) return; %>
+          <div class="request-item sent">
+            <div class="request-content">
+              <div class="request-icon">📤</div>
+              <div class="request-text">
+                <div class="request-title">Request sent to @<%= r.receiver.username %></div>
+                <div class="request-message"><%= r.message || 'No message provided' %></div>
+                <div class="request-time"><%= new Date(r.createdAt).toLocaleString() %></div>
+              </div>
+            </div>
+            <div class="request-status">
+              <span class="status-pending">Pending</span>
             </div>
           </div>
-      <% }) %>
-    <% } else { %>
-      <div class="chat-empty">No received requests</div>
-    <% } %>
-  </div>
-
-  <div style="margin-top:16px">
-    <h3>Sent</h3>
-    <% if (sentRequests && sentRequests.length) { %>
-      <% sentRequests.forEach(r => { %>
-        <div class="request-item" data-id="<%= r._id %>">
-          <div>To: <strong><%= r.receiver.username %></strong> - <%= r.message %></div>
-        </div>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <div>To: <strong>@<%= r.receiver.username %></strong> - <%= r.message %></div>
-          </div>
-      <% }) %>
-    <% } else { %>
-      <div class="chat-empty">No sent requests</div>
-    <% } %>
-  </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
 </div>
 
-<script>window.__USER_ID__ = '<%= user._id %>';</script>
-<div class="chat-requests">
-  <h2>Follow Requests</h2>
-  <div id="receivedRequests">
-    <% if (receivedRequests && receivedRequests.length>0) { %>
-      <% receivedRequests.forEach(r => { %>
-        <div class="request-item" data-id="<%= r._id %>">
-          <strong>@<%= r.sender.username %></strong>
-          <p><%= r.message %></p>
-          <button class="accept-btn" data-id="<%= r._id %>">Accept</button>
-          <button class="reject-btn" data-id="<%= r._id %>">Reject</button>
-          </div>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <strong>@<%= r.sender.username %></strong>
-            <p><%= r.message %></p>
-            <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
-            <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <div>No requests.</div>
-    <% } %>
-  </div>
+<script>
+  window.__USER_ID__ = '<%= user ? user._id : '' %>';
 
-  <script>
-    (function(){
-      document.querySelectorAll('.accept-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
+  (function(){
+    document.querySelectorAll('.accept-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        try {
           const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed');
-        });
+          if (res.ok) {
+            location.reload();
+          } else {
+            alert('Failed to accept request');
+          }
+        } catch (error) {
+          alert('Error accepting request');
+        }
       });
+    });
 
-      document.querySelectorAll('.reject-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
+    document.querySelectorAll('.reject-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        try {
           const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed');
-        });
+          if (res.ok) {
+            location.reload();
+          } else {
+            alert('Failed to reject request');
+          }
+        } catch (error) {
+          alert('Error rejecting request');
+        }
       });
-    })();
-  </script>
-</div>
+    });
+  })();
+</script>
