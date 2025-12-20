@@ -153,7 +153,7 @@ class EmailService {
         console.log('📤 Trying to send email via Resend...');
 
         const resendResult = await this.resend.emails.send({
-          from: `${process.env.EMAIL_FROM_NAME || 'UConnect Campus'} <noreply@resend.dev>`,
+          from: 'UConnect Campus <noreply@resend.dev>',
           to: [to],
           subject: '🎓 Verify Your UConnect Account - Welcome to Campus!',
           html: htmlContent,
@@ -165,13 +165,20 @@ class EmailService {
           }
         });
 
+        // Check if Resend returned an error
+        if (resendResult.error) {
+          console.error('❌ Resend API Error:', resendResult.error.message);
+          throw new Error(`Resend failed: ${resendResult.error.message}`);
+        }
+
         console.log(`✅ Verification email sent successfully to ${to} via Resend! 🎉`);
-        console.log(`📧 Message ID: ${resendResult.data?.id}`);
+        console.log(`📧 Message ID: ${resendResult.data?.id || resendResult.id}`);
+
         return {
           success: true,
-          messageId: resendResult.data?.id,
+          messageId: resendResult.data?.id || resendResult.id,
           provider: 'resend',
-          response: resendResult.data
+          response: resendResult
         };
 
       } catch (resendError) {
