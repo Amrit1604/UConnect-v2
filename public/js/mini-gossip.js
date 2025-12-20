@@ -65,10 +65,10 @@ function setupMiniGossipHandlers() {
   if (miniGossipInput) {
     miniGossipInput.addEventListener('input', function() {
       const count = this.value.length;
-      miniCharCount.textContent = `${count}/300`;
+      miniCharCount.textContent = `${count}/300 (min 5)`;
 
       if (miniPostGossipBtn) {
-        miniPostGossipBtn.disabled = count === 0 || count > 300;
+        miniPostGossipBtn.disabled = count < 5 || count > 300;
       }
     });
   }
@@ -78,6 +78,10 @@ function setupMiniGossipHandlers() {
       const content = miniGossipInput.value.trim();
 
       if (!content) return;
+      if (content.length < 5) {
+        alert('Gossip must be at least 5 characters');
+        return;
+      }
       if (content.length > 300) {
         alert('Gossip is too long (max 300 characters)');
         return;
@@ -101,7 +105,7 @@ function setupMiniGossipHandlers() {
         miniGossipFeed.insertBefore(newItem, miniGossipFeed.firstChild);
 
         miniGossipInput.value = '';
-        miniCharCount.textContent = '0/300';
+        miniCharCount.textContent = '0/300 (min 5)';
 
         console.log('✅ Mini gossip posted!');
       } catch (error) {

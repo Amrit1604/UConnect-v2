@@ -67,7 +67,7 @@ function setupInputHandlers() {
   if (gossipInput) {
     gossipInput.addEventListener('input', function() {
       const count = this.value.length;
-      charCount.textContent = count;
+      charCount.textContent = `${count}/1000 (min 5)`;
 
       if (count > 900) {
         charCount.parentElement.classList.add('warning');
@@ -75,7 +75,7 @@ function setupInputHandlers() {
         charCount.parentElement.classList.remove('warning');
       }
 
-      postGossipBtn.disabled = count === 0 || count > 1000;
+      postGossipBtn.disabled = count < 5 || count > 1000;
     });
   }
 
