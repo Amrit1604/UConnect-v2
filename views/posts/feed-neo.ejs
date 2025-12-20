@@ -255,7 +255,7 @@
                                     <div class="quick-comments-list">
                                         <% post.comments.slice(0, 2).forEach(comment => { %>
                                             <% if (comment && comment.author) { %>
-                                                <div class="quick-comment-item">
+                                                <div class="quick-comment-item" data-comment-id="<%= comment._id %>">
                                                     <a href="/users/<%= comment.author.username %>" class="author-link-neo" data-username="<%= comment.author.username %>" title="View @<%= comment.author.username %>" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
                                                       <img src="<%= (comment.author.avatarUrl || (comment.author.avatarSeed ? ('https://api.dicebear.com/9.x/adventurer/svg?seed=' + comment.author.avatarSeed) : '/images/default-avatar.png')) %><%= comment.author.updatedAt ? ('?v=' + new Date(comment.author.updatedAt).getTime()) : '' %>"
                                                            alt="<%= comment.author.username %>"
@@ -265,6 +265,13 @@
                                                         <a href="/users/<%= comment.author.username %>" class="author-link-neo" data-username="<%= comment.author.username %>" style="font-weight:600;color:inherit;text-decoration:none;">@<%= comment.author.username %></a>
                                                         <p><%= comment.content %></p>
                                                     </div>
+                                                    <% if (comment.author._id.toString() === user._id.toString()) { %>
+                                                        <button class="delete-comment-btn" data-comment-id="<%= comment._id %>" data-post-id="<%= post._id %>" title="Delete comment">
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                            </svg>
+                                                        </button>
+                                                    <% } %>
                                                 </div>
                                             <% } %>
                                         <% }); %>

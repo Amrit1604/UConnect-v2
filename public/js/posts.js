@@ -174,7 +174,7 @@
 					textarea.value = '';
 
 					// Update comment count in the action button
-					const commentCountSpan = postEl.querySelector('.comment-btn span');
+					const commentCountSpan = postEl.querySelector('.comment-btn .action-count');
 					console.log('Comment count span found:', !!commentCountSpan);
 					if (commentCountSpan) {
 						const currentCount = parseInt(commentCountSpan.textContent) || 0;
@@ -254,6 +254,69 @@
 		}
 	}
 
+	// Delete comment
+	async function deleteComment(postId, commentId) {
+		console.log('Delete comment clicked with postId:', postId, 'commentId:', commentId);
+
+		try {
+			const response = await fetch(`/posts/${postId}/comments/${commentId}`, {
+				method: 'DELETE',
+				credentials: 'same-origin',
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
+					'Content-Type': 'application/json',
+					'Accept': 'application/json'
+				}
+			});
+
+			console.log('Delete comment response status:', response.status);
+			console.log('Delete comment response headers:', response.headers);
+
+			if (!response.ok) {
+				let errorMessage = `Request failed: ${response.status} ${response.statusText}`;
+				try {
+					const errorData = await response.json();
+					console.log('Error response data:', errorData);
+					errorMessage = errorData.message || errorMessage;
+				} catch (e) {
+					try {
+						const errorText = await response.text();
+						console.log('Error response text:', errorText);
+						if (errorText) errorMessage = errorText;
+					} catch (e2) {}
+				}
+				throw new Error(errorMessage);
+			}
+
+			const data = await response.json();
+			console.log('Delete comment success data:', data);
+
+			// Remove the comment from the DOM
+			const commentEl = document.querySelector(`[data-comment-id="${commentId}"]`);
+			if (commentEl) {
+				commentEl.remove();
+				showToast('Comment deleted successfully');
+
+				// Update comment count
+				const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+				if (postEl) {
+					const commentCountSpan = postEl.querySelector('.comment-btn .action-count');
+					if (commentCountSpan) {
+						const currentCount = parseInt(commentCountSpan.textContent) || 0;
+						if (currentCount > 0) {
+							commentCountSpan.textContent = currentCount - 1;
+						}
+					}
+				}
+			}
+
+			console.log('Comment deleted successfully:', commentId);
+		} catch (err) {
+			console.error('Delete comment error:', err);
+			alert(`Failed to delete comment: ${err.message}`);
+		}
+	}
+
 	function showToast(text) {
 		const t = document.createElement('div');
 		t.className = 'uconnect-toast';
@@ -308,6 +371,18 @@
 			if (deleteBtn) {
 				const postEl = deleteBtn.closest('[data-post-id]');
 				if (postEl) deletePost(postEl.dataset.postId);
+				return;
+			}
+
+			const deleteCommentBtn = e.target.closest('.delete-comment-btn');
+			if (deleteCommentBtn) {
+				const commentId = deleteCommentBtn.dataset.commentId;
+				const postId = deleteCommentBtn.dataset.postId;
+				if (commentId && postId) {
+					if (confirm('Are you sure you want to delete this comment?')) {
+						deleteComment(postId, commentId);
+					}
+				}
 				return;
 			}
 		});

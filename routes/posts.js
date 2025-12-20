@@ -376,6 +376,92 @@ router.post('/create', requireAuth, uploadPostMedia, postValidation, logActivity
   }
 });
 
+// DELETE /posts/:id/comments/:commentId - Delete a comment
+router.delete('/:id/comments/:commentId',
+  requireAuth,
+  logActivity('delete comment'),
+  async (req, res) => {
+    try {
+      const post = await Post.findById(req.params.id);
+
+      if (!post || !post.isActive) {
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(404).json({ success: false, message: 'Post not found' });
+        }
+        req.flash('error', 'Post not found');
+        return res.redirect('/posts');
+      }
+
+      // Check campus access
+      if (post.campus !== req.user.campus) {
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(403).json({ success: false, message: 'Access denied' });
+        }
+        req.flash('error', 'Access denied');
+        return res.redirect('/posts');
+      }
+
+      // Find the comment
+      const commentIndex = post.comments.findIndex(comment =>
+        comment._id.toString() === req.params.commentId
+      );
+
+      if (commentIndex === -1) {
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(404).json({ success: false, message: 'Comment not found' });
+        }
+        req.flash('error', 'Comment not found');
+        return res.redirect('back');
+      }
+
+      const comment = post.comments[commentIndex];
+
+      // Check if user owns the comment
+      if (comment.author.toString() !== req.user._id.toString()) {
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+          return res.status(403).json({ success: false, message: 'Not authorized to delete this comment' });
+        }
+        req.flash('error', 'Not authorized to delete this comment');
+        return res.redirect('back');
+      }
+
+      // Remove the comment
+      post.comments.splice(commentIndex, 1);
+      await post.save();
+
+      // Update user stats
+      await User.findByIdAndUpdate(req.user._id, {
+        $inc: { 'stats.commentsCount': -1 }
+      });
+
+      // Real-time broadcast for comment deletion
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('comment-deleted', {
+          postId: post._id.toString(),
+          commentId: req.params.commentId
+        });
+        console.log(`⚡ Real-time broadcast: Comment deleted by ${req.user.username}`);
+      }
+
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.json({ success: true, message: 'Comment deleted successfully' });
+      }
+
+      req.flash('success', 'Comment deleted successfully!');
+      res.redirect('back');
+
+    } catch (error) {
+      console.error('Comment deletion error:', error);
+      if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(500).json({ success: false, message: 'Failed to delete comment' });
+      }
+      req.flash('error', 'Failed to delete comment');
+      res.redirect('back');
+    }
+  }
+);
+
 // DELETE /posts/:id - Delete post
 router.delete('/:id',
   requireAuth,

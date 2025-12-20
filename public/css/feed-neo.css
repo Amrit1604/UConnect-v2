@@ -818,6 +818,31 @@
     line-height: 1.5;
 }
 
+/* Delete comment button styling */
+.delete-comment-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-comment-btn:hover {
+    opacity: 1;
+    background: rgba(220, 38, 38, 0.1);
+    transform: scale(1.1);
+}
+
+.delete-comment-btn svg {
+    display: block;
+}
+
 .view-all-comments {
     color: var(--red);
     font-size: 13px;

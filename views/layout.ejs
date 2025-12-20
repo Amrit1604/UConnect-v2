@@ -290,6 +290,9 @@
 
     <!-- Global Socket.IO realtime handlers -->
     <script>
+      // Set current user ID for real-time comment filtering
+      window.currentUserId = '<%= user ? user._id : "" %>';
+
       (function(){
         if (!(window.io)) return; // socket.io not present on some pages
         const socket = io();
@@ -325,13 +328,20 @@
           try {
             const card = document.querySelector(`[data-post-id="${data.postId}"]`);
             if (!card) return;
-            // Update comment count on the action bar
+
+            // Always update comment count on the action bar (for all users including current user)
             const countSpan = card.querySelector('.comment-btn .action-count, .comment-btn span');
             if (countSpan) {
               const n = parseInt(countSpan.textContent || '0', 10) || 0;
               countSpan.textContent = n + 1;
             }
-            // Append to quick comments list if present
+
+            // Skip visual addition if this is our own comment (already added locally)
+            if (data.comment && data.comment.author && data.comment.author._id === window.currentUserId) {
+              return;
+            }
+
+            // Append to quick comments list if present (only for other users' comments)
             const list = card.querySelector('.quick-comments-list');
             if (list && data.comment) {
               const c = data.comment;
