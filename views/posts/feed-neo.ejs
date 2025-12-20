@@ -305,6 +305,28 @@
             <!-- Close Button for Mobile -->
             <button class="close-panel-btn" id="closePanelBtn">✕</button>
 
+            <!-- Mobile Profile Quick Access -->
+            <div class="mobile-profile-section">
+                <a href="/users/profile" class="mobile-profile-link">
+                    <% 
+                    let mobileAvatarUrl = '/images/default-avatar.png';
+                    if (user.avatarType === 'upload' && user.avatar) {
+                        mobileAvatarUrl = '/uploads/avatars/' + user.avatar;
+                    } else if (user.avatarUrl) {
+                        mobileAvatarUrl = user.avatarUrl;
+                    } else if (user.avatarSeed) {
+                        mobileAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed;
+                    }
+                    %>
+                    <img src="<%= mobileAvatarUrl %>" alt="<%= user.name %>" class="mobile-profile-avatar" onerror="this.src='/images/default-avatar.png'">
+                    <div class="mobile-profile-info">
+                        <h4 class="mobile-profile-name"><%= user.name %></h4>
+                        <p class="mobile-profile-username">@<%= user.username %></p>
+                    </div>
+                </a>
+                <a href="/posts/create" class="mobile-create-post-btn">✨ CREATE POST</a>
+            </div>
+
             <!-- Trending Tags -->
             <div class="trending-card-neo">
                 <h3 class="card-title-neo">🔥 TRENDING</h3>
@@ -657,6 +679,29 @@ document.addEventListener('DOMContentLoaded', function() {
     tooltip.addEventListener('mouseleave', hideCardSoon);
   });
 </script>
+
+<!-- Mobile Bottom Navigation (Apple Style) -->
+<nav class="mobile-bottom-nav">
+    <a href="/posts" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/posts' ? 'active' : '' %>">
+        <span class="mobile-nav-icon">🏠</span>
+        <span>Home</span>
+    </a>
+    <a href="/users/campus" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/users/campus' ? 'active' : '' %>">
+        <span class="mobile-nav-icon">👥</span>
+        <span>Campus</span>
+    </a>
+    <a href="/posts/create" class="mobile-nav-create-btn" aria-label="Create Post">
+        <span>+</span>
+    </a>
+    <a href="/gossip" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/gossip' ? 'active' : '' %>">
+        <span class="mobile-nav-icon">🗣️</span>
+        <span>Gossip</span>
+    </a>
+    <a href="/users/profile" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/users/profile' ? 'active' : '' %>">
+        <span class="mobile-nav-icon">👤</span>
+        <span>Profile</span>
+    </a>
+</nav>
 
 <footer class="footer-neo">
     <div class="footer-container-neo">

@@ -16,6 +16,11 @@
     overflow-x: hidden;
 }
 
+/* Mobile Bottom Nav (Hidden by default) */
+.mobile-bottom-nav {
+    display: none;
+}
+
 /* Parallax Background Layers (Same as index2.ejs) */
 .parallax-bg {
     position: fixed;
@@ -479,6 +484,11 @@
     cursor: pointer;
     transition: all 0.3s ease;
     margin-left: auto;
+}
+
+/* Hide mobile profile section on desktop */
+.mobile-profile-section {
+    display: none;
 }
 
 .quick-links-toggle-btn:hover {
@@ -1114,6 +1124,10 @@ body.light-theme .load-more-btn-neo {
         display: flex !important;
         align-items: center;
         gap: 8px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+        border: none;
+        background: linear-gradient(135deg, #FF0000, #D00000);
     }
 
     /* Right sidebar must be displayable on mobile */
@@ -1124,17 +1138,179 @@ body.light-theme .load-more-btn-neo {
         right: -100%;
         width: 85%;
         max-width: 320px;
-        height: 100vh;
+        height: 100dvh; /* Dynamic viewport height for mobile */
         background: #000000;
         z-index: 999;
         overflow-y: auto;
-        padding: 80px 24px 24px;
+        overflow-x: hidden;
+        padding: 70px 16px 100px; /* Extra bottom padding for bottom nav */
         transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+        overscroll-behavior: contain;
     }
 
     .feed-sidebar-right.open {
         right: 0;
+    }
+
+    /* Mobile Bottom Navigation (Apple Style) */
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 85px;
+        background: rgba(10, 10, 10, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        text-decoration: none;
+        font-size: 10px;
+        font-weight: 600;
+        gap: 4px;
+        width: 20%;
+        height: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .mobile-nav-item.active {
+        color: #FF0000;
+    }
+
+    .mobile-nav-item.active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40%;
+        height: 3px;
+        background: #FF0000;
+        border-radius: 0 0 4px 4px;
+        box-shadow: 0 2px 8px rgba(255, 0, 0, 0.6);
+    }
+
+    .mobile-nav-icon {
+        font-size: 24px;
+        margin-bottom: 2px;
+    }
+
+    .mobile-nav-create-btn {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #FF0000, #CC0000);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        box-shadow: 0 8px 20px rgba(255, 0, 0, 0.4);
+        transform: translateY(-20px);
+        border: 4px solid #000;
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .mobile-nav-create-btn:active {
+        transform: translateY(-15px) scale(0.95);
+    }
+
+    /* Adjust body padding for mobile nav */
+    body {
+        padding-bottom: 90px;
+    }
+
+    /* Mobile Profile Section in Sidebar */
+    .mobile-profile-section {
+        display: block;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 3px solid #FF0000;
+    }
+
+    .mobile-profile-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        text-decoration: none;
+        color: #FFFFFF;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-profile-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .mobile-profile-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid #FF0000;
+        object-fit: cover;
+    }
+
+    .mobile-profile-info {
+        flex: 1;
+        text-align: left;
+    }
+
+    .mobile-profile-name {
+        display: block;
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 2px;
+        color: #FFFFFF;
+    }
+
+    .mobile-profile-username {
+        display: block;
+        font-size: 12px;
+        color: #999;
+    }
+
+    .mobile-create-post-btn {
+        display: block;
+        width: 100%;
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #FF0000, #D00000);
+        color: #FFFFFF;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(255, 0, 0, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .mobile-create-post-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 12px 24px rgba(255, 0, 0, 0.4);
     }
 
     .profile-card-neo {
@@ -1171,6 +1347,107 @@ body.light-theme .load-more-btn-neo {
 
     .post-title-neo {
         font-size: 18px;
+    }
+
+    /* ========================================
+       iOS PREMIUM FEEL OVERRIDES (Mobile Only)
+       ======================================== */
+    
+    /* Global Typography */
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Glassy Post Cards */
+    .post-card-neo {
+        background: rgba(28, 28, 30, 0.65);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    /* Soft Buttons */
+    .action-btn-neo {
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    
+    .action-btn-neo:active {
+        transform: scale(0.96);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Pill Categories */
+    .category-chip-neo {
+        border-radius: 100px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .category-chip-neo.active {
+        background: #FF0000;
+        border-color: #FF0000;
+        box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+    }
+
+    /* Smooth Inputs */
+    .quick-comment-input {
+        border-radius: 20px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding-left: 16px;
+    }
+
+    /* Profile Card Glass */
+    .profile-card-neo {
+        background: rgba(28, 28, 30, 0.65);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Navbar Glass */
+    .navbar-neo {
+        background: rgba(0, 0, 0, 0.7) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Sidebar Handle for Sheet Feel */
+    .feed-sidebar-right::before {
+        content: '';
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        z-index: 1001;
+    }
+
+    /* iOS Style Load More Button */
+    .load-more-btn-neo {
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: none;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 14px 24px;
+        width: 100%;
+        margin-top: 16px;
     }
 }
 

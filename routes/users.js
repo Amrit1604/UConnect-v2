@@ -946,8 +946,10 @@ router.get('/campus', async (req, res) => {
       isActive: true
     });
 
-    res.render('users/campus', {
+    res.render('layout', {
       title: `${req.user.campus} Campus Users`,
+      bodyTemplate: 'users/campus-body',
+      additionalCSS: ['/css/feed-neo.css', '/css/profile-neo.css'],
       users,
       currentPage: page,
       totalPages: Math.ceil(totalUsers / limit),

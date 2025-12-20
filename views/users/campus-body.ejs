@@ -1,0 +1,118 @@
+<div class="posts-page">
+    <!-- Background Effects -->
+    <div class="parallax-bg">
+        <div class="parallax-layer layer-1"></div>
+        <div class="parallax-layer layer-2"></div>
+        <div class="blob-container">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+    </div>
+
+    <div class="feed-container-neo">
+        <div class="feed-layout-neo">
+            <!-- Main Content -->
+            <main class="feed-main-neo" style="width: 100%; max-width: 1000px; margin: 0 auto;">
+                
+                <!-- Header -->
+                <div class="profile-card-neo" style="margin-bottom: 30px; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 class="card-title-neo" style="font-size: 2rem; margin-bottom: 5px;">👥 CAMPUS USERS</h1>
+                        <p class="profile-username-neo"><%= totalUsers %> students in <%= user.campus %></p>
+                    </div>
+                    <div class="categories-bar-neo" style="background: transparent; border: none; padding: 0;">
+                        <a href="/users/explore" class="category-chip-neo">Explore All</a>
+                    </div>
+                </div>
+
+                <!-- Users Grid -->
+                <div class="users-grid-neo" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                    <% if (users && users.length > 0) { %>
+                        <% users.forEach(u => { %>
+                            <div class="profile-card-neo" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                                <div class="profile-header-neo">
+                                    <% 
+                                    let avatarUrl = '/images/default-avatar.png';
+                                    if (u.avatarType === 'upload' && u.avatar) {
+                                        avatarUrl = '/uploads/avatars/' + u.avatar;
+                                    } else if (u.avatarType === 'supabase' && u.avatarSupabaseUrl) {
+                                        avatarUrl = u.avatarSupabaseUrl;
+                                    } else if (u.avatarUrl) {
+                                        avatarUrl = u.avatarUrl;
+                                    } else if (u.avatarSeed) {
+                                        avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + u.avatarSeed;
+                                    }
+                                    %>
+                                    <img src="<%= avatarUrl %>" alt="<%= u.displayName || u.username %>" class="profile-avatar-neo" style="width: 80px; height: 80px; margin: 0 auto 15px;">
+                                    <h3 class="profile-name-neo"><%= u.displayName || u.username %></h3>
+                                    <p class="profile-username-neo">@<%= u.username %></p>
+                                </div>
+
+                                <div class="profile-stats-neo" style="margin: 15px 0;">
+                                    <div class="stat-item-neo">
+                                        <span class="stat-value-neo"><%= u.stats ? u.stats.postsCount : 0 %></span>
+                                        <span class="stat-label-small">Posts</span>
+                                    </div>
+                                    <div class="stat-item-neo">
+                                        <span class="stat-value-neo"><%= u.stats ? u.stats.followersCount : 0 %></span>
+                                        <span class="stat-label-small">Followers</span>
+                                    </div>
+                                </div>
+
+                                <a href="/users/<%= u._id %>" class="action-btn-neo" style="width: 100%; text-align: center; text-decoration: none; display: block;">
+                                    VIEW PROFILE
+                                </a>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-state-neo" style="grid-column: 1 / -1;">
+                            <div class="empty-icon-neo">👥</div>
+                            <h3 class="empty-title-neo">No Users Found</h3>
+                            <p class="empty-text-neo">Be the first to invite your friends!</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Pagination -->
+                <% if (totalPages > 1) { %>
+                    <div class="pagination-neo" style="margin-top: 40px; display: flex; justify-content: center; gap: 10px;">
+                        <% if (currentPage > 1) { %>
+                            <a href="/users/campus?page=<%= currentPage - 1 %>" class="action-btn-neo">← PREV</a>
+                        <% } %>
+                        
+                        <span class="action-btn-neo" style="background: var(--red); color: white; border-color: var(--red);"><%= currentPage %></span>
+                        
+                        <% if (hasNextPage) { %>
+                            <a href="/users/campus?page=<%= currentPage + 1 %>" class="action-btn-neo">NEXT →</a>
+                        <% } %>
+                    </div>
+                <% } %>
+
+            </main>
+        </div>
+    </div>
+    
+    <!-- Mobile Bottom Navigation (Apple Style) -->
+    <nav class="mobile-bottom-nav">
+        <a href="/posts" class="mobile-nav-item">
+            <span class="mobile-nav-icon">🏠</span>
+            <span>Home</span>
+        </a>
+        <a href="/users/campus" class="mobile-nav-item active">
+            <span class="mobile-nav-icon">👥</span>
+            <span>Campus</span>
+        </a>
+        <a href="/posts/create" class="mobile-nav-create-btn" aria-label="Create Post">
+            <span>+</span>
+        </a>
+        <a href="/gossip" class="mobile-nav-item">
+            <span class="mobile-nav-icon">🗣️</span>
+            <span>Gossip</span>
+        </a>
+        <a href="/users/profile" class="mobile-nav-item">
+            <span class="mobile-nav-icon">👤</span>
+            <span>Profile</span>
+        </a>
+    </nav>
+</div>
