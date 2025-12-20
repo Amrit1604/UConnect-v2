@@ -1,55 +1,68 @@
 /**
  * Email Service - UConnect
- * Handles all email functionality with Gmail SMTP
+ * Handles all email functionality with Resend (primary) and SMTP (fallback)
  * Built with godly-level coding powers! 🚀⚡
  */
 
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const path = require('path');
 
 class EmailService {
   constructor() {
+    this.resend = null;
     this.transporter = null;
+    this.primaryProvider = 'resend'; // 'resend' or 'smtp'
     this.isConfigured = false;
-    this.initializeTransporter();
+    this.initializeServices();
   }
 
   /**
-   * Initialize Gmail SMTP transporter
+   * Initialize both Resend and SMTP services
    */
-  initializeTransporter() {
+  initializeServices() {
     try {
       console.log('🔧 Initializing Email Service...');
+
+      // Initialize Resend (primary provider)
+      if (process.env.RESEND_API_KEY) {
+        this.resend = new Resend(process.env.RESEND_API_KEY);
+        console.log('📧 Resend service initialized');
+        this.primaryProvider = 'resend';
+      } else {
+        console.log('⚠️ RESEND_API_KEY not found, will use SMTP as primary');
+        this.primaryProvider = 'smtp';
+      }
+
+      // Initialize SMTP (fallback)
       console.log('📧 Email User:', process.env.EMAIL_USER);
       console.log('🔑 Email Pass Length:', process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 'MISSING');
 
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.error('❌ Email credentials missing in .env file');
-        this.isConfigured = false;
-        return;
+      if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        this.transporter = nodemailer.createTransport({
+          host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+          port: parseInt(process.env.EMAIL_PORT) || 587,
+          secure: process.env.EMAIL_SECURE === 'true', // false for TLS
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          },
+          tls: {
+            rejectUnauthorized: false
+          }
+        });
+        console.log('📧 SMTP Transporter created successfully');
+      } else {
+        console.log('⚠️ SMTP credentials not found, Resend will be the only option');
       }
 
-      this.transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.EMAIL_PORT) || 587,
-        secure: process.env.EMAIL_SECURE === 'true', // false for TLS
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        },
-        tls: {
-          rejectUnauthorized: false
-        }
-      });
+      // Set configuration status
+      this.isConfigured = (this.resend !== null) || (this.transporter !== null);
 
-      console.log('📧 SMTP Transporter created successfully');
-
-      // Try to verify connection immediately unless running tests or explicitly disabled
-      if (process.env.NODE_ENV !== 'test' && process.env.SKIP_EMAIL_VERIFY !== 'true') {
-        this.verifyConnectionSync();
+      if (this.isConfigured) {
+        console.log(`✅ Email Service configured with primary provider: ${this.primaryProvider}`);
       } else {
-        console.log('ℹ️ Skipping SMTP verification in test/disabled mode');
-        this.isConfigured = true;
+        console.error('❌ No email providers configured');
       }
 
     } catch (error) {
@@ -131,46 +144,88 @@ class EmailService {
       verificationUrl
     });
 
-    const mailOptions = {
-      from: {
-        name: process.env.EMAIL_FROM_NAME || 'UConnect Campus',
-        address: process.env.EMAIL_FROM || process.env.EMAIL_USER
-      },
-      to: to,
-      subject: '🎓 Verify Your UConnect Account - Welcome to Campus!',
-      text: textContent,
-      html: htmlContent,
-      // Add some email headers for better deliverability
-      headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'high'
-      }
-    };
+    // Try primary provider first (Resend), then fallback to SMTP
+    let lastError = null;
 
-    try {
-      console.log('📤 Sending email via Gmail SMTP...');
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Verification email sent successfully to ${to}! 🎉`);
-      console.log(`📧 Message ID: ${info.messageId}`);
-      return {
-        success: true,
-        messageId: info.messageId,
-        response: info.response
-      };
-    } catch (error) {
-      console.error(`❌ Failed to send verification email to ${to}:`, error.message);
-      console.error('🔧 Error code:', error.code);
-      console.error('🔧 Error response:', error.response);
+    // Try Resend first if available
+    if (this.resend) {
+      try {
+        console.log('📤 Trying to send email via Resend...');
 
-      // Provide specific error messages
-      if (error.code === 'EAUTH') {
-        throw new Error('Gmail authentication failed. Please check your App Password in .env file.');
-      } else if (error.code === 'ECONNECTION') {
-        throw new Error('Cannot connect to Gmail SMTP server. Check your internet connection.');
-      } else {
-        throw new Error(`Email sending failed: ${error.message}`);
+        const resendResult = await this.resend.emails.send({
+          from: `${process.env.EMAIL_FROM_NAME || 'UConnect Campus'} <noreply@resend.dev>`,
+          to: [to],
+          subject: '🎓 Verify Your UConnect Account - Welcome to Campus!',
+          html: htmlContent,
+          text: textContent,
+          headers: {
+            'X-Priority': '1',
+            'X-MSMail-Priority': 'High',
+            'Importance': 'high'
+          }
+        });
+
+        console.log(`✅ Verification email sent successfully to ${to} via Resend! 🎉`);
+        console.log(`📧 Message ID: ${resendResult.data?.id}`);
+        return {
+          success: true,
+          messageId: resendResult.data?.id,
+          provider: 'resend',
+          response: resendResult.data
+        };
+
+      } catch (resendError) {
+        console.error('❌ Resend failed:', resendError.message);
+        lastError = resendError;
+        console.log('🔄 Falling back to SMTP...');
       }
+    }
+
+    // Try SMTP as fallback if available
+    if (this.transporter) {
+      try {
+        console.log('📤 Sending email via Gmail SMTP...');
+
+        const mailOptions = {
+          from: {
+            name: process.env.EMAIL_FROM_NAME || 'UConnect Campus',
+            address: process.env.EMAIL_FROM || process.env.EMAIL_USER
+          },
+          to: to,
+          subject: '🎓 Verify Your UConnect Account - Welcome to Campus!',
+          text: textContent,
+          html: htmlContent,
+          headers: {
+            'X-Priority': '1',
+            'X-MSMail-Priority': 'High',
+            'Importance': 'high'
+          }
+        };
+
+        const info = await this.transporter.sendMail(mailOptions);
+        console.log(`✅ Verification email sent successfully to ${to} via SMTP! 🎉`);
+        console.log(`📧 Message ID: ${info.messageId}`);
+        return {
+          success: true,
+          messageId: info.messageId,
+          provider: 'smtp',
+          response: info.response
+        };
+
+      } catch (smtpError) {
+        console.error('❌ SMTP also failed:', smtpError.message);
+        lastError = smtpError;
+      }
+    }
+
+    // If both providers failed, throw the last error
+    console.error(`❌ All email providers failed for ${to}`);
+    if (lastError.code === 'EAUTH') {
+      throw new Error('Email authentication failed. Please check your credentials in .env file.');
+    } else if (lastError.code === 'ECONNECTION') {
+      throw new Error('Cannot connect to email servers. Check your internet connection.');
+    } else {
+      throw new Error(`Email sending failed: ${lastError.message}`);
     }
   }
 
