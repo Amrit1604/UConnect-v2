@@ -99,11 +99,6 @@
                 <a href="/posts?category=canteen" class="category-chip-neo <%= category === 'canteen' ? 'active' : '' %>">
                     🍕 CANTEEN
                 </a>
-                <!-- Mobile Quick Links Toggle -->
-                <button class="quick-links-toggle-btn" id="quickLinksToggleBtn">
-                    <span class="toggle-icon">☰</span>
-                    <span class="toggle-text">MENU</span>
-                </button>
             </div>
 
             <!-- Posts Feed -->
@@ -475,58 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Quick Links Panel Toggle (Mobile)
-function toggleQuickLinks() {
-    console.log('🔥 toggleQuickLinks called!');
-    const panel = document.getElementById('quickLinksPanel');
-    const overlay = document.getElementById('panelOverlay');
-
-    console.log('Panel element:', panel);
-    console.log('Overlay element:', overlay);
-
-    if (!panel || !overlay) {
-        console.error('❌ Panel or overlay not found!');
-        return;
-    }
-
-    if (panel.classList.contains('open')) {
-        console.log('🚪 Closing panel...');
-        panel.classList.remove('open');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    } else {
-        console.log('🚀 Opening panel...');
-        panel.classList.add('open');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Add event listeners when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle button
-    const toggleBtn = document.getElementById('quickLinksToggleBtn');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', toggleQuickLinks);
-        console.log('✅ Toggle button listener added');
-    } else {
-        console.error('❌ Toggle button not found');
-    }
-
-    // Close button
-    const closeBtn = document.getElementById('closePanelBtn');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', toggleQuickLinks);
-        console.log('✅ Close button listener added');
-    }
-
-    // Overlay
-    const overlay = document.getElementById('panelOverlay');
-    if (overlay) {
-        overlay.addEventListener('click', toggleQuickLinks);
-        console.log('✅ Overlay listener added');
-    }
-});
+// OLD MENU REMOVED - Using mega menu in layout.ejs instead
 </script>
 
 <!-- Suggestions and Hover Card Scripts -->
@@ -549,58 +493,75 @@ document.addEventListener('DOMContentLoaded', function() {
                     const displayName = u.name || u.displayName || u.fullName || '';
                     const avatar = (u.avatarUrl || u.avatar || '/images/default-avatar.png') + '?v=' + Date.now();
                     const isFollowing = !!(u.isFollowing || u.following || u.followed || false);
-                    const btnText = isFollowing ? '✓ FOLLOWING' : '+ FOLLOW';
+                    const btnText = isFollowing ? '✓' : '+';
                     const btnClass = isFollowing ? 'follow-suggest-btn following' : 'follow-suggest-btn';
+                    if (!id) {
+                        console.warn('No user ID found for suggestion:', u);
+                        return '';
+                    }
                     return `
                         <div class="suggestion-item">
                             <a href="/users/${username}" class="author-link-neo suggestion-link" data-username="${username}">
                                 <img src="${avatar}" alt="@${username}" class="suggestion-avatar" onerror="this.src='/images/default-avatar.png'">
                                 <div class="suggestion-info">
-                                    <strong>@${username}</strong>
+                                    <strong class="suggestion-username">@${username}</strong>
                                     <span class="suggestion-name">${displayName}</span>
                                 </div>
                             </a>
-                            <button class="${btnClass}" data-user-id="${id}" data-username="${username}">${btnText}</button>
+                            <button class="${btnClass}" data-user-id="${id}" data-username="${username}" data-following="${isFollowing}">${btnText}</button>
                         </div>`
-                }).join('');
+                }).filter(Boolean).join('');
       } catch (e) {
         const box = document.getElementById('followSuggestions');
         if (box) box.innerHTML = '<p class="trending-empty">Failed to load suggestions</p>';
       }
     })();
 
+        // Shared follow button handler
+        async function handleFollowClick(btn) {
+            const id = btn.getAttribute('data-user-id');
+            const isCurrentlyFollowing = btn.getAttribute('data-following') === 'true';
+            
+            if (!id) {
+                console.error('No user ID found on button');
+                alert('Unable to follow: missing user ID');
+                return;
+            }
+            
+            const action = isCurrentlyFollowing ? 'unfollow' : 'follow';
+            console.log(`${action} user:`, id);
+            
+            try {
+                const res = await fetch(`/users/${id}/${action}`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' } 
+                });
+                const data = await res.json();
+                console.log('Follow response:', data);
+                
+                if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
+                
+                btn.textContent = data.following ? '✓' : '+';
+                btn.setAttribute('data-following', data.following);
+                btn.classList.toggle('following', data.following);
+            } catch (err) {
+                console.error('Follow error:', err);
+                alert(err.message || 'Failed to update follow');
+            }
+        }
+
         // Follow button in suggestions (delegated for left and right panels)
         document.getElementById('quickLinksPanel')?.addEventListener('click', async function(e){
             const btn = e.target.closest('.follow-suggest-btn');
             if (!btn) return;
-            const id = btn.getAttribute('data-user-id');
-            try {
-                const action = btn.textContent.includes('FOLLOWING') ? 'unfollow' : 'follow';
-                const res = await fetch(`/users/${id}/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-                const data = await res.json();
-                if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
-                btn.textContent = data.following ? '✓ FOLLOWING' : '+ FOLLOW';
-                btn.classList.toggle('following', data.following);
-            } catch (err) {
-                alert(err.message || 'Failed to update follow');
-            }
+            await handleFollowClick(btn);
         });
 
         // Also listen on the left suggestions container
         document.getElementById('followSuggestions')?.addEventListener('click', async function(e){
             const btn = e.target.closest('.follow-suggest-btn');
             if (!btn) return;
-            const id = btn.getAttribute('data-user-id');
-            try {
-                const action = btn.textContent.includes('FOLLOWING') ? 'unfollow' : 'follow';
-                const res = await fetch(`/users/${id}/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-                const data = await res.json();
-                if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
-                btn.textContent = data.following ? '✓ FOLLOWING' : '+ FOLLOW';
-                btn.classList.toggle('following', data.following);
-            } catch (err) {
-                alert(err.message || 'Failed to update follow');
-            }
+            await handleFollowClick(btn);
         });
 
     // Hover mini card

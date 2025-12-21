@@ -386,11 +386,302 @@
             <span class="mobile-nav-icon">🗣️</span>
             <span>Gossip</span>
         </a>
-        <a href="/users/profile" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/users/profile' ? 'active' : '' %>">
-            <span class="mobile-nav-icon">👤</span>
-            <span>Profile</span>
-        </a>
+        <button class="mobile-nav-item" id="mobileMenuToggle">
+            <span class="mobile-nav-icon">☰</span>
+            <span>Menu</span>
+        </button>
     </nav>
+
+    <!-- MEGA MOBILE MENU - ALL CONTENT FROM BOTH MENUS -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <div class="mobile-menu-sidebar">
+            <div class="mobile-menu-header">
+                <h2>Menu</h2>
+                <button class="mobile-menu-close" id="mobileMenuClose">✕</button>
+            </div>
+            
+            <div class="mobile-menu-content">
+                <!-- User Profile -->
+                <% if (user) { %>
+                <div class="mobile-profile-card">
+                    <%
+                    const mobileAvatar = (user.avatarUrl || (user.avatarSeed ? 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed : '/images/default-avatar.png'));
+                    %>
+                    <img src="<%= mobileAvatar %>" alt="<%= user.name %>" class="mobile-profile-img">
+                    <div class="mobile-profile-details">
+                        <h3><%= user.name %></h3>
+                        <p>@<%= user.username %></p>
+                    </div>
+                </div>
+                <% } %>
+
+                <!-- User Search -->
+                <div class="mobile-section">
+                    <h3 class="mobile-section-title">🔍 Search Users</h3>
+                    <div class="mobile-search-wrapper">
+                        <input type="text" id="mobileUserSearchInput" placeholder="Search users..." class="mobile-search-input">
+                        <div id="mobileUserSearchResults" class="mobile-search-results"></div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="mobile-section">
+                    <h3 class="mobile-section-title">🔔 Notifications <span id="mobileNotifCount" class="mobile-notif-badge"></span></h3>
+                    <a href="/notifications" class="mobile-menu-link">➡️ View All Notifications</a>
+                </div>
+
+                <!-- Who to Follow -->
+                <div class="mobile-section">
+                    <h3 class="mobile-section-title">👥 Who to Follow</h3>
+                    <div id="mobileFollowSuggestions" class="mobile-follow-list">
+                        <p class="mobile-loading">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Trending Tags -->
+                <div class="mobile-section" id="mobileTrendingSection">
+                    <h3 class="mobile-section-title">🔥 Trending</h3>
+                    <div id="mobileTrendingTags" class="mobile-trending-list">
+                        <p class="mobile-loading">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Mini Gossip Box -->
+                <div class="mobile-section">
+                    <h3 class="mobile-section-title">🗣️ Gossip Box</h3>
+                    <div class="mobile-gossip-mini">
+                        <textarea id="mobileGossipInput" class="mobile-gossip-textarea" placeholder="Share a secret..." maxlength="300"></textarea>
+                        <div class="mobile-gossip-footer">
+                            <span id="mobileGossipCharCount">0/300</span>
+                            <button id="mobilePostGossipBtn" class="mobile-gossip-post-btn">POST</button>
+                        </div>
+                    </div>
+                    <a href="/gossip" class="mobile-menu-link">➡️ View Full Gossip Box</a>
+                </div>
+
+                <!-- External Apps -->
+                <div class="mobile-section">
+                    <h3 class="mobile-section-title">🌐 External Apps</h3>
+                    <div class="mobile-apps-list">
+                        <a href="https://key-vora.vercel.app/" class="mobile-app-link" target="_blank" rel="noopener noreferrer">🔑 KeyVora</a>
+                        <a href="https://recrutix-v1.onrender.com/" class="mobile-app-link" target="_blank" rel="noopener noreferrer">💼 Recrutix</a>
+                        <a href="https://amrit1604.github.io/THE-NINE-TAILS-KITCHEN/" class="mobile-app-link" target="_blank" rel="noopener noreferrer">🍜 Hungry?</a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="mobile-section">
+                    <h3 class="mobile-section-title">⚡ Quick Links</h3>
+                    <div class="mobile-quick-links">
+                        <a href="/users/campus" class="mobile-menu-link">👥 Campus Users</a>
+                        <a href="/users/profile" class="mobile-menu-link">👤 My Profile</a>
+                        <a href="/users/settings/profile" class="mobile-menu-link">⚙️ Settings</a>
+                        <a href="/posts/create" class="mobile-menu-link">✨ Create Post</a>
+                        <a href="/about" class="mobile-menu-link">📘 About</a>
+                        <a href="/contact" class="mobile-menu-link">📩 Contact Us</a>
+                        <button id="mobileThemeToggle" class="mobile-menu-link">🌙 Toggle Theme</button>
+                        <% if (user && user.role === 'admin') { %>
+                        <a href="/admin" class="mobile-menu-link">🛡️ Admin Panel</a>
+                        <% } %>
+                        <a href="/auth/logout" class="mobile-menu-link logout">🚪 Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // MEGA MOBILE MENU TOGGLE
+    (function() {
+        const menuToggle = document.getElementById('mobileMenuToggle');
+        const menuOverlay = document.getElementById('mobileMenuOverlay');
+        const menuClose = document.getElementById('mobileMenuClose');
+        const menuSidebar = menuOverlay?.querySelector('.mobile-menu-sidebar');
+
+        function openMenu() {
+            if (menuOverlay && menuSidebar) {
+                menuOverlay.classList.add('active');
+                menuToggle?.classList.add('menu-active');
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => menuSidebar.classList.add('active'), 10);
+            }
+        }
+
+        function closeMenu() {
+            if (menuSidebar) menuSidebar.classList.remove('active');
+            menuToggle?.classList.remove('menu-active');
+            setTimeout(() => {
+                menuOverlay?.classList.remove('active');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        menuToggle?.addEventListener('click', openMenu);
+        menuClose?.addEventListener('click', closeMenu);
+        menuOverlay?.addEventListener('click', (e) => {
+            if (e.target === menuOverlay) closeMenu();
+        });
+
+        // Mobile search
+        const mobileSearchInput = document.getElementById('mobileUserSearchInput');
+        const mobileSearchResults = document.getElementById('mobileUserSearchResults');
+        let mobileSearchTimeout;
+
+        mobileSearchInput?.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            clearTimeout(mobileSearchTimeout);
+            
+            if (query.length < 2) {
+                mobileSearchResults.innerHTML = '';
+                mobileSearchResults.style.display = 'none';
+                return;
+            }
+
+            mobileSearchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/users/search?q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    if (data.success && data.users && data.users.length > 0) {
+                        mobileSearchResults.innerHTML = data.users.slice(0, 5).map(u => `
+                            <a href="/users/${u.username}" class="mobile-search-result">
+                                <img src="${u.avatarUrl || '/images/default-avatar.png'}" alt="${u.username}">
+                                <div>
+                                    <strong>@${u.username}</strong>
+                                    <span>${u.name || ''}</span>
+                                </div>
+                            </a>
+                        `).join('');
+                        mobileSearchResults.style.display = 'block';
+                    } else {
+                        mobileSearchResults.innerHTML = '<p class="mobile-no-results">No users found</p>';
+                        mobileSearchResults.style.display = 'block';
+                    }
+                } catch (err) {
+                    console.error('Search error:', err);
+                }
+            }, 300);
+        });
+
+        // Load follow suggestions
+        (async function() {
+            const container = document.getElementById('mobileFollowSuggestions');
+            if (!container) return;
+            try {
+                const res = await fetch('/users/suggestions');
+                const data = await res.json();
+                if (data.success && data.results && data.results.length > 0) {
+                    container.innerHTML = data.results.slice(0, 8).map(u => {
+                        const id = u._id || '';
+                        const username = u.username || '';
+                        const avatar = u.avatarUrl || '/images/default-avatar.png';
+                        const name = u.name || '';
+                        const isFollowing = u.isFollowing || false;
+                        return `
+                            <div class="mobile-follow-item">
+                                <a href="/users/${username}" class="mobile-follow-link">
+                                    <img src="${avatar}" alt="${username}">
+                                    <div>
+                                        <strong>@${username}</strong>
+                                        <span>${name}</span>
+                                    </div>
+                                </a>
+                                <button class="mobile-follow-btn ${isFollowing ? 'following' : ''}" 
+                                        data-user-id="${id}" 
+                                        data-following="${isFollowing}">
+                                    ${isFollowing ? '✓' : '+'}
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Follow button handlers
+                    container.querySelectorAll('.mobile-follow-btn').forEach(btn => {
+                        btn.addEventListener('click', async function() {
+                            const userId = this.getAttribute('data-user-id');
+                            const isFollowing = this.getAttribute('data-following') === 'true';
+                            const action = isFollowing ? 'unfollow' : 'follow';
+                            
+                            try {
+                                const res = await fetch(`/users/${userId}/${action}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    this.textContent = data.following ? '✓' : '+';
+                                    this.setAttribute('data-following', data.following);
+                                    this.classList.toggle('following', data.following);
+                                }
+                            } catch (err) {
+                                console.error('Follow error:', err);
+                            }
+                        });
+                    });
+                } else {
+                    container.innerHTML = '<p class="mobile-no-results">No suggestions</p>';
+                }
+            } catch (err) {
+                container.innerHTML = '<p class="mobile-no-results">Failed to load</p>';
+            }
+        })();
+
+        // Load trending tags from page data
+        const trendingContainer = document.getElementById('mobileTrendingTags');
+        if (trendingContainer && typeof trendingTags !== 'undefined' && trendingTags && trendingTags.length > 0) {
+            trendingContainer.innerHTML = trendingTags.slice(0, 6).map(tag => `
+                <a href="/posts?tag=${tag}" class="mobile-trending-tag">#${tag}</a>
+            `).join('');
+        } else if (trendingContainer) {
+            trendingContainer.innerHTML = '<p class="mobile-no-results">No trending tags</p>';
+        }
+
+        // Gossip character count
+        const gossipInput = document.getElementById('mobileGossipInput');
+        const gossipCharCount = document.getElementById('mobileGossipCharCount');
+        gossipInput?.addEventListener('input', () => {
+            gossipCharCount.textContent = `${gossipInput.value.length}/300`;
+        });
+
+        // Post gossip
+        document.getElementById('mobilePostGossipBtn')?.addEventListener('click', async () => {
+            const content = gossipInput?.value.trim();
+            if (!content) return;
+            try {
+                const res = await fetch('/gossip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    gossipInput.value = '';
+                    gossipCharCount.textContent = '0/300';
+                    alert('Gossip posted! 🎉');
+                } else {
+                    alert(data.message || 'Failed to post');
+                }
+            } catch (err) {
+                alert('Error posting gossip');
+            }
+        });
+
+        // Mobile theme toggle
+        document.getElementById('mobileThemeToggle')?.addEventListener('click', () => {
+            document.getElementById('themeToggle')?.click();
+        });
+
+        // Update notification count
+        const notifCountNav = document.getElementById('navNotificationsCount');
+        const notifCountMobile = document.getElementById('mobileNotifCount');
+        if (notifCountNav && notifCountMobile) {
+            const count = notifCountNav.textContent;
+            if (count && count !== '0') {
+                notifCountMobile.textContent = count;
+                notifCountMobile.style.display = 'inline-block';
+            }
+        }
+    })();
+    </script>
 
 </body>
 </html>
