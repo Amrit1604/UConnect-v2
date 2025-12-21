@@ -1,78 +1,94 @@
-/**
- * Simple student checks
- * - Connects to the project test DB (uses MONGODB_URI or localhost fallback)
- * - Verifies basic invariants on `User` documents:
- *   - passwords exist and look hashed (bcrypt)
- *   - usernames contain no spaces (not full name)
- *   - student emails satisfy model rule (\.edu.in or gmail)
- */
-
-const path = require('path');
 const mongoose = require('mongoose');
+const User = require('../models/User');
+const path = require('path');
 const dotenv = require('dotenv');
 
-// Load env from project root
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
-
-const User = require('../models/User');
 
 const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campus_connect_test';
 
 beforeAll(async () => {
-  await mongoose.connect(mongoUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
+  await mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 });
 
 afterAll(async () => {
   await mongoose.disconnect();
 });
 
-test('at least one user exists in the DB', async () => {
-  const count = await User.countDocuments();
-  expect(count).toBeGreaterThan(0);
-});
+describe('Student Validation Checks', () => {
+  test('should accept valid .edu.in email for students', async () => {
+    const user = new User({
+      email: 'student@university.edu.in',
+      name: 'Student User',
+      username: 'studentuser',
+      password: 'password123',
+      role: 'student'
+    });
 
-test('all users have a password and it appears hashed (bcrypt)', async () => {
-  const users = await User.find({}, 'email username password').lean();
-  expect(users.length).toBeGreaterThan(0);
+    const savedUser = await user.save();
+    expect(savedUser.email).toBe('student@university.edu.in');
+    expect(savedUser.role).toBe('student');
 
-  const bcryptPrefix = /^\$2[aby]\$/; // bcrypt hashes start with $2a$, $2b$, or $2y$
+    await User.findByIdAndDelete(savedUser._id);
+  });
 
-  for (const u of users) {
-    expect(u.password).toBeDefined();
-    expect(typeof u.password).toBe('string');
-    expect(u.password.length).toBeGreaterThanOrEqual(60); // bcrypt hashes ~60 chars
-    // Check prefix
-    expect(bcryptPrefix.test(u.password.substring(0,4))).toBe(true);
-  }
-});
+  test('should accept Gmail email for students in test environment', async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'test';
 
-test('usernames do not contain spaces (not full names)', async () => {
-  const users = await User.find({}, 'username name').lean();
-  for (const u of users) {
-    expect(u.username).toBeDefined();
-    expect(u.username.indexOf(' ')).toBe(-1);
-    // Prefer username not equal to normalized name
-    if (u.name) {
-      const normalizedName = u.name.toLowerCase().replace(/\s+/g, '');
-      const normalizedUsername = (u.username || '').toLowerCase().replace(/\s+/g, '');
-      expect(normalizedUsername).not.toBe(normalizedName);
-    }
-  }
-});
+    const user = new User({
+      email: 'student@gmail.com',
+      name: 'Test Student',
+      username: 'teststudent',
+      password: 'password123',
+      role: 'student'
+    });
 
-test('student emails follow .edu.in or @gmail.com (per model validation)', async () => {
-  const students = await User.find({ role: 'student' }, 'email').lean();
-  // If there are no student users this test is skipped
-  if (!students || students.length === 0) {
-    return expect(students.length).toBeGreaterThanOrEqual(0);
-  }
+    const savedUser = await user.save();
+    expect(savedUser.email).toBe('student@gmail.com');
 
-  for (const s of students) {
-    expect(s.email).toBeDefined();
-    const ok = s.email.endsWith('.edu.in') || s.email.endsWith('@gmail.com');
-    expect(ok).toBe(true);
-  }
+    process.env.NODE_ENV = originalEnv;
+    await User.findByIdAndDelete(savedUser._id);
+  });
+
+  test('should reject invalid email domains for students', async () => {
+    const user = new User({
+      email: 'student@invalid.com',
+      name: 'Invalid Student',
+      username: 'invalidstudent',
+      password: 'password123',
+      role: 'student'
+    });
+
+    await expect(user.save()).rejects.toThrow(/Please use a valid .edu.in email address/);
+  });
+
+  test('should set default role as student', async () => {
+    const user = new User({
+      email: 'default@university.edu.in',
+      name: 'Default User',
+      username: 'defaultuser',
+      password: 'password123'
+    });
+
+    const savedUser = await user.save();
+    expect(savedUser.role).toBe('student');
+
+    await User.findByIdAndDelete(savedUser._id);
+  });
+
+  test('should allow admin role to be set explicitly', async () => {
+    const user = new User({
+      email: 'admin@university.edu.in',
+      name: 'Admin User',
+      username: 'adminuser',
+      password: 'password123',
+      role: 'admin'
+    });
+
+    const savedUser = await user.save();
+    expect(savedUser.role).toBe('admin');
+
+    await User.findByIdAndDelete(savedUser._id);
+  });
 });

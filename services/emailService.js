@@ -10,28 +10,43 @@ const path = require('path');
 
 class EmailService {
   constructor() {
+    this.brevo = false;
     this.resend = null;
     this.transporter = null;
-    this.primaryProvider = 'resend'; // 'resend' or 'smtp'
+    this.primaryProvider = 'brevo'; // 'brevo', 'resend' or 'smtp'
     this.isConfigured = false;
     this.initializeServices();
   }
 
   /**
-   * Initialize both Resend and SMTP services
+   * Initialize Brevo, Resend and SMTP services
    */
   initializeServices() {
     try {
       console.log('🔧 Initializing Email Service...');
 
-      // Initialize Resend (primary provider)
+      // Initialize Brevo (primary provider for deployment)
+      if (process.env.BREVO_API_KEY) {
+        this.brevo = true;
+        console.log('📧 Brevo service initialized');
+        this.primaryProvider = 'brevo';
+      } else {
+        console.log('⚠️ BREVO_API_KEY not found, falling back to Resend');
+        this.primaryProvider = 'resend';
+      }
+
+      // Initialize Resend (secondary provider)
       if (process.env.RESEND_API_KEY) {
         this.resend = new Resend(process.env.RESEND_API_KEY);
         console.log('📧 Resend service initialized');
-        this.primaryProvider = 'resend';
+        if (!this.brevo) {
+          this.primaryProvider = 'resend';
+        }
       } else {
-        console.log('⚠️ RESEND_API_KEY not found, will use SMTP as primary');
-        this.primaryProvider = 'smtp';
+        console.log('⚠️ RESEND_API_KEY not found, will use SMTP as fallback');
+        if (!this.brevo) {
+          this.primaryProvider = 'smtp';
+        }
       }
 
       // Initialize SMTP (fallback)
@@ -57,7 +72,7 @@ class EmailService {
       }
 
       // Set configuration status
-      this.isConfigured = (this.resend !== null) || (this.transporter !== null);
+      this.isConfigured = (this.brevo === true) || (this.resend !== null) || (this.transporter !== null);
 
       if (this.isConfigured) {
         console.log(`✅ Email Service configured with primary provider: ${this.primaryProvider}`);
@@ -144,10 +159,57 @@ class EmailService {
       verificationUrl
     });
 
-    // Try primary provider first (Resend), then fallback to SMTP
+    // Try primary provider first (Brevo), then fallback to Resend, then SMTP
     let lastError = null;
 
-    // Try Resend first if available
+    // Try Brevo first if available
+    if (this.brevo) {
+      try {
+        console.log('🚀 Sending via Brevo API...');
+
+        const fromEmail = process.env.BREVO_FROM || process.env.EMAIL_USER || 'noreply@uconnect.com';
+        const fromName = 'UConnect';
+
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-key': process.env.BREVO_API_KEY,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: { name: fromName, email: fromEmail },
+            to: [{ email: to }],
+            subject: '🎓 Verify Your UConnect Account - Welcome to Campus!',
+            htmlContent: htmlContent,
+            textContent: textContent
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error('❌ Brevo API error:', result);
+          throw new Error(result.message || 'Brevo API request failed');
+        }
+
+        console.log('✅ Email sent via Brevo!');
+        console.log('📧 Message ID:', result.messageId || 'N/A');
+
+        return {
+          success: true,
+          messageId: result.messageId,
+          provider: 'brevo'
+        };
+
+      } catch (brevoError) {
+        console.error('❌ Brevo error:', brevoError.message);
+        lastError = brevoError;
+        console.log('🔄 Falling back to Resend...');
+      }
+    }
+
+    // Try Resend as secondary provider if available
     if (this.resend) {
       try {
         console.log('📤 Trying to send email via Resend...');
