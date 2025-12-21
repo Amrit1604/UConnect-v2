@@ -340,6 +340,12 @@ router.post('/create', requireAuth, uploadPostMedia, handlePostMediaUpload, post
 
     await post.save();
     console.log(`📝 Post created with ${images.length} images and ${media.length} media items by:`, req.user.username);
+    if (images.length > 0) {
+      console.log('📸 Image URLs saved:', images.map(i => i.url));
+    }
+    if (media.length > 0) {
+      console.log('🎥 Video URLs saved:', media.map(m => m.url));
+    }
 
     // 🚀 REAL-TIME SOCKET.IO BROADCAST
     const io = req.app.get('io');

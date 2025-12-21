@@ -1,0 +1,5 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <rect fill="#1a1a1a" width="400" height="300"/>
+  <text x="200" y="140" text-anchor="middle" fill="#666" font-family="Arial" font-size="14">Image could not be loaded</text>
+  <text x="200" y="180" text-anchor="middle" fill="#888" font-size="40"></text>
+</svg>

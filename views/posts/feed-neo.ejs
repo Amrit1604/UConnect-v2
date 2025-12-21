@@ -149,25 +149,22 @@
                                 <!-- Post Media -->
                                 <% if (post.images && post.images.length > 0) { %>
                                     <div class="post-media-neo">
-                                        <% if (post.images[0].url) { %>
-                                            <img src="<%= post.images[0].url %>"
-                                                 alt="<%= post.images[0].originalName || 'Post image' %>"
-                                                 class="post-image-neo"
-                                                 loading="lazy"
-                                                 onerror="this.style.display='none'">
-                                        <% } else if (post.images[0].filename) { %>
-                                            <img src="/uploads/posts/<%= post.images[0].filename %>"
-                                                 alt="<%= post.images[0].originalName || 'Post image' %>"
-                                                 class="post-image-neo"
-                                                 loading="lazy"
-                                                 onerror="this.style.display='none'">
-                                        <% } else if (typeof post.images[0] === 'string') { %>
-                                            <img src="/uploads/posts/<%= post.images[0] %>"
-                                                 alt="Post image"
-                                                 class="post-image-neo"
-                                                 loading="lazy"
-                                                 onerror="this.style.display='none'">
-                                        <% } %>
+                                        <%
+                                        let imgSrc = '';
+                                        const img = post.images[0];
+                                        if (img.url) {
+                                            imgSrc = img.url;
+                                        } else if (img.filename) {
+                                            imgSrc = '/uploads/posts/' + img.filename;
+                                        } else if (typeof img === 'string') {
+                                            imgSrc = '/uploads/posts/' + img;
+                                        }
+                                        %>
+                                        <img src="<%= imgSrc %>"
+                                             alt="<%= img.originalName || 'Post image' %>"
+                                             class="post-image-neo"
+                                             loading="lazy"
+                                             onerror="this.src='/images/default-avatar.png'; this.onerror=null;">
                                     </div>
                                 <% } else if (post.media && post.media.length > 0) { %>
                                     <% const firstMedia = post.media[0]; %>
@@ -177,7 +174,7 @@
                                                  alt="<%= firstMedia.originalName || 'Post image' %>"
                                                  class="post-image-neo"
                                                  loading="lazy"
-                                                 onerror="this.style.display='none'">
+                                                 onerror="this.src='/images/default-avatar.png'; this.onerror=null;">
                                         </div>
                                     <% } else if (firstMedia.type === 'video') { %>
                                         <div class="post-media-neo">
@@ -190,22 +187,21 @@
                                     <% } %>
                                 <% } else if (post.videos && post.videos.length > 0) { %>
                                     <div class="post-media-neo">
-                                        <% if (post.videos[0].url) { %>
-                                            <video class="post-video-neo" controls>
-                                                <source src="<%= post.videos[0].url %>" type="<%= post.videos[0].mimetype || 'video/mp4' %>">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                        <% } else if (post.videos[0].filename) { %>
-                                            <video class="post-video-neo" controls>
-                                                <source src="/uploads/posts/<%= post.videos[0].filename %>" type="<%= post.videos[0].mimetype || 'video/mp4' %>">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                        <% } else if (typeof post.videos[0] === 'string') { %>
-                                            <video class="post-video-neo" controls>
-                                                <source src="/uploads/posts/<%= post.videos[0] %>" type="video/mp4">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                        <% } %>
+                                        <%
+                                        let vidSrc = '';
+                                        const vid = post.videos[0];
+                                        if (vid.url) {
+                                            vidSrc = vid.url;
+                                        } else if (vid.filename) {
+                                            vidSrc = '/uploads/posts/' + vid.filename;
+                                        } else if (typeof vid === 'string') {
+                                            vidSrc = '/uploads/posts/' + vid;
+                                        }
+                                        %>
+                                        <video class="post-video-neo" controls playsinline preload="metadata">
+                                            <source src="<%= vidSrc %>" type="<%= vid.mimetype || 'video/mp4' %>">
+                                            Your browser does not support the video tag.
+                                        </video>
                                     </div>
                                 <% } %>
 
