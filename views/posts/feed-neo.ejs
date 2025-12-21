@@ -580,6 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
                 btn.textContent = data.following ? '✓ FOLLOWING' : '+ FOLLOW';
+                btn.classList.toggle('following', data.following);
             } catch (err) {
                 alert(err.message || 'Failed to update follow');
             }
@@ -596,6 +597,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
                 btn.textContent = data.following ? '✓ FOLLOWING' : '+ FOLLOW';
+                btn.classList.toggle('following', data.following);
             } catch (err) {
                 alert(err.message || 'Failed to update follow');
             }

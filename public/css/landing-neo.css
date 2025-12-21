@@ -746,15 +746,15 @@ body.landing-neo:hover .cursor-outline {
 /* Mobile / narrow adjustments to avoid overflow and broken layout */
 @media (max-width: 900px) {
     .nav-container-neo {
-        grid-template-columns: 1fr auto;
-        grid-template-areas: "brand actions" "center center";
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-areas: "left brand right" "center center center";
         padding: 8px 14px;
         gap: 12px;
         height: auto;
     }
 
-    .nav-brand-neo { grid-area: brand; }
-    .nav-actions-neo { grid-area: actions; justify-content: flex-end; }
+    .nav-brand-neo { grid-area: brand; justify-self: center; }
+    .nav-actions-neo { grid-area: right; justify-content: flex-end; }
     .nav-center-neo { grid-area: center; grid-column: 1 / -1; justify-content: space-around; gap: 12px; }
 
     .mobile-menu-btn-neo { display: flex; }

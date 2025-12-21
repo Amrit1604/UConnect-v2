@@ -240,11 +240,21 @@
 		try {
 			const data = await requestJson(`/posts/${postId}`, { method: 'DELETE' });
 
+			// Check if we're on a single post page
+			const isSinglePostPage = window.location.pathname.includes(`/posts/${postId}`);
+
 			// Remove the post from the DOM
 			const postEl = document.querySelector(`[data-post-id="${postId}"]`);
 			if (postEl) {
 				postEl.remove();
 				showToast('Post deleted successfully');
+			}
+
+			// If on single post page, redirect to feed
+			if (isSinglePostPage) {
+				setTimeout(() => {
+					window.location.href = '/posts';
+				}, 1000);
 			}
 
 			console.log('Post deleted successfully:', postId);
