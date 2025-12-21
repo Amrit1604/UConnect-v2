@@ -106,6 +106,7 @@ app.use('/notifications', notificationsRoutes);
 app.use('/friends', friendsRoutes);
 app.use('/gossip', gossipRoutes);
 app.use('/redis', redisDemoRoutes);
+app.use('/api', require('./routes/testSupabase')); // Supabase test/debug routes
 
 // URL test route for debugging 🔧
 // app.use('/debug', createUrlTestRoute());
