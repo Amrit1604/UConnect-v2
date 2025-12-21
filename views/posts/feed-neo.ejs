@@ -324,7 +324,10 @@
                         <p class="mobile-profile-username">@<%= user.username %></p>
                     </div>
                 </a>
-                <a href="/posts/create" class="mobile-create-post-btn">✨ CREATE POST</a>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <a href="/posts/create" class="mobile-create-post-btn" style="flex: 1;">✨ CREATE POST</a>
+                    <a href="/auth/logout" class="mobile-logout-btn" style="flex: 1;">🚪 LOGOUT</a>
+                </div>
             </div>
 
             <!-- Trending Tags -->

@@ -1,5 +1,23 @@
 <link rel="stylesheet" href="/css/chat-neo.css">
 
+<div class="posts-page">
+  <!-- Parallax Background -->
+  <div class="parallax-bg">
+    <div class="parallax-layer layer-1"></div>
+    <div class="parallax-layer layer-2"></div>
+    <div class="blob-container">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+  </div>
+
+  <div class="emoji-reactions">
+    <div class="emoji-float emoji-1">💬</div>
+    <div class="emoji-float emoji-2">❤️</div>
+    <div class="emoji-float emoji-3">✨</div>
+  </div>
+
 <div class="chat-inbox-container">
     <!-- Header -->
     <div class="inbox-header">
@@ -43,26 +61,38 @@
         <% if (conversations && conversations.length > 0) { %>
             <% conversations.forEach(c => { %>
                 <a href="/chat/<%= c.otherUser._id %>" class="conversation-item">
-                    <% 
-                    let cAvatarUrl = '/images/default-avatar.png';
-                    if (c.otherUser.avatarType === 'upload' && c.otherUser.avatar) {
-                        cAvatarUrl = '/uploads/avatars/' + c.otherUser.avatar;
-                    } else if (c.otherUser.avatarType === 'supabase' && c.otherUser.avatarSupabaseUrl) {
-                        cAvatarUrl = c.otherUser.avatarSupabaseUrl;
-                    } else if (c.otherUser.avatarUrl) {
-                        cAvatarUrl = c.otherUser.avatarUrl;
-                    } else if (c.otherUser.avatarSeed) {
-                        cAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + c.otherUser.avatarSeed;
-                    }
-                    %>
-                    <img src="<%= cAvatarUrl %>" class="conversation-avatar" alt="<%= c.otherUser.username %>" />
+                    <div class="conversation-avatar">
+                        <% 
+                        let cAvatarUrl = '/images/default-avatar.png';
+                        if (c.otherUser.avatarType === 'upload' && c.otherUser.avatar) {
+                            cAvatarUrl = '/uploads/avatars/' + c.otherUser.avatar;
+                        } else if (c.otherUser.avatarType === 'supabase' && c.otherUser.avatarSupabaseUrl) {
+                            cAvatarUrl = c.otherUser.avatarSupabaseUrl;
+                        } else if (c.otherUser.avatarUrl) {
+                            cAvatarUrl = c.otherUser.avatarUrl;
+                        } else if (c.otherUser.avatarSeed) {
+                            cAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + c.otherUser.avatarSeed;
+                        }
+                        %>
+                        <img src="<%= cAvatarUrl %>" alt="<%= c.otherUser.username %>" />
+                        <% if (c.otherUser.isOnline) { %>
+                            <div class="online-indicator"></div>
+                        <% } %>
+                    </div>
                     
-                    <div class="conversation-info">
-                        <div class="conversation-name"><%= c.otherUser.name || c.otherUser.username %></div>
+                    <div class="conversation-details">
+                        <div class="conversation-top">
+                            <div class="conversation-name"><%= c.otherUser.name || c.otherUser.username %></div>
+                            <div class="conversation-time">
+                                <% if (c.lastMessage) { %>
+                                    <%= new Date(c.lastMessage.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                                <% } %>
+                            </div>
+                        </div>
                         <div class="conversation-preview">
                             <% if (c.lastMessage) { %>
                                 <% if (c.lastMessage.sender.toString() === user._id.toString()) { %>
-                                    You: <%= c.lastMessage.content %>
+                                    <span style="color:var(--blue)">You:</span> <%= c.lastMessage.content %>
                                 <% } else { %>
                                     <%= c.lastMessage.content %>
                                 <% } %>
@@ -72,15 +102,14 @@
                         </div>
                     </div>
 
-                    <div class="conversation-meta">
-                        <% if (c.unreadCount > 0) { %>
-                            <div class="unread-badge"><%= c.unreadCount %></div>
-                        <% } %>
-                    </div>
+                    <% if (c.unreadCount > 0) { %>
+                        <div class="unread-badge"><%= c.unreadCount %></div>
+                    <% } %>
                 </a>
             <% }) %>
         <% } else { %>
-            <div style="text-align: center; padding: 40px; color: #666;">
+            <div class="empty-inbox">
+                <div class="empty-icon">💬</div>
                 <p>No messages yet.</p>
                 <p>Tap a friend above to start chatting!</p>
             </div>
@@ -88,36 +117,41 @@
     </div>
 </div>
 
-<!-- New Chat Modal (Simple implementation) -->
-<div id="newChatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; flex-direction:column; padding:20px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 style="color:white; margin:0;">New Message</h2>
-        <button onclick="document.getElementById('newChatModal').style.display='none'" style="background:none; border:none; color:white; font-size:24px;">✕</button>
-    </div>
-    <div style="overflow-y:auto;">
-        <% if (friendsList && friendsList.length > 0) { %>
-            <% friendsList.forEach(friend => { %>
-                <a href="/chat/<%= friend._id %>" style="display:flex; align-items:center; padding:12px; text-decoration:none; color:white; border-bottom:1px solid rgba(255,255,255,0.1);">
-                    <% 
-                    let fAvatarUrl = '/images/default-avatar.png';
-                    if (friend.avatarType === 'upload' && friend.avatar) {
-                        fAvatarUrl = '/uploads/avatars/' + friend.avatar;
-                    } else if (friend.avatarType === 'supabase' && friend.avatarSupabaseUrl) {
-                        fAvatarUrl = friend.avatarSupabaseUrl;
-                    } else if (friend.avatarUrl) {
-                        fAvatarUrl = friend.avatarUrl;
-                    } else if (friend.avatarSeed) {
-                        fAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + friend.avatarSeed;
-                    }
-                    %>
-                    <img src="<%= fAvatarUrl %>" style="width:40px; height:40px; border-radius:50%; margin-right:12px; object-fit:cover;">
-                    <div>
-                        <div style="font-weight:bold;"><%= friend.name || friend.username %></div>
-                        <div style="font-size:12px; color:#999;">@<%= friend.username %></div>
-                    </div>
-                </a>
-            <% }) %>
-        <% } %>
+<!-- New Chat Modal (Neo Style) -->
+<div id="newChatModal" class="neo-modal-overlay" style="display:none;">
+    <div class="neo-modal-content">
+        <div class="neo-modal-header">
+            <h2>New Message</h2>
+            <button onclick="document.getElementById('newChatModal').style.display='none'" class="neo-close-btn">✕</button>
+        </div>
+        <div class="neo-modal-body">
+            <% if (friendsList && friendsList.length > 0) { %>
+                <% friendsList.forEach(friend => { %>
+                    <a href="/chat/<%= friend._id %>" class="neo-user-item">
+                        <% 
+                        let fAvatarUrl = '/images/default-avatar.png';
+                        if (friend.avatarType === 'upload' && friend.avatar) {
+                            fAvatarUrl = '/uploads/avatars/' + friend.avatar;
+                        } else if (friend.avatarType === 'supabase' && friend.avatarSupabaseUrl) {
+                            fAvatarUrl = friend.avatarSupabaseUrl;
+                        } else if (friend.avatarUrl) {
+                            fAvatarUrl = friend.avatarUrl;
+                        } else if (friend.avatarSeed) {
+                            fAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + friend.avatarSeed;
+                        }
+                        %>
+                        <img src="<%= fAvatarUrl %>" class="neo-user-avatar">
+                        <div class="neo-user-info">
+                            <div class="neo-user-name"><%= friend.name || friend.username %></div>
+                            <div class="neo-user-handle">@<%= friend.username %></div>
+                        </div>
+                        <div class="neo-user-action">➜</div>
+                    </a>
+                <% }) %>
+            <% } else { %>
+                <p style="text-align:center; color:#888;">No friends found. Go to Campus to find people!</p>
+            <% } %>
+        </div>
     </div>
 </div>
 

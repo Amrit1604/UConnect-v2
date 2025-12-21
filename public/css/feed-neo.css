@@ -1076,6 +1076,26 @@ body.light-theme .load-more-btn-neo {
         gap: 8px;
     }
 
+    /* Theme toggle visible on mobile */
+    .theme-toggle-btn {
+        display: flex !important;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+    }
+
     /* Right sidebar slides in from right on mobile */
     .feed-sidebar-right {
         display: block;
@@ -1086,8 +1106,9 @@ body.light-theme .load-more-btn-neo {
         height: 100vh;
         background: #000000;
         z-index: 999;
-        overflow-y: auto;
-        padding: 80px 24px 24px;
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        padding: 80px 24px 100px;
         transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
     }
@@ -1558,3 +1579,43 @@ body.light-theme .load-more-btn-neo {
         gap: 30px;
     }
 }
+
+/* Mobile Logout Button */
+.mobile-logout-btn {
+    display: inline-block;
+    padding: 12px 20px;
+    background: rgba(255, 59, 92, 0.1);
+    border: 1px solid rgba(255, 59, 92, 0.3);
+    color: var(--red);
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+}
+
+.mobile-logout-btn:hover {
+    background: rgba(255, 59, 92, 0.2);
+    border-color: rgba(255, 59, 92, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Selection Color */
+::selection {
+    background: var(--red);
+    color: white;
+}
+
+::-moz-selection {
+    background: var(--red);
+    color: white;
+}
+
