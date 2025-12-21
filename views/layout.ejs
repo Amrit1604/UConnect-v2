@@ -351,5 +351,28 @@
 
     <%- include('partials/admin-modal') %>
 
+    <!-- Mobile Bottom Navigation (Apple Style) - Global -->
+    <nav class="mobile-bottom-nav">
+        <a href="/posts" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/posts' ? 'active' : '' %>">
+            <span class="mobile-nav-icon">🏠</span>
+            <span>Home</span>
+        </a>
+        <a href="/chat" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath.startsWith('/chat') ? 'active' : '' %>">
+            <span class="mobile-nav-icon">💬</span>
+            <span>Friends</span>
+        </a>
+        <a href="/posts/create" class="mobile-nav-create-btn" aria-label="Create Post">
+            <span>+</span>
+        </a>
+        <a href="/gossip" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/gossip' ? 'active' : '' %>">
+            <span class="mobile-nav-icon">🗣️</span>
+            <span>Gossip</span>
+        </a>
+        <a href="/users/profile" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/users/profile' ? 'active' : '' %>">
+            <span class="mobile-nav-icon">👤</span>
+            <span>Profile</span>
+        </a>
+    </nav>
+
 </body>
 </html>

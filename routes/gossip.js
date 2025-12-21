@@ -54,7 +54,7 @@ router.get('/', requireAuth, async (req, res) => {
     res.render('layout', {
       title: 'Gossip Box',
       bodyTemplate: 'posts/gossip-body',
-      additionalCSS: ['/css/gossip.css'],
+      additionalCSS: ['/css/feed-neo.css', '/css/gossip.css', '/css/gossip-neo.css'],
       additionalJS: ['/js/gossip.js'],
       gossips,
       anonId,

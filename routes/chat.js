@@ -46,7 +46,7 @@ router.get('/requests', async (req, res) => {
     res.render('layout', {
       title: 'Follow Requests',
       bodyTemplate: 'chat/requests-body',
-      additionalCSS: ['/css/chat.css'],
+      additionalCSS: ['/css/feed-neo.css', '/css/chat.css', '/css/chat-neo.css'],
       receivedRequests,
       sentRequests,
       user: req.user
@@ -484,12 +484,21 @@ router.get('/', async (req, res) => {
       return timeB - timeA;
     });
 
+    // Get all friends for the "New Chat" or "Active" list (limit to 50 for now)
+    const allFriendships = await Friendship.getUserFriendships(req.user._id, 1, 50);
+    const friendsList = allFriendships.map(f => {
+        const otherUserId = f.getOtherUserId(req.user._id);
+        const otherUser = f.users.find(u => u._id.toString() === otherUserId.toString());
+        return otherUser ? otherUser.toObject({ virtuals: true }) : null;
+    }).filter(u => u !== null);
+
     res.render('layout', {
       title: 'Messages',
       bodyTemplate: 'chat/inbox-body',
-      additionalCSS: ['/css/chat.css'],
+      additionalCSS: ['/css/feed-neo.css', '/css/chat.css', '/css/chat-neo.css'],
       additionalJS: ['/js/chat.js'],
       conversations: conversationsWithMessages,
+      friendsList,
       user: req.user
     });
 
@@ -540,7 +549,7 @@ router.get('/:userId', async (req, res) => {
     res.render('layout', {
       title: `Chat with ${otherUser.username}`,
       bodyTemplate: 'chat/conversation-body',
-      additionalCSS: ['/css/chat.css'],
+      additionalCSS: ['/css/feed-neo.css', '/css/chat.css', '/css/chat-neo.css'],
       additionalJS: ['/js/chat.js'],
       otherUser: otherUser.toObject({ virtuals: true }),
       messages,
@@ -580,7 +589,7 @@ router.get('/start/:userId', async (req, res) => {
     res.render('layout', {
       title: `Start chat with ${otherUser.username}`,
       bodyTemplate: 'chat/start-body',
-      additionalCSS: ['/css/chat.css'],
+      additionalCSS: ['/css/feed-neo.css', '/css/chat.css', '/css/chat-neo.css'],
       additionalJS: ['/js/chat.js'],
       otherUser: otherUser.toObject({ virtuals: true }),
       user: req.user

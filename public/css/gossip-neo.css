@@ -1,0 +1,338 @@
+/* Gossip Neo Styles */
+
+.gossip-page {
+  font-family: 'Inter', 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+  color: #fff;
+  min-height: 100vh;
+  padding-top: 80px;
+  padding-bottom: 60px;
+}
+
+.gossip-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header */
+.gossip-header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: slideDown 0.6s ease-out;
+}
+
+.gossip-title {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #ff3333, #ff7777);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+
+.gossip-subtitle {
+  font-size: 14px;
+  color: #999;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+/* Create Section */
+.gossip-create-section {
+  background: rgba(255, 51, 51, 0.08);
+  border: 1px solid rgba(255, 51, 51, 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  backdrop-filter: blur(10px);
+}
+
+.gossip-create-section label {
+  display: block;
+  color: #ff6666;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.gossip-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 51, 51, 0.2);
+  border-radius: 8px;
+  padding: 14px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  min-height: 100px;
+  resize: vertical;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.gossip-textarea:focus {
+  outline: none;
+  border-color: rgba(255, 51, 51, 0.6);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 15px rgba(255, 51, 51, 0.2);
+}
+
+.gossip-textarea::placeholder {
+  color: #666;
+}
+
+#charCount {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #999;
+  text-align: right;
+}
+
+.create-btn {
+  background: linear-gradient(90deg, #ff3333, #cc0000);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  cursor: pointer;
+  margin-top: 12px;
+  width: 100%;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  box-sizing: border-box;
+}
+
+.create-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
+  transform: translateY(-2px);
+}
+
+.create-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.create-btn:disabled {
+  background: #444;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Feed */
+.gossip-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Card */
+.gossip-card {
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(255, 51, 51, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.1);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.gossip-card:hover {
+  border-color: rgba(255, 51, 51, 0.4);
+  box-shadow: 0 0 30px rgba(255, 51, 51, 0.15);
+}
+
+/* Header Row */
+.gossip-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gossip-anon-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gossip-anon-id {
+  background: rgba(255, 51, 51, 0.15);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #ff9999;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.gossip-time {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Content */
+.gossip-content {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #eee;
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+}
+
+/* Actions */
+.gossip-actions {
+  display: flex;
+  gap: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  color: #fff;
+}
+
+.action-btn.like-btn:hover,
+.action-btn.like-btn.liked {
+  color: #ff3333;
+}
+
+.action-btn.comment-btn:hover {
+  color: #3399ff;
+}
+
+/* Comments Section */
+.comments-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: none;
+}
+
+.comments-section.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.comment-item {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: #666;
+}
+
+.comment-content {
+  color: #ddd;
+}
+
+.comment-input-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 8px 16px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: #3399ff;
+}
+
+.send-comment-btn {
+  background: #3399ff;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.send-comment-btn:hover {
+  background: #2288ee;
+  transform: scale(1.05);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Animations */
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gossip-page {
+    padding-top: 60px;
+  }
+  
+  .gossip-title {
+    font-size: 32px;
+  }
+  
+  .gossip-container {
+    padding: 16px;
+  }
+}

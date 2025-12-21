@@ -1,49 +1,141 @@
 <link rel="stylesheet" href="/css/chat-neo.css">
-<div class="chat-inbox">
-  <h2>Messages</h2>
-  <div id="conversationsList">
-    <% if (conversations && conversations.length) { %>
-      <% conversations.forEach(c => { %>
-        <div class="conversation-item neo-chat-item" data-other-id="<%= c.otherUser._id %>">
-          <a class="open-chat-mini" href="/chat/<%= c.otherUser._id %>">
-            <img src="<%= c.otherUser.avatarUrl %>" alt="avatar" width="44" height="44" style="border-radius:8px; border:2px solid rgba(255,255,255,0.03); object-fit:cover" />
-            <div style="margin-left:10px">
-              <div class="username" style="font-weight:700">@<%= c.otherUser.username %></div>
-              <div class="last-message" style="font-size:13px;color:rgba(255,255,255,0.6)"><%= c.lastMessage ? (c.lastMessage.content && c.lastMessage.content.slice(0,60)) : 'No messages yet' %></div>
+
+<div class="chat-inbox-container">
+    <!-- Header -->
+    <div class="inbox-header">
+        <h1>Messages</h1>
+        <button class="new-chat-btn" onclick="document.getElementById('newChatModal').style.display='flex'">✏️</button>
+    </div>
+
+    <!-- Search -->
+    <div class="inbox-search">
+        <input type="text" placeholder="Search" id="inboxSearch" />
+    </div>
+
+    <!-- Active/Friends Horizontal Scroll -->
+    <div class="friends-scroll-container">
+        <% if (friendsList && friendsList.length > 0) { %>
+            <% friendsList.forEach(friend => { %>
+                <a href="/chat/<%= friend._id %>" class="friend-bubble">
+                    <% 
+                    let avatarUrl = '/images/default-avatar.png';
+                    if (friend.avatarType === 'upload' && friend.avatar) {
+                        avatarUrl = '/uploads/avatars/' + friend.avatar;
+                    } else if (friend.avatarType === 'supabase' && friend.avatarSupabaseUrl) {
+                        avatarUrl = friend.avatarSupabaseUrl;
+                    } else if (friend.avatarUrl) {
+                        avatarUrl = friend.avatarUrl;
+                    } else if (friend.avatarSeed) {
+                        avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + friend.avatarSeed;
+                    }
+                    %>
+                    <img src="<%= avatarUrl %>" alt="<%= friend.username %>" />
+                    <span><%= friend.username %></span>
+                </a>
+            <% }) %>
+        <% } else { %>
+            <div style="color: #666; font-size: 12px; padding: 10px;">No friends yet</div>
+        <% } %>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="conversations-list">
+        <% if (conversations && conversations.length > 0) { %>
+            <% conversations.forEach(c => { %>
+                <a href="/chat/<%= c.otherUser._id %>" class="conversation-item">
+                    <% 
+                    let cAvatarUrl = '/images/default-avatar.png';
+                    if (c.otherUser.avatarType === 'upload' && c.otherUser.avatar) {
+                        cAvatarUrl = '/uploads/avatars/' + c.otherUser.avatar;
+                    } else if (c.otherUser.avatarType === 'supabase' && c.otherUser.avatarSupabaseUrl) {
+                        cAvatarUrl = c.otherUser.avatarSupabaseUrl;
+                    } else if (c.otherUser.avatarUrl) {
+                        cAvatarUrl = c.otherUser.avatarUrl;
+                    } else if (c.otherUser.avatarSeed) {
+                        cAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + c.otherUser.avatarSeed;
+                    }
+                    %>
+                    <img src="<%= cAvatarUrl %>" class="conversation-avatar" alt="<%= c.otherUser.username %>" />
+                    
+                    <div class="conversation-info">
+                        <div class="conversation-name"><%= c.otherUser.name || c.otherUser.username %></div>
+                        <div class="conversation-preview">
+                            <% if (c.lastMessage) { %>
+                                <% if (c.lastMessage.sender.toString() === user._id.toString()) { %>
+                                    You: <%= c.lastMessage.content %>
+                                <% } else { %>
+                                    <%= c.lastMessage.content %>
+                                <% } %>
+                            <% } else { %>
+                                Started a chat
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="conversation-meta">
+                        <% if (c.unreadCount > 0) { %>
+                            <div class="unread-badge"><%= c.unreadCount %></div>
+                        <% } %>
+                    </div>
+                </a>
+            <% }) %>
+        <% } else { %>
+            <div style="text-align: center; padding: 40px; color: #666;">
+                <p>No messages yet.</p>
+                <p>Tap a friend above to start chatting!</p>
             </div>
-          </a>
-          <% if (c.unreadCount && c.unreadCount>0) { %>
-            <div class="unread neo-unread"><%= c.unreadCount %></div>
-          <% } %>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <div class="chat-empty">You have no conversations yet. Connect with people to start chatting.</div>
-    <% } %>
-  </div>
+        <% } %>
+    </div>
 </div>
 
-<script>window.__USER_ID__ = '<%= user._id %>';</script>
-<div class="chat-inbox" data-profile-user-id="<%= user ? user._id : '' %>">
-  <h2>Messages</h2>
-  <div id="conversationsList">
-    <% if (conversations && conversations.length>0) { %>
-      <% conversations.forEach(c => { %>
-        <div class="conversation-item neo-chat-item" data-other-id="<%= c.otherUser._id %>">
-          <a class="open-chat-mini" href="/chat/<%= c.otherUser._id %>">@<%= c.otherUser.username %></a>
-          <div class="last-message" style="color:rgba(255,255,255,0.6)"><%= c.lastMessage ? c.lastMessage.content : '' %></div>
-          <% if (c.unreadCount) { %>
-            <div class="unread neo-unread"><%= c.unreadCount %></div>
-          <% } %>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <div>No conversations yet.</div>
-    <% } %>
-  </div>
+<!-- New Chat Modal (Simple implementation) -->
+<div id="newChatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; flex-direction:column; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="color:white; margin:0;">New Message</h2>
+        <button onclick="document.getElementById('newChatModal').style.display='none'" style="background:none; border:none; color:white; font-size:24px;">✕</button>
+    </div>
+    <div style="overflow-y:auto;">
+        <% if (friendsList && friendsList.length > 0) { %>
+            <% friendsList.forEach(friend => { %>
+                <a href="/chat/<%= friend._id %>" style="display:flex; align-items:center; padding:12px; text-decoration:none; color:white; border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <% 
+                    let fAvatarUrl = '/images/default-avatar.png';
+                    if (friend.avatarType === 'upload' && friend.avatar) {
+                        fAvatarUrl = '/uploads/avatars/' + friend.avatar;
+                    } else if (friend.avatarType === 'supabase' && friend.avatarSupabaseUrl) {
+                        fAvatarUrl = friend.avatarSupabaseUrl;
+                    } else if (friend.avatarUrl) {
+                        fAvatarUrl = friend.avatarUrl;
+                    } else if (friend.avatarSeed) {
+                        fAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + friend.avatarSeed;
+                    }
+                    %>
+                    <img src="<%= fAvatarUrl %>" style="width:40px; height:40px; border-radius:50%; margin-right:12px; object-fit:cover;">
+                    <div>
+                        <div style="font-weight:bold;"><%= friend.name || friend.username %></div>
+                        <div style="font-size:12px; color:#999;">@<%= friend.username %></div>
+                    </div>
+                </a>
+            <% }) %>
+        <% } %>
+    </div>
 </div>
 
 <script>
-  // Provide current user id to client chat script
-  window.__USER_ID__ = '<%= user ? user._id : '' %>';
+    // Simple search filter
+    document.getElementById('inboxSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const items = document.querySelectorAll('.conversation-item');
+        items.forEach(item => {
+            const name = item.querySelector('.conversation-name').textContent.toLowerCase();
+            if (name.includes(term)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+    
+    // Provide current user id to client chat script
+    window.__USER_ID__ = '<%= user ? user._id : '' %>';
 </script>

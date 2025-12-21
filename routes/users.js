@@ -935,7 +935,7 @@ router.get('/campus', async (req, res) => {
       isActive: true,
       _id: { $ne: req.user._id } // Exclude current user
     })
-    .select('displayName avatar stats createdAt')
+    .select('displayName username avatar avatarType avatarSupabaseUrl avatarSeed avatarGridFSId stats createdAt')
     .sort({ 'stats.postsCount': -1, createdAt: -1 })
     .skip(skip)
     .limit(limit);

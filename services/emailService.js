@@ -1,22 +1,20 @@
 /**
  * Email Service - UConnect 🔥
- * Hybrid Email System: SMTP (Local) + Resend API (Production)
+ * Hybrid Email System: Brevo API (Production) + SMTP (Local)
  *
  * LOCAL DEV  → Gmail SMTP (your gmail app password)
- * PRODUCTION → Resend API (works on Render free tier!)
+ * PRODUCTION → Brevo API (300 emails/day FREE - works on Render!)
  *
  * Super cool Red/White/Black branded emails! 🎨
  */
 
 const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
 
 class EmailService {
   constructor() {
     this.transporter = null;
-    this.resend = null;
     this.isConfigured = false;
-    this.useResend = false;
+    this.useBrevo = false;
     this.maxRetries = 3;
     this.initialize();
   }
@@ -31,40 +29,41 @@ class EmailService {
     console.log('╚════════════════════════════════════════════════════════════╝');
     console.log('🌐 Environment:', process.env.NODE_ENV || 'development');
 
-    // USE RESEND API EVERYWHERE (works on Render free tier and locally!)
-    if (process.env.RESEND_API_KEY) {
-      this.initializeResend();
-    } else {
-      // Fallback to SMTP only if Resend API key is not available
-      console.warn('⚠️ RESEND_API_KEY not found, falling back to SMTP...');
+    // Priority: Brevo API → SMTP
+    if (process.env.BREVO_API_KEY) {
+      this.initializeBrevo();
+    } else if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       this.initializeSMTP();
+    } else {
+      console.warn('⚠️ No email provider configured!');
+      console.warn('💡 Set BREVO_API_KEY for production or EMAIL_USER/EMAIL_PASS for SMTP');
+      this.isConfigured = false;
     }
     console.log('');
   }
 
   /**
-   * Initialize Resend API for production (Render)
-   * Resend works perfectly on Render's free tier! 🚀
+   * Initialize Brevo API for production (Render)
+   * Brevo offers 300 emails/day FREE - perfect for startups! 🚀
    */
-  initializeResend() {
+  initializeBrevo() {
     try {
-      console.log('📧 Mode: RESEND API (Production)');
-      console.log('🔑 API Key:', process.env.RESEND_API_KEY ? '***' + process.env.RESEND_API_KEY.slice(-8) : 'MISSING');
+      console.log('📧 Mode: BREVO API (Production - 300 emails/day FREE!)');
+      console.log('🔑 API Key:', process.env.BREVO_API_KEY ? '***' + process.env.BREVO_API_KEY.slice(-8) : 'MISSING');
 
-      if (!process.env.RESEND_API_KEY) {
-        console.error('❌ RESEND_API_KEY is missing in environment variables!');
+      if (!process.env.BREVO_API_KEY) {
+        console.error('❌ BREVO_API_KEY is missing in environment variables!');
         this.isConfigured = false;
         return;
       }
 
-      this.resend = new Resend(process.env.RESEND_API_KEY);
-      this.useResend = true;
+      this.useBrevo = true;
       this.isConfigured = true;
 
-      console.log('✅ Resend API initialized successfully! 🚀');
-      console.log('📬 From:', process.env.RESEND_FROM || 'UConnect <onboarding@resend.dev>');
+      console.log('✅ Brevo API initialized successfully! 🚀');
+      console.log('📬 From:', process.env.BREVO_FROM || process.env.EMAIL_USER || 'noreply@uconnect.com');
     } catch (error) {
-      console.error('❌ Resend initialization failed:', error.message);
+      console.error('❌ Brevo initialization failed:', error.message);
       this.isConfigured = false;
     }
   }
@@ -125,21 +124,21 @@ class EmailService {
 
   /**
    * Send verification email
-   * Uses Resend (production) or SMTP (development) automatically
+   * Uses Brevo (production) or SMTP (development) automatically
    */
   async sendVerificationEmail({ to, username, name, verificationUrl }) {
     console.log('');
     console.log('📧 ═══════════════════════════════════════════════════════');
     console.log('📧 SENDING VERIFICATION EMAIL');
     console.log('📧 To:', to);
-    console.log('📧 Provider:', this.useResend ? '🚀 Resend API' : '📮 Gmail SMTP');
+    console.log('📧 Provider:', this.useBrevo ? '🚀 Brevo API' : '📮 Gmail SMTP');
     console.log('📧 ═══════════════════════════════════════════════════════');
 
     const html = this.generateVerificationHTML({ name, username, verificationUrl, to });
     const text = this.generateVerificationText({ name, verificationUrl });
 
-    if (this.useResend) {
-      return this.sendWithResend({
+    if (this.useBrevo) {
+      return this.sendWithBrevo({
         to,
         subject: '🔥 Verify Your UConnect Account',
         html,
@@ -163,14 +162,14 @@ class EmailService {
     console.log('📧 ═══════════════════════════════════════════════════════');
     console.log('📧 SENDING PASSWORD RESET EMAIL');
     console.log('📧 To:', to);
-    console.log('📧 Provider:', this.useResend ? '🚀 Resend API' : '📮 Gmail SMTP');
+    console.log('📧 Provider:', this.useBrevo ? '🚀 Brevo API' : '📮 Gmail SMTP');
     console.log('📧 ═══════════════════════════════════════════════════════');
 
     const html = this.generateResetPasswordHTML({ name, username, resetUrl, to });
     const text = this.generateResetPasswordText({ name, resetUrl });
 
-    if (this.useResend) {
-      return this.sendWithResend({
+    if (this.useBrevo) {
+      return this.sendWithBrevo({
         to,
         subject: '🔐 Reset Your UConnect Password',
         html,
@@ -187,32 +186,50 @@ class EmailService {
   }
 
   /**
-   * Send email using Resend API (Production - Render)
+   * Send email using Brevo API (Production - Render)
+   * 300 emails/day FREE! 🚀
    */
-  async sendWithResend({ to, subject, html, text }) {
+  async sendWithBrevo({ to, subject, html, text }) {
     try {
-      console.log('🚀 Sending via Resend API...');
+      console.log('🚀 Sending via Brevo API...');
 
-      const result = await this.resend.emails.send({
-        from: process.env.RESEND_FROM || 'UConnect <onboarding@resend.dev>',
-        to: to,
-        subject: subject,
-        html: html,
-        text: text
+      const fromEmail = process.env.BREVO_FROM || process.env.EMAIL_USER || 'noreply@uconnect.com';
+      const fromName = 'UConnect';
+
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: to }],
+          subject: subject,
+          htmlContent: html,
+          textContent: text
+        })
       });
 
-      console.log('✅ Email sent via Resend!');
-      console.log('📧 Message ID:', result.data?.id || result.id || 'N/A');
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error('❌ Brevo API error:', result);
+        throw new Error(result.message || 'Brevo API request failed');
+      }
+
+      console.log('✅ Email sent via Brevo!');
+      console.log('📧 Message ID:', result.messageId || 'N/A');
 
       return {
         success: true,
-        messageId: result.data?.id || result.id,
-        provider: 'resend'
+        messageId: result.messageId,
+        provider: 'brevo'
       };
     } catch (error) {
-      console.error('❌ Resend error:', error.message);
-      console.error('📋 Error details:', JSON.stringify(error, null, 2));
-      throw new Error(`Failed to send email via Resend: ${error.message}`);
+      console.error('❌ Brevo error:', error.message);
+      throw new Error(`Failed to send email via Brevo: ${error.message}`);
     }
   }
 
@@ -567,8 +584,8 @@ Click here to reset: ${resetUrl}
    * Verify email service connection
    */
   async verifyConnection() {
-    if (this.useResend) {
-      console.log('✅ Resend API is configured');
+    if (this.useBrevo) {
+      console.log('✅ Brevo API is configured');
       return true;
     }
 

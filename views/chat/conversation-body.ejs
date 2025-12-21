@@ -2,8 +2,21 @@
 <div class="chat-window chat-conversation" data-other-id="<%= otherUser._id %>">
   <div class="chat-header">
     <div style="display:flex;align-items:center;gap:10px">
-      <div class="presence-dot" id="presenceDot"></div>
-      <div class="title">Chat with <%= otherUser.username %></div>
+      <a href="/chat" class="back-btn" style="color:white;text-decoration:none;font-size:20px;margin-right:5px;">←</a>
+      <% 
+      let avatarUrl = '/images/default-avatar.png';
+      if (otherUser.avatarType === 'upload' && otherUser.avatar) {
+          avatarUrl = '/uploads/avatars/' + otherUser.avatar;
+      } else if (otherUser.avatarType === 'supabase' && otherUser.avatarSupabaseUrl) {
+          avatarUrl = otherUser.avatarSupabaseUrl;
+      } else if (otherUser.avatarUrl) {
+          avatarUrl = otherUser.avatarUrl;
+      } else if (otherUser.avatarSeed) {
+          avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
+      }
+      %>
+      <img src="<%= avatarUrl %>" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+      <div class="title" style="font-weight:bold;"><%= otherUser.username %></div>
     </div>
     <div style="margin-left:auto">
       <span id="presenceBadge" class="presence-badge offline">Offline</span>

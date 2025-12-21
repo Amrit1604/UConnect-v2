@@ -680,29 +680,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 </script>
 
-<!-- Mobile Bottom Navigation (Apple Style) -->
-<nav class="mobile-bottom-nav">
-    <a href="/posts" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/posts' ? 'active' : '' %>">
-        <span class="mobile-nav-icon">🏠</span>
-        <span>Home</span>
-    </a>
-    <a href="/users/campus" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/users/campus' ? 'active' : '' %>">
-        <span class="mobile-nav-icon">👥</span>
-        <span>Campus</span>
-    </a>
-    <a href="/posts/create" class="mobile-nav-create-btn" aria-label="Create Post">
-        <span>+</span>
-    </a>
-    <a href="/gossip" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/gossip' ? 'active' : '' %>">
-        <span class="mobile-nav-icon">🗣️</span>
-        <span>Gossip</span>
-    </a>
-    <a href="/users/profile" class="mobile-nav-item <%= typeof currentPath !== 'undefined' && currentPath === '/users/profile' ? 'active' : '' %>">
-        <span class="mobile-nav-icon">👤</span>
-        <span>Profile</span>
-    </a>
-</nav>
-
 <footer class="footer-neo">
     <div class="footer-container-neo">
         <div class="footer-content-neo">
