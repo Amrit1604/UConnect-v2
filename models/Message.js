@@ -68,6 +68,17 @@ const messageSchema = new mongoose.Schema({
   },
   
   // Message status
+  isDelivered: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  
+  deliveredAt: {
+    type: Date,
+    default: null
+  },
+  
   isRead: {
     type: Boolean,
     default: false,
@@ -99,6 +110,17 @@ const messageSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  
+  // Edit tracking
+  isEdited: {
+    type: Boolean,
+    default: false
+  },
+  
+  editedAt: {
+    type: Date,
+    default: null
+  },
   
   // Reply to another message
   replyTo: {

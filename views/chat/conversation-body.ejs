@@ -2,7 +2,7 @@
 <div class="chat-window chat-conversation" data-other-id="<%= otherUser._id %>">
   <div class="chat-header">
     <div style="display:flex;align-items:center;gap:10px">
-      <a href="/chat" class="back-btn" style="color:white;text-decoration:none;font-size:20px;margin-right:5px;">←</a>
+      <a href="/chat" class="back-btn" style="color:white;text-decoration:none;font-size:20px;margin-right:5px;display:none;">←</a>
       <% 
       let avatarUrl = '/images/default-avatar.png';
       if (otherUser.avatarType === 'upload' && otherUser.avatar) {
@@ -15,11 +15,11 @@
           avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
       }
       %>
-      <img src="<%= avatarUrl %>" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
-      <div class="title" style="font-weight:bold;"><%= otherUser.username %></div>
-    </div>
-    <div style="margin-left:auto">
-      <span id="presenceBadge" class="presence-badge offline">Offline</span>
+      <img src="<%= avatarUrl %>" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);">
+      <div>
+        <div class="title" style="font-weight:bold;font-size:16px;"><%= otherUser.name || otherUser.username %></div>
+        <span id="presenceBadge" class="presence-badge offline" style="font-size:10px;padding:2px 8px;">Offline</span>
+      </div>
     </div>
   </div>
 
@@ -31,7 +31,7 @@
           <div class="bubble">
             <div class="bubble-meta">
               <span class="bubble-username"><%= m.sender && m.sender.username ? (isMe ? 'You' : m.sender.username) : '' %></span>
-              <span class="bubble-time"><%= new Date(m.sentAt).toLocaleString() %></span>
+              <span class="bubble-time"><%= new Date(m.sentAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) %></span>
               <span class="read-receipt" style="float:right;"></span>
             </div>
             <div class="bubble-content"><%= m.content %></div>
@@ -39,11 +39,15 @@
         </div>
       <% }) %>
     <% } else { %>
-      <div class="chat-empty">No messages yet. Say hi!</div>
+      <div class="chat-empty" style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);">
+        <div style="font-size:48px;margin-bottom:12px;">💬</div>
+        <div style="font-size:16px;">No messages yet</div>
+        <div style="font-size:14px;margin-top:8px;">Send a message to start the conversation</div>
+      </div>
     <% } %>
   </div>
 
-  <div class="chat-typing" id="typingIndicator" aria-hidden="true">
+  <div class="chat-typing" id="typingIndicator" aria-hidden="true" style="display: none; opacity: 0;">
     <div class="typing-indicator" aria-hidden="true">
       <span class="dot"></span>
       <span class="dot"></span>
@@ -67,7 +71,12 @@
 
       const form = document.getElementById('chatSendForm');
       const input = document.getElementById('chatMessageInput');
-      const typingIndicator = document.getElementById('typingIndicator');
+      const backBtn = document.querySelector('.back-btn');
+
+      // Show back button on mobile
+      if (window.innerWidth <= 768) {
+        backBtn.style.display = 'inline-flex';
+      }
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -76,18 +85,43 @@
         try {
           await window.chatSendMessage(otherId, text);
           input.value = '';
+          // Stop typing indicator when sending
+          if (window.chatTyping) window.chatTyping(otherId, false);
         } catch (err) {
           alert('Failed to send');
         }
       });
 
-      input.addEventListener('input', ()=>{ window.chatTyping(otherId, true); });
+      // Debounced typing indicator
+      let typingTimeout = null;
+      input.addEventListener('input', () => { 
+        if (window.chatTyping) {
+          window.chatTyping(otherId, true);
+        }
+      });
 
-      // Typing indicator will be handled by global socket handler in chat.js
-      // Scroll to bottom on load and focus input
+      // Scroll to bottom on load
       const msgs = document.getElementById('conversationMessages');
-      if (msgs) { msgs.scrollTop = msgs.scrollHeight; }
-      input.focus();
+      if (msgs) { 
+        msgs.scrollTop = msgs.scrollHeight; 
+      }
+      
+      // Focus input after delay for mobile
+      setTimeout(() => {
+        input.focus();
+      }, 500);
+      
+      // Auto-scroll on keyboard open
+      input.addEventListener('focus', () => {
+        setTimeout(() => {
+          if (msgs) {
+            msgs.scrollTo({
+              top: msgs.scrollHeight,
+              behavior: 'smooth'
+            });
+          }
+        }, 300);
+      });
     })();
   </script>
 </div>

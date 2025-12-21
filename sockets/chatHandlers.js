@@ -28,7 +28,10 @@ function initializeChatHandlers(io) {
         socket.userId = userId;
 
         // Join user's personal room for notifications
-        socket.join(`user:${userId}`);
+        const roomName = `user:${userId}`;
+        socket.join(roomName);
+        console.log(`✅ User ${userId} joined room: ${roomName}`);
+        console.log(`📋 Socket ${socket.id} rooms:`, Array.from(socket.rooms));
 
         // Broadcast online status to user's friends
         const friendships = await Friendship.getUserFriendships(userId, 1, 100);

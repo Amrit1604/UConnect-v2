@@ -24,7 +24,6 @@ router.get('/file/:fileId', async (req, res) => {
     const objectId = new mongoose.Types.ObjectId(fileId);
     const db = mongoose.connection.db;
 
-    // Try finding file in different buckets
     const buckets = ['uploads', 'avatars', 'posts', 'videos'];
     let file = null;
     let bucketName = null;

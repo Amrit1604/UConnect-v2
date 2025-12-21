@@ -29,30 +29,65 @@
   socket.on('new_message', (payload) => {
     try {
       const msg = payload.message;
-      // Try to append to conversation list if present
+      const senderId = (msg && msg.sender && (msg.sender._id || msg.sender.id)) || (payload.sender && payload.sender.id);
+      const isMe = senderId && String(senderId) === String(userId);
+      
+      // Only render if we're in a conversation and it matches current chat
+      const currentOtherId = window.__CHAT_OTHER_USER_ID__;
       const convList = document.getElementById('conversationMessages');
-      if (convList) {
-        const li = document.createElement('div');
-        // Determine sender id robustly
-        const senderId = (msg && msg.sender && (msg.sender._id || msg.sender.id)) || (payload.sender && payload.sender.id);
-        const isMe = senderId && String(senderId) === String(userId);
-        li.className = 'chat-message-item ' + (isMe ? 'me' : '');
-        // Attach message id when available
-        if (msg && (msg._id || msg.id)) li.setAttribute('data-msg-id', msg._id || msg.id);
+      
+      // Check if this message is for the current conversation
+      const isCurrentConv = currentOtherId && (
+        String(senderId) === String(currentOtherId) || 
+        (payload.recipient && String(payload.recipient) === String(currentOtherId))
+      );
+      
+      if (convList && isCurrentConv) {
+        // Check if message already exists (avoid duplicates)
+        const msgId = msg._id || msg.id;
+        if (msgId && document.querySelector(`[data-msg-id="${msgId}"]`)) {
+          console.log('Message already exists, skipping');
+          return;
+        }
+        
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'msg ' + (isMe ? 'msg--sent' : 'msg--received');
+        if (msgId) msgDiv.setAttribute('data-msg-id', msgId);
+        
         const time = new Date(msg.sentAt || Date.now()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        const senderName = (payload.sender && payload.sender.username) || (msg.sender && msg.sender.username) || 'Unknown';
-        li.innerHTML = `<div><strong>${escapeHtml(senderName)}</strong> <span style="color:var(--muted);font-size:12px;margin-left:8px">${time}</span> <span class="read-receipt" style="float:right;color:var(--muted);font-size:11px"></span></div><div>${escapeHtml(msg.content || '')}</div>`;
-        convList.appendChild(li);
-        // Auto-scroll
-        convList.scrollTop = convList.scrollHeight;
+        const senderName = isMe ? 'You' : ((payload.sender && payload.sender.username) || (msg.sender && msg.sender.username) || 'User');
+        
+        msgDiv.innerHTML = `
+          <div class="bubble">
+            <div class="bubble-meta">
+              <span class="bubble-username">${escapeHtml(senderName)}</span>
+              <span class="bubble-time">${time}</span>
+              <span class="read-receipt" style="float:right;"></span>
+            </div>
+            <div class="bubble-content">${escapeHtml(msg.content || '')}</div>
+          </div>
+        `;
+        
+        convList.appendChild(msgDiv);
+        
+        // Smooth auto-scroll
+        setTimeout(() => {
+          convList.scrollTo({
+            top: convList.scrollHeight,
+            behavior: 'smooth'
+          });
+        }, 50);
       }
 
-      // Update conversations list preview if present
-      const otherIdForPreview = (msg && msg.sender && (msg.sender._id || msg.sender.id)) || (payload.sender && payload.sender.id);
+      // Update conversations list preview
+      const otherIdForPreview = isMe ? payload.recipient : senderId;
       const convItem = document.querySelector(`.conversation-item[data-other-id="${otherIdForPreview}"]`);
       if (convItem) {
-        const last = convItem.querySelector('.last-message');
-        if (last) last.textContent = msg.content ? (msg.content.slice(0,60)) : '';
+        const last = convItem.querySelector('.conversation-preview');
+        if (last) last.textContent = msg.content ? (msg.content.slice(0,50) + '...') : '';
+        
+        const timeEl = convItem.querySelector('.conversation-time');
+        if (timeEl) timeEl.textContent = 'Just now';
       }
     } catch (e) { console.warn('chat: could not render incoming message', e); }
   });
@@ -83,7 +118,15 @@
       // if typing event matches the other user in current view, show indicator
       if (otherId && String(userId) === String(otherId)){
         const indicator = document.getElementById('typingIndicator');
-        if (indicator) indicator.textContent = isTyping ? 'Typing...' : '';
+        if (indicator) {
+          if (isTyping) {
+            indicator.style.display = 'block';
+            indicator.style.opacity = '1';
+          } else {
+            indicator.style.opacity = '0';
+            setTimeout(() => { indicator.style.display = 'none'; }, 300);
+          }
+        }
       }
     } catch (e) { /* ignore */ }
   });
@@ -177,13 +220,29 @@
     }
   });
 
-  // Typing helpers
+  // Typing helpers with debounce
   let typingTimer = null;
+  let isCurrentlyTyping = false;
+  
   window.chatTyping = function(otherUserId, isStart) {
-    socket.emit(isStart ? 'typing_start' : 'typing_stop', { userId, otherUserId });
     if (isStart) {
+      // Only emit if not already typing
+      if (!isCurrentlyTyping) {
+        socket.emit('typing_start', { userId, otherUserId });
+        isCurrentlyTyping = true;
+      }
+      // Reset timer
       if (typingTimer) clearTimeout(typingTimer);
-      typingTimer = setTimeout(() => socket.emit('typing_stop', { userId, otherUserId }), 3000);
+      typingTimer = setTimeout(() => {
+        socket.emit('typing_stop', { userId, otherUserId });
+        isCurrentlyTyping = false;
+      }, 2000);
+    } else {
+      if (typingTimer) clearTimeout(typingTimer);
+      if (isCurrentlyTyping) {
+        socket.emit('typing_stop', { userId, otherUserId });
+        isCurrentlyTyping = false;
+      }
     }
   };
 

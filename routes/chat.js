@@ -495,7 +495,8 @@ router.get('/', async (req, res) => {
     res.render('layout', {
       title: 'Messages',
       bodyTemplate: 'chat/inbox-body',
-      additionalCSS: ['/css/feed-neo.css', '/css/chat.css', '/css/chat-neo.css'],
+      bodyClass: 'chat-inbox-page',
+      additionalCSS: ['/css/chat-neo.css'],
       additionalJS: ['/js/chat.js'],
       conversations: conversationsWithMessages,
       friendsList,
@@ -548,9 +549,10 @@ router.get('/:userId', async (req, res) => {
 
     res.render('layout', {
       title: `Chat with ${otherUser.username}`,
-      bodyTemplate: 'chat/conversation-body',
-      additionalCSS: ['/css/feed-neo.css', '/css/chat.css', '/css/chat-neo.css'],
-      additionalJS: ['/js/chat.js'],
+      bodyTemplate: 'chat/conversation-body-new',
+      bodyClass: 'chat-conversation-page',
+      additionalCSS: [],
+      additionalJS: [],
       otherUser: otherUser.toObject({ virtuals: true }),
       messages,
       friendship,
@@ -616,9 +618,15 @@ router.post('/:userId/message',
     .withMessage('Invalid reply message ID'),
   logActivity('send message'),
   async (req, res) => {
+    console.log('📩 POST /chat/:userId/message received');
+    console.log('📩 Params:', req.params);
+    console.log('📩 Body:', req.body);
+    console.log('📩 User:', req.user?._id);
+    
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('❌ Validation errors:', errors.array());
         return res.status(400).json({ 
           success: false, 
           message: errors.array()[0].msg 
@@ -626,8 +634,10 @@ router.post('/:userId/message',
       }
 
       const receiverId = req.params.userId;
+      console.log('📩 Receiver ID:', receiverId);
 
       if (!mongoose.Types.ObjectId.isValid(receiverId)) {
+        console.log('❌ Invalid ObjectId');
         return res.status(400).json({ 
           success: false, 
           message: 'Invalid user ID' 
@@ -635,7 +645,10 @@ router.post('/:userId/message',
       }
 
       // Check if users are friends
+      console.log('🔍 Checking friendship...');
       const areFriends = await Friendship.areFriends(req.user._id, receiverId);
+      console.log('🔍 Are friends:', areFriends);
+      
       if (!areFriends) {
         return res.status(403).json({ 
           success: false, 
@@ -645,8 +658,10 @@ router.post('/:userId/message',
 
       // Get friendship
       const friendship = await Friendship.getFriendship(req.user._id, receiverId);
+      console.log('🔍 Friendship:', friendship?._id);
 
       // Create message
+      console.log('💾 Creating message...');
       const message = await Message.create({
         sender: req.user._id,
         receiver: receiverId,
@@ -655,6 +670,7 @@ router.post('/:userId/message',
         content: req.body.content,
         replyTo: req.body.replyTo || null
       });
+      console.log('✅ Message created:', message._id);
 
       // Update friendship
       await friendship.updateLastMessage();
@@ -671,8 +687,13 @@ router.post('/:userId/message',
 
       // Emit Socket.IO event
       const io = req.app.get('io');
+      console.log('📡 Socket.IO instance:', io ? 'EXISTS' : 'MISSING');
       if (io) {
-        io.to(`user:${receiverId}`).emit('new_message', {
+        const roomName = `user:${receiverId}`;
+        console.log('📡 Emitting new_message to room:', roomName);
+        console.log('📡 Message ID:', message._id);
+        
+        io.to(roomName).emit('new_message', {
           message: message.toObject({ virtuals: true }),
           sender: {
             id: req.user._id,
@@ -681,6 +702,24 @@ router.post('/:userId/message',
             avatarUrl: req.user.avatarUrl
           }
         });
+        
+        // Mark as delivered if receiver is online
+        const chatHandlers = require('../sockets/chatHandlers');
+        if (chatHandlers.isUserOnline(receiverId)) {
+          message.isDelivered = true;
+          message.deliveredAt = new Date();
+          await message.save();
+          
+          // Notify sender about delivery
+          io.to(`user:${req.user._id}`).emit('message_delivered', {
+            messageId: message._id,
+            deliveredAt: message.deliveredAt
+          });
+        }
+        
+        console.log('📡 Emit completed');
+      } else {
+        console.log('❌ No Socket.IO instance!');
       }
 
       return res.json({ 
@@ -867,6 +906,23 @@ router.delete('/message/:messageId',
       // Soft delete for user
       await message.deleteForUser(req.user._id);
 
+      // Emit Socket.IO event to notify other user
+      const io = req.app.get('io');
+      if (io) {
+        const otherUserId = message.sender.toString() === req.user._id.toString() 
+          ? message.receiver 
+          : message.sender;
+        
+        console.log('📡 Emitting message_deleted to room:', `user:${otherUserId}`);
+        io.to(`user:${otherUserId}`).emit('message_deleted', {
+          messageId: message._id,
+          deletedBy: req.user._id
+        });
+        console.log('📡 Delete event emitted');
+      } else {
+        console.log('❌ No Socket.IO instance for delete!');
+      }
+
       return res.json({ 
         success: true, 
         message: 'Message deleted' 
@@ -877,6 +933,96 @@ router.delete('/message/:messageId',
       return res.status(500).json({ 
         success: false, 
         message: 'Failed to delete message' 
+      });
+    }
+  }
+);
+
+// PUT /chat/message/:messageId - Edit message (within 5 min)
+router.put('/message/:messageId',
+  body('content')
+    .trim()
+    .notEmpty()
+    .withMessage('Message content is required')
+    .isLength({ max: 5000 })
+    .withMessage('Message cannot exceed 5000 characters'),
+  logActivity('edit message'),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false, 
+          message: errors.array()[0].msg 
+        });
+      }
+
+      const messageId = req.params.messageId;
+
+      if (!mongoose.Types.ObjectId.isValid(messageId)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid message ID' 
+        });
+      }
+
+      const message = await Message.findById(messageId);
+
+      if (!message) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Message not found' 
+        });
+      }
+
+      // Only sender can edit
+      if (message.sender.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Only sender can edit message' 
+        });
+      }
+
+      // Check if message is within 5 minutes
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      if (message.sentAt < fiveMinutesAgo) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Can only edit messages within 5 minutes' 
+        });
+      }
+
+      // Update message
+      message.content = req.body.content;
+      message.isEdited = true;
+      message.editedAt = new Date();
+      await message.save();
+
+      // Emit Socket.IO event
+      const io = req.app.get('io');
+      if (io) {
+        console.log('📡 Emitting message_edited to room:', `user:${message.receiver}`);
+        io.to(`user:${message.receiver}`).emit('message_edited', {
+          messageId: message._id,
+          content: message.content,
+          isEdited: true,
+          editedAt: message.editedAt
+        });
+        console.log('📡 Edit event emitted');
+      } else {
+        console.log('❌ No Socket.IO instance for edit!');
+      }
+
+      return res.json({ 
+        success: true, 
+        message: message.toObject({ virtuals: true })
+      });
+
+    } catch (error) {
+      console.error('Edit message error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to edit message' 
       });
     }
   }
