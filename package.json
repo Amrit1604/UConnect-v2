@@ -78,6 +78,12 @@
     "nodemon": "^3.0.1",
     "supertest": "^6.3.3"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["./jest.setup.js"],
+    "coveragePathIgnorePatterns": ["/node_modules/", "/tests/"],
+    "testTimeout": 30000
+  },
   "engines": {
     "node": ">=16.0.0"
   },

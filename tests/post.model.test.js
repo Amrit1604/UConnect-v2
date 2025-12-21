@@ -5,15 +5,28 @@ const User = require('../models/User');
 
 describe('Post Model', () => {
   let user;
+  
+  // Use existing mongoose connection from app.js
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/uconnect_test');
-    user = new User({ username: 'postuser', email: 'postuser@example.com', password: 'pw' });
-    await user.save();
+    // Create test user
+    user = await User.create({ 
+      name: 'Post Test User',
+      username: 'postuser_model', 
+      email: 'postuser@gmail.com', 
+      password: 'hashedpassword123',
+      campus: 'Test Campus',
+      isVerified: true
+    });
   });
+  
   afterAll(async () => {
-    await User.deleteOne({ _id: user._id });
-    await mongoose.connection.close();
+    // Clean up
+    if (user && user._id) {
+      await Post.deleteMany({ author: user._id });
+      await User.deleteOne({ _id: user._id });
+    }
   });
+  
   it('should create a post', async () => {
     const post = new Post({
       author: user._id,

@@ -72,6 +72,7 @@ afterAll(async () => {
   await Friendship.deleteMany({});
   await Message.deleteMany({});
   await Notification.deleteMany({});
+  // Mongoose connection will be closed by jest.setup.js
 });
 
 // Helper function to login user
