@@ -28,7 +28,14 @@
       <% if (users && users.length) { %>
         <% users.forEach(u => { %>
           <div class="post-card-neo" style="padding:16px;display:flex;flex-direction:column;align-items:center;text-align:center;">
-            <% const avatar = (u.avatarUrl || '/images/default-avatar.png') + (u.updatedAt ? ('?v=' + new Date(u.updatedAt).getTime()) : ''); %>
+            <% 
+              const baseAvatar = (u.avatarUrl || '/images/default-avatar.png');
+              const isDicebearAvatar = typeof baseAvatar === 'string' && baseAvatar.includes('api.dicebear.com');
+              const ver = (u.updatedAt ? new Date(u.updatedAt).getTime() : null);
+              const avatar = (!isDicebearAvatar && ver)
+                ? (baseAvatar + (baseAvatar.includes('?') ? '&' : '?') + 'v=' + ver)
+                : baseAvatar;
+            %>
             <a href="/users/<%= u.username %>" style="text-decoration:none;">
               <img src="<%= avatar %>" alt="@<%= u.username %>" class="author-avatar-neo" style="width:88px;height:88px;border-radius:50%;object-fit:cover;" onerror="this.src='/images/default-avatar.png'">
             </a>

@@ -7,7 +7,8 @@
     <% friends.forEach(f => { %>
       <% if (!f.user) return; %>
       <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:rgba(0,0,0,0.35);">
-        <img src="<%= f.user.avatarUrl %>?v=<%= Date.now() %>" style="width:56px;height:56px;border-radius:8px;object-fit:cover;border:2px solid var(--red)" onerror="this.src='/images/default-avatar.png'">
+        <% const fAvatarBase = (f.user.avatarUrl || '/images/default-avatar.png'); %>
+        <img src="<%= fAvatarBase %>" style="width:56px;height:56px;border-radius:8px;object-fit:cover;border:2px solid var(--red)" onerror="this.src='/images/default-avatar.png'">
         <div style="flex:1">
           <div style="font-weight:700;color:#fff">@<%= f.user.username %></div>
           <div style="font-size:13px;color:rgba(255,255,255,0.6)"><%= f.user.name || '' %></div>

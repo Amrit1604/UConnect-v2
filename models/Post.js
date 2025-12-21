@@ -395,7 +395,7 @@ postSchema.statics.getTrending = function(campus, limit = 10) {
     isActive: true,
     createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
   })
-  .populate('author', 'username avatar avatarType avatarSeed')
+  .populate('author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
   .sort({ engagementScore: -1 })
   .limit(limit);
 };
@@ -406,8 +406,8 @@ postSchema.statics.getRecent = function(campus, limit = 20, skip = 0) {
     campus: campus,
     isActive: true
   })
-  .populate('author', 'username avatar avatarType avatarSeed')
-  .populate('comments.author', 'username avatar avatarType avatarSeed')
+  .populate('author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
+  .populate('comments.author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
   .sort({ createdAt: -1 })
   .skip(skip)
   .limit(limit);
@@ -419,8 +419,8 @@ postSchema.statics.getByUser = function(userId, limit = 20, skip = 0) {
     author: userId,
     isActive: true
   })
-  .populate('author', 'username avatar avatarType avatarSeed')
-  .populate('comments.author', 'username avatar avatarType avatarSeed')
+  .populate('author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
+  .populate('comments.author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
   .sort({ createdAt: -1 })
   .skip(skip)
   .limit(limit);
@@ -433,8 +433,8 @@ postSchema.statics.getByCategory = function(campus, category, limit = 20, skip =
     category: category,
     isActive: true
   })
-  .populate('author', 'username avatar avatarType avatarSeed')
-  .populate('comments.author', 'username avatar avatarType avatarSeed')
+  .populate('author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
+  .populate('comments.author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
   .sort({ createdAt: -1 })
   .skip(skip)
   .limit(limit);
@@ -463,8 +463,8 @@ postSchema.statics.searchPosts = function(campus, searchQuery, category = null, 
   }
 
   return this.find(query)
-    .populate('author', 'username avatar avatarType avatarSeed')
-    .populate('comments.author', 'username avatar avatarType avatarSeed')
+    .populate('author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
+    .populate('comments.author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
     .sort(searchQuery ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
     .limit(limit);
 };

@@ -3,19 +3,10 @@
   <div class="chat-header">
     <div style="display:flex;align-items:center;gap:10px">
       <a href="/chat" class="back-btn" style="color:white;text-decoration:none;font-size:20px;margin-right:5px;display:none;">←</a>
-      <% 
-      let avatarUrl = '/images/default-avatar.png';
-      if (otherUser.avatarType === 'upload' && otherUser.avatar) {
-          avatarUrl = '/uploads/avatars/' + otherUser.avatar;
-      } else if (otherUser.avatarType === 'supabase' && otherUser.avatarSupabaseUrl) {
-          avatarUrl = otherUser.avatarSupabaseUrl;
-      } else if (otherUser.avatarUrl) {
-          avatarUrl = otherUser.avatarUrl;
-      } else if (otherUser.avatarSeed) {
-          avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
-      }
-      %>
-      <img src="<%= avatarUrl %>" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);">
+        <%
+        const avatarUrl = otherUser.avatarUrl || otherUser.avatarSupabaseUrl || '/images/default-avatar.png';
+        %>
+        <img src="<%= avatarUrl %>" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);">
       <div>
         <div class="title" style="font-weight:bold;font-size:16px;"><%= otherUser.name || otherUser.username %></div>
         <span id="presenceBadge" class="presence-badge offline" style="font-size:10px;padding:2px 8px;">Offline</span>

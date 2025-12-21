@@ -200,12 +200,16 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   toJSON: {
+    virtuals: true,
     transform: function(doc, ret) {
       delete ret.password;
       delete ret.verificationToken;
       delete ret.resetPasswordToken;
       return ret;
     }
+  },
+  toObject: {
+    virtuals: true
   }
 });
 
@@ -304,6 +308,11 @@ userSchema.statics.getStats = async function() {
 
 // Virtual for avatar URL
 userSchema.virtual('avatarUrl').get(function() {
+  // Priority 0: Legacy local upload (if still in use)
+  if (this.avatar && this.avatarType === 'upload') {
+    return `/uploads/avatars/${this.avatar}`;
+  }
+
   // Priority 1: Supabase avatar (direct URL)
   if (this.avatarSupabaseUrl && this.avatarType === 'supabase') {
     return this.avatarSupabaseUrl;
@@ -319,8 +328,9 @@ userSchema.virtual('avatarUrl').get(function() {
     return `https://api.dicebear.com/9.x/adventurer/svg?seed=${this.avatarSeed}`;
   }
 
-  // Priority 4: Generate seed from username/email as absolute fallback
-  const seed = this.username || this.email.split('@')[0] || 'default';
+  // Priority 4: Generate seed from username as absolute fallback
+  // Use username to ensure consistency (email might not always be populated)
+  const seed = this.username || this._id.toString().substring(0, 8) || 'default';
   return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
 });
 

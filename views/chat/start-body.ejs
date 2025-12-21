@@ -1,7 +1,8 @@
 <link rel="stylesheet" href="/css/chat-neo.css">
 <div class="chat-start-container" style="max-width:820px;margin:40px auto;padding:28px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);">
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
-    <img src="<%= otherUser.avatarUrl %>?v=<%= Date.now() %>" alt="<%= otherUser.username %>" style="width:64px;height:64px;border-radius:8px;border:2px solid var(--red);object-fit:cover;">
+    <% const startAvatarBase = (otherUser.avatarUrl || '/images/default-avatar.png'); %>
+    <img src="<%= startAvatarBase %>" alt="<%= otherUser.username %>" style="width:64px;height:64px;border-radius:8px;border:2px solid var(--red);object-fit:cover;">
     <div>
       <h2 style="margin:0;font-family:var(--font-display);letter-spacing:0.02em;">Start chat with <%= otherUser.name || ('@' + otherUser.username) %></h2>
       <div style="color:rgba(255,255,255,0.6);font-size:14px;margin-top:6px">You need to send a follow request to start chatting. Send a quick message to introduce yourself.</div>

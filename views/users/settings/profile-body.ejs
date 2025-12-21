@@ -37,7 +37,7 @@
       <form method="POST" action="/users/settings/profile" id="profileForm">
         <!-- Avatar Section -->
         <div class="avatar-section-neo">
-          <img src="<%= user.avatarUrl %>?t=<%= Date.now() %>" alt="Current Avatar" class="current-avatar-neo" id="avatarPreview" onerror="this.src='/images/default-avatar.png'">
+          <img src="<%= user.avatarUrl %>" alt="Current Avatar" class="current-avatar-neo" id="avatarPreview" onerror="this.src='/images/default-avatar.png'">
           <h3 class="avatar-title-neo">PROFILE PICTURE</h3>
           <p class="avatar-description-neo">Your profile picture helps others recognize you on campus</p>
           <div class="avatar-buttons-neo">

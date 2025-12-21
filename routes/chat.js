@@ -32,14 +32,14 @@ router.get('/requests', async (req, res) => {
         receiver: req.user._id, 
         status: 'pending' 
       })
-        .populate('sender', 'username name avatarSeed avatarType avatarGridFSId stats')
+        .populate('sender', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl stats')
         .sort({ sentAt: -1 }),
       
       FollowRequest.find({ 
         sender: req.user._id, 
         status: 'pending' 
       })
-        .populate('receiver', 'username name avatarSeed avatarType avatarGridFSId stats')
+        .populate('receiver', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl stats')
         .sort({ sentAt: -1 })
     ]);
 
@@ -249,7 +249,7 @@ router.post('/request/:requestId/accept',
 
       // Find the follow request
       const followRequest = await FollowRequest.findById(requestId)
-        .populate('sender', 'username name avatarSeed avatarType avatarGridFSId');
+        .populate('sender', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl');
 
       if (!followRequest) {
         return res.status(404).json({ 
@@ -529,7 +529,7 @@ router.get('/:userId', async (req, res) => {
 
     // Get other user info
     const otherUser = await User.findById(otherUserId)
-      .select('username name avatarSeed avatarType avatarGridFSId');
+      .select('username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl');
 
     if (!otherUser) {
       req.flash('error', 'User not found');
@@ -582,7 +582,7 @@ router.get('/start/:userId', async (req, res) => {
     }
 
     // Otherwise, show a small "start chat" view that allows sending a follow request
-    const otherUser = await User.findById(otherUserId).select('username name avatarSeed avatarType avatarGridFSId');
+    const otherUser = await User.findById(otherUserId).select('username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl');
     if (!otherUser) {
       req.flash('error', 'User not found');
       return res.redirect('/chat');
@@ -677,7 +677,7 @@ router.post('/:userId/message',
       await friendship.incrementUnread(receiverId);
 
       // Populate sender info for response
-      await message.populate('sender', 'username name avatarSeed avatarType avatarGridFSId');
+      await message.populate('sender', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl');
       if (message.replyTo) {
         await message.populate('replyTo', 'content messageType sender');
       }
@@ -796,7 +796,7 @@ router.post('/:userId/upload',
       await friendship.incrementUnread(receiverId);
 
       // Populate sender info
-      await message.populate('sender', 'username name avatarSeed avatarType avatarGridFSId');
+      await message.populate('sender', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl');
 
       // Create notification
       await Notification.createMessageNotification(req.user, receiverId, message._id);

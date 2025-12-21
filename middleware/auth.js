@@ -57,6 +57,12 @@ const requireAuth = async (req, res, next) => {
     console.log('✅ Auth successful for user:', user.username);
     // Attach user to request object
     req.user = user;
+
+    // Ensure views use the hydrated DB user (with virtuals) for this request.
+    // This avoids stale/incomplete session user data causing inconsistent avatars.
+    if (res && res.locals) {
+      res.locals.user = user.toObject({ virtuals: true });
+    }
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);

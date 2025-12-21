@@ -30,14 +30,8 @@
             <div class="profile-card-neo">
                 <div class="profile-header-neo">
                     <%
-                    let avatarUrl = '/images/default-avatar.png';
-                    if (user.avatarType === 'upload' && user.avatar) {
-                        avatarUrl = '/uploads/avatars/' + user.avatar;
-                    } else if (user.avatarUrl) {
-                        avatarUrl = user.avatarUrl;
-                    } else if (user.avatarSeed) {
-                        avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed;
-                    }
+                    // Use the precomputed avatarUrl (from virtual) or fallback to default
+                    const avatarUrl = user.avatarUrl || '/images/default-avatar.png';
                     %>
                     <img src="<%= avatarUrl %>"
                          alt="<%= user.name %>"
@@ -111,11 +105,15 @@
                             <header class="post-header-neo">
                                 <a href="/users/<%= post.author.username %>" class="post-author-neo" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;">
                                     <%
-                                    let postAuthorAvatar = post.author.avatarUrl || (post.author.avatarSeed ? ('https://api.dicebear.com/9.x/adventurer/svg?seed=' + post.author.avatarSeed) : '/images/default-avatar.png');
-                                    const authorCacheKey = post.author.updatedAt ? new Date(post.author.updatedAt).getTime() : '';
+                                                                        let postAuthorAvatar = post.author.avatarUrl || '/images/default-avatar.png';
+                                                                        const isDicebearAvatar = typeof postAuthorAvatar === 'string' && postAuthorAvatar.includes('api.dicebear.com');
+                                                                        const authorCacheKey = post.author.updatedAt ? new Date(post.author.updatedAt).getTime() : '';
+                                                                        const postAuthorAvatarSrc = (!isDicebearAvatar && authorCacheKey)
+                                                                            ? (postAuthorAvatar + (postAuthorAvatar.includes('?') ? '&' : '?') + 'v=' + authorCacheKey)
+                                                                            : postAuthorAvatar;
                                     %>
                                     <span class="author-link-neo" data-username="<%= post.author.username %>" title="View @<%= post.author.username %>'s profile">
-                                      <img src="<%= postAuthorAvatar %><%= authorCacheKey ? ('?v=' + authorCacheKey) : '' %>"
+                                                                            <img src="<%= postAuthorAvatarSrc %>"
                                            alt="<%= post.author.username %>"
                                            class="author-avatar-neo"
                                            onerror="this.src='/images/default-avatar.png'">
@@ -248,7 +246,15 @@
                                             <% if (comment && comment.author) { %>
                                                 <div class="quick-comment-item">
                                                     <a href="/users/<%= comment.author.username %>" class="author-link-neo" data-username="<%= comment.author.username %>" title="View @<%= comment.author.username %>" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;">
-                                                      <img src="<%= (comment.author.avatarUrl || (comment.author.avatarSeed ? ('https://api.dicebear.com/9.x/adventurer/svg?seed=' + comment.author.avatarSeed) : '/images/default-avatar.png')) %><%= comment.author.updatedAt ? ('?v=' + new Date(comment.author.updatedAt).getTime()) : '' %>"
+                                                      <%
+                                                                                                                const commentAvatarBase = (comment.author.avatarUrl || '/images/default-avatar.png');
+                                                                                                                const isDicebearCommentAvatar = typeof commentAvatarBase === 'string' && commentAvatarBase.includes('api.dicebear.com');
+                                                                                                                const commentAvatarVer = comment.author.updatedAt ? new Date(comment.author.updatedAt).getTime() : '';
+                                                                                                                const commentAvatarSrc = (!isDicebearCommentAvatar && commentAvatarVer)
+                                                                                                                    ? (commentAvatarBase + (commentAvatarBase.includes('?') ? '&' : '?') + 'v=' + commentAvatarVer)
+                                                                                                                    : commentAvatarBase;
+                                                      %>
+                                                      <img src="<%= commentAvatarSrc %>"
                                                            alt="<%= comment.author.username %>"
                                                            class="quick-comment-avatar">
                                                     </a>
@@ -305,8 +311,6 @@
                         mobileAvatarUrl = '/uploads/avatars/' + user.avatar;
                     } else if (user.avatarUrl) {
                         mobileAvatarUrl = user.avatarUrl;
-                    } else if (user.avatarSeed) {
-                        mobileAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed;
                     }
                     %>
                     <img src="<%= mobileAvatarUrl %>" alt="<%= user.name %>" class="mobile-profile-avatar" onerror="this.src='/images/default-avatar.png'">
@@ -491,7 +495,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const id = u._id || u.id || u.uuid || '';
                     const username = u.username || u.handle || u.userName || '';
                     const displayName = u.name || u.displayName || u.fullName || '';
-                    const avatar = (u.avatarUrl || u.avatar || '/images/default-avatar.png') + '?v=' + Date.now();
+                                        const avatarBase = (u.avatarUrl || u.avatar || '/images/default-avatar.png');
+                                        const isDicebearAvatar = typeof avatarBase === 'string' && avatarBase.includes('api.dicebear.com');
+                                        const avatar = isDicebearAvatar
+                                            ? avatarBase
+                                            : (avatarBase + (avatarBase.includes('?') ? '&' : '?') + 'v=' + Date.now());
                     const isFollowing = !!(u.isFollowing || u.following || u.followed || false);
                     const btnText = isFollowing ? '✓' : '+';
                     const btnClass = isFollowing ? 'follow-suggest-btn following' : 'follow-suggest-btn';
@@ -596,7 +604,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = await res.json();
         if (!data.success) throw new Error('Not found');
         const u = data.user;
-        const avatar = (u.avatarUrl || '/images/default-avatar.png') + '?v=' + Date.now();
+                const avatarBase = (u.avatarUrl || '/images/default-avatar.png');
+                const isDicebearAvatar = typeof avatarBase === 'string' && avatarBase.includes('api.dicebear.com');
+                const avatar = isDicebearAvatar
+                    ? avatarBase
+                    : (avatarBase + (avatarBase.includes('?') ? '&' : '?') + 'v=' + Date.now());
         tooltip.innerHTML = `
           <div style="display:flex;gap:10px;align-items:center;">
             <img src="${avatar}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;" onerror="this.src='/images/default-avatar.png'">

@@ -27,12 +27,16 @@
     <div class="profile-header-neo">
       <div class="profile-top-neo">
         <%
-          // Prefer server-side virtual that already resolves GridFS/API/default
+          // Prefer server-side virtual that already resolves Supabase/GridFS/API/default
           let avatarUrl = profileUser.avatarUrl || '/images/default-avatar.png';
-          // Cache-busting query to avoid stale browser cache after change
-          const cacheBuster = (profileUser.updatedAt ? new Date(profileUser.updatedAt).getTime() : Date.now());
+          const isDicebearAvatar = typeof avatarUrl === 'string' && avatarUrl.includes('api.dicebear.com');
+          // Only cache-bust non-Dicebear URLs (Dicebear query params can change output)
+          const cacheBuster = (profileUser.updatedAt ? new Date(profileUser.updatedAt).getTime() : null);
+          const avatarSrc = (!isDicebearAvatar && cacheBuster)
+            ? (avatarUrl + (avatarUrl.includes('?') ? '&' : '?') + 'v=' + cacheBuster)
+            : avatarUrl;
         %>
-        <img src="<%= avatarUrl %>?v=<%= cacheBuster %>"
+        <img src="<%= avatarSrc %>"
              alt="<%= profileUser.displayName || profileUser.name || profileUser.username %>"
              class="profile-avatar-large-neo"
              onerror="this.src='/images/default-avatar.png'">

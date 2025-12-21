@@ -35,17 +35,8 @@
         <% if (friendsList && friendsList.length > 0) { %>
             <% friendsList.forEach(friend => { %>
                 <a href="/chat/<%= friend._id %>" class="friend-bubble">
-                    <% 
-                    let avatarUrl = '/images/default-avatar.png';
-                    if (friend.avatarType === 'upload' && friend.avatar) {
-                        avatarUrl = '/uploads/avatars/' + friend.avatar;
-                    } else if (friend.avatarType === 'supabase' && friend.avatarSupabaseUrl) {
-                        avatarUrl = friend.avatarSupabaseUrl;
-                    } else if (friend.avatarUrl) {
-                        avatarUrl = friend.avatarUrl;
-                    } else if (friend.avatarSeed) {
-                        avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + friend.avatarSeed;
-                    }
+                    <%
+                    const avatarUrl = friend.avatarUrl || friend.avatarSupabaseUrl || '/images/default-avatar.png';
                     %>
                     <img src="<%= avatarUrl %>" alt="<%= friend.username %>" />
                     <span><%= friend.username %></span>
@@ -62,17 +53,8 @@
             <% conversations.forEach(c => { %>
                 <a href="/chat/<%= c.otherUser._id %>" class="conversation-item">
                     <div class="conversation-avatar">
-                        <% 
-                        let cAvatarUrl = '/images/default-avatar.png';
-                        if (c.otherUser.avatarType === 'upload' && c.otherUser.avatar) {
-                            cAvatarUrl = '/uploads/avatars/' + c.otherUser.avatar;
-                        } else if (c.otherUser.avatarType === 'supabase' && c.otherUser.avatarSupabaseUrl) {
-                            cAvatarUrl = c.otherUser.avatarSupabaseUrl;
-                        } else if (c.otherUser.avatarUrl) {
-                            cAvatarUrl = c.otherUser.avatarUrl;
-                        } else if (c.otherUser.avatarSeed) {
-                            cAvatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + c.otherUser.avatarSeed;
-                        }
+                        <%
+                        const cAvatarUrl = c.otherUser.avatarUrl || c.otherUser.avatarSupabaseUrl || '/images/default-avatar.png';
                         %>
                         <img src="<%= cAvatarUrl %>" alt="<%= c.otherUser.username %>" />
                         <% if (c.otherUser.isOnline) { %>

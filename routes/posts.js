@@ -75,8 +75,8 @@ router.get('/', requireAuth, async (req, res) => {
         isActive: true,
         createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
       })
-      .populate('author', 'username avatar avatarType avatarSeed')
-      .populate('comments.author', 'username avatar avatarType avatarSeed')
+      .populate('author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
+      .populate('comments.author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
       .sort({ engagementScore: -1 })
       .skip(skip)
       .limit(limit);
@@ -86,8 +86,8 @@ router.get('/', requireAuth, async (req, res) => {
 
     // Ensure authors have the fields required by avatarUrl virtual
     await Post.populate(posts, [
-      { path: 'author', select: 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt' },
-      { path: 'comments.author', select: 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt' }
+      { path: 'author', select: 'username name avatarType avatarSeed avatarGridFSId avatarSupabaseUrl avatar updatedAt' },
+      { path: 'comments.author', select: 'username name avatarType avatarSeed avatarGridFSId avatarSupabaseUrl avatar updatedAt' }
     ]);
 
     // Filter out posts with missing authors to prevent errors
@@ -95,7 +95,25 @@ router.get('/', requireAuth, async (req, res) => {
     console.log(`📊 Filtered posts: ${posts.length} posts with valid authors`);
 
     // Convert to plain objects with virtuals so templates get avatarUrl reliably
-    posts = posts.map(p => p.toObject({ virtuals: true }));
+    posts = posts.map(p => {
+      const postObj = p.toObject({ virtuals: true });
+      // Ensure nested user objects have virtuals too
+      if (postObj.author && postObj.author._id) {
+        postObj.author.avatarUrl = p.author.avatarUrl; // Copy virtual from Mongoose doc
+      }
+      if (postObj.comments) {
+        postObj.comments = postObj.comments.map(c => {
+          if (c.author && c.author._id) {
+            const authorDoc = p.comments.find(pc => pc._id.equals(c._id))?.author;
+            if (authorDoc) {
+              c.author.avatarUrl = authorDoc.avatarUrl; // Copy virtual
+            }
+          }
+          return c;
+        });
+      }
+      return postObj;
+    });
 
     // 📊 Get category statistics
     const categoryStats = await Post.getCategoryStats(req.user.campus);
@@ -202,8 +220,8 @@ router.get('/category/:category', requireAuth, async (req, res) => {
     const category = req.params.category;
 
     const posts = await Post.find({ campus: req.user.campus, category: category, isActive: true })
-      .populate('author', 'username avatar avatarType avatarSeed')
-      .populate('comments.author', 'username avatar avatarType avatarSeed')
+      .populate('author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
+      .populate('comments.author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -350,7 +368,7 @@ router.post('/create', requireAuth, uploadPostMedia, handlePostMediaUpload, post
     // 🚀 REAL-TIME SOCKET.IO BROADCAST
     const io = req.app.get('io');
     if (io) {
-      const populatedPost = await Post.findById(post._id).populate('author', 'username name avatar avatarType avatarSeed');
+      const populatedPost = await Post.findById(post._id).populate('author', 'username name avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt');
       io.to(post.campus).emit('new-post', { post: populatedPost, campus: post.campus });
       console.log(`⚡ Real-time broadcast: New post to ${post.campus}`);
     }
@@ -471,8 +489,8 @@ router.delete('/:id',
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('author', 'username avatar avatarType avatarSeed')
-      .populate('comments.author', 'username avatar avatarType avatarSeed');
+      .populate('author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt')
+      .populate('comments.author', 'username avatar avatarType avatarSeed avatarSupabaseUrl avatarGridFSId updatedAt');
 
     if (!post || !post.isActive) {
       req.flash('error', 'Post not found');
@@ -606,7 +624,7 @@ router.post('/:id/comment',
 
       // Get the newly added comment with populated author including avatar fields for avatarUrl virtual
       const populatedPost = await Post.findById(post._id)
-        .populate('comments.author', 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt');
+        .populate('comments.author', 'username name avatarType avatarSeed avatarGridFSId avatarSupabaseUrl avatar updatedAt');
 
       const newComment = populatedPost.comments[populatedPost.comments.length - 1];
 
@@ -699,7 +717,7 @@ router.post('/:id/comments',
       post.comments.push(newComment);
       await post.save();
 
-      await post.populate('comments.author', 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt');
+      await post.populate('comments.author', 'username name avatarType avatarSeed avatarGridFSId avatarSupabaseUrl avatar updatedAt');
       const addedComment = post.comments[post.comments.length - 1];
 
       // Real-time broadcast
@@ -771,7 +789,7 @@ router.get('/:id/comments', requireAuth, async (req, res) => {
     const comments = post.comments.slice(offset, offset + limit);
 
     // Populate authors
-    await Post.populate(comments, { path: 'author', select: 'username name avatarType avatarSeed avatarGridFSId avatar updatedAt' });
+    await Post.populate(comments, { path: 'author', select: 'username name avatarType avatarSeed avatarGridFSId avatarSupabaseUrl avatar updatedAt' });
 
     // Convert to objects with virtuals
     const populatedComments = comments.map(c => {

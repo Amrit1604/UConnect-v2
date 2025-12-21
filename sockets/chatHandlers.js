@@ -130,7 +130,7 @@ function initializeChatHandlers(io) {
         await friendship.updateLastMessage();
         await friendship.incrementUnread(otherUserId);
 
-        await message.populate('sender', 'username name avatarSeed avatarType avatarGridFSId');
+        await message.populate('sender', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl');
 
         // Emit to receiver
         io.to(`user:${otherUserId}`).emit('new_message', {

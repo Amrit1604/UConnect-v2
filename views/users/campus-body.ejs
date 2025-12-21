@@ -32,17 +32,8 @@
                         <% users.forEach(u => { %>
                             <div class="profile-card-neo" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
                                 <div class="profile-header-neo">
-                                    <% 
-                                    let avatarUrl = '/images/default-avatar.png';
-                                    if (u.avatarType === 'upload' && u.avatar) {
-                                        avatarUrl = '/uploads/avatars/' + u.avatar;
-                                    } else if (u.avatarType === 'supabase' && u.avatarSupabaseUrl) {
-                                        avatarUrl = u.avatarSupabaseUrl;
-                                    } else if (u.avatarUrl) {
-                                        avatarUrl = u.avatarUrl;
-                                    } else if (u.avatarSeed) {
-                                        avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + u.avatarSeed;
-                                    }
+                                    <%
+                                    const avatarUrl = u.avatarUrl || u.avatarSupabaseUrl || '/images/default-avatar.png';
                                     %>
                                     <img src="<%= avatarUrl %>" alt="<%= u.displayName || u.username %>" class="profile-avatar-neo" style="width: 80px; height: 80px; margin: 0 auto 15px;">
                                     <h3 class="profile-name-neo"><%= u.displayName || u.username %></h3>

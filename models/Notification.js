@@ -192,7 +192,7 @@ notificationSchema.statics.getUserNotifications = async function(userId, page = 
     .sort({ priority: -1, createdAt: -1 })
     .skip(skip)
     .limit(limit)
-    .populate('sender', 'username name avatarSeed avatarType avatarGridFSId');
+    .populate('sender', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl');
 };
 
 // Static method to mark all as read

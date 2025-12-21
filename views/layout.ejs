@@ -94,10 +94,14 @@
                     <!-- User Avatar -->
                     <a href="/users/profile" class="nav-avatar-link">
                         <%
-                          const navAvatarUrl = (user && user.avatarUrl) ? user.avatarUrl : (user && user.avatarSeed ? 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed : '/images/default-avatar.png');
-                          const navAvatarVer = user && user.updatedAt ? new Date(user.updatedAt).getTime() : Date.now();
+                          const navAvatarUrl = (user && user.avatarUrl) ? user.avatarUrl : '/images/default-avatar.png';
+                                                    const isDicebearAvatar = typeof navAvatarUrl === 'string' && navAvatarUrl.includes('api.dicebear.com');
+                                                    const navAvatarVer = user && user.updatedAt ? new Date(user.updatedAt).getTime() : null;
+                                                    const navAvatarSrc = (!isDicebearAvatar && navAvatarVer)
+                                                        ? (navAvatarUrl + (navAvatarUrl.includes('?') ? '&' : '?') + 'v=' + navAvatarVer)
+                                                        : navAvatarUrl;
                         %>
-                        <img src="<%= navAvatarUrl %>?v=<%= navAvatarVer %>"
+                                                <img src="<%= navAvatarSrc %>"
                              alt="<%= user && (user.name || user.username) %>"
                              class="nav-avatar"
                               >
@@ -230,8 +234,12 @@
             results.style.display = 'block';
             return;
           }
-          results.innerHTML = items.map(u => {
-            const avatar = (u.avatarUrl || '/images/default-avatar.png') + '?v=' + Date.now();
+                    results.innerHTML = items.map(u => {
+                                                const baseAvatar = (u.avatarUrl || '/images/default-avatar.png');
+                                                const isDicebearAvatar = typeof baseAvatar === 'string' && baseAvatar.includes('api.dicebear.com');
+                                                const avatar = isDicebearAvatar
+                                                    ? baseAvatar
+                                                    : (baseAvatar + (baseAvatar.includes('?') ? '&' : '?') + 'v=' + Date.now());
             const name = u.name || u.username;
             return `
               <a href="/users/${u.username}" class="search-item" style="display:flex;align-items:center;gap:10px;padding:10px 12px;color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.06);">
@@ -405,7 +413,7 @@
                 <% if (user) { %>
                 <div class="mobile-profile-card">
                     <%
-                    const mobileAvatar = (user.avatarUrl || (user.avatarSeed ? 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + user.avatarSeed : '/images/default-avatar.png'));
+                    const mobileAvatar = (user.avatarUrl || '/images/default-avatar.png');
                     %>
                     <img src="<%= mobileAvatar %>" alt="<%= user.name %>" class="mobile-profile-img">
                     <div class="mobile-profile-details">

@@ -35,7 +35,12 @@ const configureAppMiddleware = (app) => {
 
   // Global middleware to pass user data to all views
   app.use((req, res, next) => {
-    res.locals.user = req.session.user || null;
+    // Use req.user (Mongoose document with virtuals) if available, otherwise session user
+    if (req.user) {
+      res.locals.user = req.user.toObject({ virtuals: true });
+    } else {
+      res.locals.user = req.session.user || null;
+    }
     res.locals.isAdminSession = req.session && req.session.isAdmin;
     res.locals.messages = {
       success: req.flash('success'),

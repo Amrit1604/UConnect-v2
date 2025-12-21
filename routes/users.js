@@ -39,7 +39,7 @@ router.get('/search', async (req, res) => {
         { name: regex }
       ]
     })
-    .select('username name avatarSeed avatarType avatarGridFSId stats createdAt')
+    .select('username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl stats createdAt')
     .limit(10);
 
     const results = users.map(u => ({ id: u._id, username: u.username, name: u.name, avatarUrl: u.avatarUrl }));
@@ -75,7 +75,7 @@ router.get('/explore', async (req, res) => {
 
     const [candidates, total] = await Promise.all([
       User.find(baseQuery)
-        .select('username name avatarSeed avatarType avatarGridFSId stats createdAt updatedAt')
+        .select('username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl stats createdAt updatedAt')
         .sort(sortSpec)
         .skip(skip)
         .limit(limit),
@@ -111,7 +111,7 @@ router.get('/suggestions', async (req, res) => {
       isVerified: true,
       _id: { $nin: Array.from(excludeIds) }
     })
-      .select('username name avatarSeed avatarType avatarGridFSId stats createdAt')
+      .select('username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl stats createdAt')
       .sort({ createdAt: -1 })
       .limit(6);
 
@@ -127,7 +127,7 @@ router.get('/suggestions', async (req, res) => {
 router.get('/:username/card', async (req, res) => {
   try {
     const u = await User.findOne({ username: req.params.username.toLowerCase(), isActive: true, isVerified: true })
-      .select('username name stats avatarSeed avatarType avatarGridFSId createdAt');
+      .select('username name stats avatarSeed avatarType avatarGridFSId avatarSupabaseUrl createdAt');
     if (!u) return res.status(404).json({ success: false });
     res.json({ success: true, user: { username: u.username, name: u.name, avatarUrl: u.avatarUrl, stats: u.stats } });
   } catch (e) {
