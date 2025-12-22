@@ -670,6 +670,18 @@ router.get('/logout', (req, res) => {
   });
 });
 
+// POST /auth/logout - Logout user (for AJAX requests)
+router.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+      return res.json({ success: false, error: 'Logout failed' });
+    }
+    res.clearCookie('connect.sid');
+    res.json({ success: true, message: 'Logged out successfully' });
+  });
+});
+
 // ========================================
 // LEGACY ROUTES (Old Design)
 // ========================================

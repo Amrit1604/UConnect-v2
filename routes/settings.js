@@ -12,6 +12,12 @@ const auth = require('../middleware/auth');
 const { uploadAvatar, deleteFile } = require('../utils/gridfs');
 
 // Middleware to check if user is authenticated
+router.use((req, res, next) => {
+  console.log('🔐 SETTINGS ROUTE MIDDLEWARE HIT:', req.method, req.url);
+  console.log('🔐 User authenticated:', !!req.user);
+  console.log('🔐 Session user:', !!req.session?.user);
+  next();
+});
 router.use(auth.requireAuth);
 
 // Profile Settings Page
@@ -568,21 +574,22 @@ router.post('/export-data', async (req, res) => {
 });
 
 // Delete Account - GODLY POWERS UNLEASHED! 🔥
-router.post('/delete-account', [
-    body('confirmDeletion')
-        .equals('on')
-        .withMessage('You must confirm account deletion'),
-    body('exportedData')
-        .equals('on')
-        .withMessage('You must confirm data export status')
-], async (req, res) => {
+router.post('/delete-account', async (req, res) => {
     try {
         console.log('🔥 GODLY POWERS: Account deletion request received');
-        const errors = validationResult(req);
+        console.log('🔥 Request method:', req.method);
+        console.log('🔥 Request URL:', req.url);
+        console.log('🔥 Request body:', req.body);
+        console.log('🔥 Request headers:', JSON.stringify(req.headers, null, 2));
+        console.log('🔥 confirmDeletion:', req.body.confirmDeletion);
+        console.log('🔥 exportedData:', req.body.exportedData);
+        console.log('🔥 User authenticated:', !!req.user);
+        console.log('🔥 User ID:', req.user?.id);
 
-        if (!errors.isEmpty()) {
-            req.flash('error', 'Please confirm all required checkboxes');
-            return res.redirect('/users/settings/account');
+        // Check if required fields are present
+        if (req.body.confirmDeletion !== 'on' || req.body.exportedData !== 'on') {
+            console.log('❌ Validation failed: missing required fields');
+            return res.json({ success: false, error: 'Please confirm all required checkboxes' });
         }
 
         const { deleteReason } = req.body;
@@ -609,25 +616,22 @@ router.post('/delete-account', [
         if (deletedUser) {
             console.log('🎉 GODLY SUCCESS: Account deleted successfully!');
 
-            // Destroy session and clear cookies
+            // Return success response immediately for AJAX request
+            res.json({ success: true, message: 'Account deleted successfully. Thank you for using UConnect!' });
+
+            // Destroy session asynchronously after response is sent
             req.session.destroy((err) => {
                 if (err) {
                     console.error('💥 GODLY ERROR destroying session:', err);
                 }
-                res.clearCookie('connect.sid');
-
-                // Redirect to login with deletion confirmation
-                res.redirect('/auth/login?message=Account deleted successfully. Thank you for using UConnect!');
             });
         } else {
             console.log('💥 GODLY ERROR: User not found for deletion');
-            req.flash('error', 'Account not found');
-            res.redirect('/users/settings/account');
+            res.json({ success: false, error: 'Account not found' });
         }
     } catch (error) {
         console.error('💥 GODLY ERROR deleting account:', error);
-        req.flash('error', 'Error deleting account. Please try again.');
-        res.redirect('/users/settings/account');
+        res.json({ success: false, error: 'Error deleting account. Please try again.' });
     }
 });
 

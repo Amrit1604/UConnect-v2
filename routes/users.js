@@ -856,49 +856,74 @@ router.post('/settings/delete-account',
   body('confirmDataLoss').equals('on').withMessage('Please confirm data loss'),
   logActivity('delete account'),
   async (req, res) => {
+    console.log('🔥 DELETE ACCOUNT ROUTE HIT');
+    console.log('Request body:', req.body);
+    console.log('User ID:', req.user._id);
+    console.log('User email:', req.user.email);
+
     try {
       const errors = validationResult(req);
+      console.log('Validation errors:', errors.array());
+
       if (!errors.isEmpty()) {
+        console.log('❌ Validation failed, redirecting back');
         req.flash('error', 'Please complete all confirmation steps');
         return res.redirect('/users/settings/account');
       }
 
       const { confirmEmail } = req.body;
+      console.log('Confirm email from form:', confirmEmail);
+
       const user = await User.findById(req.user._id);
+      console.log('User found in DB:', !!user);
+      console.log('User email in DB:', user ? user.email : 'N/A');
 
       // Verify email matches
       if (confirmEmail !== user.email) {
+        console.log('❌ Email mismatch:', confirmEmail, 'vs', user.email);
         req.flash('error', 'Email does not match your account email');
         return res.redirect('/users/settings/account');
       }
 
+      console.log('✅ Email verified, proceeding with deletion');
+
       // Delete user's posts
-      await Post.deleteMany({ author: req.user._id });
+      console.log('🗑️ Deleting user posts...');
+      const deletedPosts = await Post.deleteMany({ author: req.user._id });
+      console.log('Posts deleted:', deletedPosts.deletedCount);
 
       // Delete user's GridFS avatar if exists
       if (user.avatarGridFSId && user.avatarType === 'gridfs') {
+        console.log('🗑️ Deleting GridFS avatar...');
         try {
           await deleteFile(user.avatarGridFSId);
+          console.log('✅ GridFS avatar deleted');
         } catch (error) {
-          console.log('GridFS avatar deletion failed:', error.message);
+          console.log('❌ GridFS avatar deletion failed:', error.message);
         }
       }
 
       // Delete user account
-      await User.findByIdAndDelete(req.user._id);
+      console.log('🗑️ Deleting user account...');
+      const deletedUser = await User.findByIdAndDelete(req.user._id);
+      console.log('✅ User account deleted:', !!deletedUser);
 
       // Destroy session
+      console.log('🔐 Destroying session...');
       req.session.destroy((err) => {
         if (err) {
-          console.error('Session destruction error:', err);
+          console.error('❌ Session destruction error:', err);
         }
+        console.log('✅ Session destroyed, clearing cookie');
         res.clearCookie('connect.sid');
-        req.flash('success', 'Your account has been permanently deleted');
+        // Note: Can't use req.flash() after session destruction
+        console.log('🔄 Redirecting to home page');
         res.redirect('/');
       });
 
     } catch (error) {
-      console.error('Account deletion error:', error);
+      console.error('💥 Account deletion error:', error);
+      console.error('Error stack:', error.stack);
       req.flash('error', 'Failed to delete account');
       res.redirect('/users/settings/account');
     }
