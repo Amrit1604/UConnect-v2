@@ -12,6 +12,8 @@
     padding-top: 100px;
     position: relative;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ========================================

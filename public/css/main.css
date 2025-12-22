@@ -202,6 +202,7 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   overflow-x: hidden;
+  height: 100%;
 }
 
 body {
@@ -215,6 +216,9 @@ body {
   transition: background-color var(--transition-normal), color var(--transition-normal);
   overflow-x: hidden;
   width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Typography */
@@ -259,6 +263,7 @@ a:hover {
   min-height: calc(100vh - var(--navbar-height));
   padding-top: 0;
   background: transparent;
+  flex: 1;
 }
 
 /* Navigation */
@@ -861,8 +866,12 @@ a:hover {
 .footer {
   background-color: var(--surface-color);
   color: var(--text-primary);
-  margin-top: var(--spacing-3xl);
+  margin-top: auto;
   border-top: 1px solid var(--border-light);
+}
+
+.footer-neo {
+  margin-top: auto;
 }
 
 .footer-container {
@@ -909,4 +918,67 @@ a:hover {
   padding-top: var(--spacing-md);
   border-top: 1px solid var(--border-light);
   color: var(--text-muted);
+}
+
+/* Global Fix: Prevent extra white space after footer */
+footer:last-child,
+.footer:last-child,
+.footer-neo:last-child {
+  margin-bottom: 0 !important;
+  padding-bottom: 40px;
+}
+
+/* Main content should grow to fill space */
+main,
+.main-content,
+.feed-main-neo,
+.profile-content,
+.settings-content,
+.gossip-container {
+  flex: 1;
+}
+
+/* Mobile Menu - Hidden by default on all screens */
+.mobile-menu-overlay {
+  display: none !important;
+  visibility: hidden;
+  opacity: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2000;
+}
+
+.mobile-menu-overlay.active {
+  display: block !important;
+  visibility: visible;
+  opacity: 1;
+}
+
+.mobile-menu-sidebar {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 90%;
+  max-width: 400px;
+  height: 100%;
+  z-index: 2001;
+  transition: right 0.3s ease;
+}
+
+.mobile-menu-sidebar.active {
+  right: 0;
+}
+
+/* Mobile Bottom Nav - Hidden by default on desktop */
+.mobile-bottom-nav {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex !important;
+  }
 }

@@ -96,6 +96,7 @@ const errorHandler = (err, req, res, next) => {
     },
     showStack: process.env.NODE_ENV === 'development' ? err.stack : null,
     user: req.user || null,
+    messages: req.flash ? req.flash() : {},
     bodyTemplate: null
   });
 };

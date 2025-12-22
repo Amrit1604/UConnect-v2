@@ -24,7 +24,6 @@ const { configureCORS } = require('./config/cors');
 const { configureHelmet } = require('./config/helmet');
 const { configureAppMiddleware } = require('./middleware/appMiddleware');
 const { configureServer } = require('./startup/server');
-const { connectRedis } = require('./services/redisClient');
 
 // ==========================================
 // ROUTES
@@ -65,9 +64,7 @@ mongoose.connection.once('open', () => {
 // Security middleware
 configureHelmet(app);
 
-// Session configuration (MUST be first after basic setup)
-const useRedisForSessions = process.env.SESSION_STORE === 'redis' || !!process.env.REDIS_URL;
-// Configure session immediately (session middleware must be active for other middlewares)
+// Session configuration (MongoDB only)
 configureSession(app);
 
 // Flash messages (needs session)
@@ -81,11 +78,6 @@ configureCORS(app);
 
 // Server and Socket.IO setup
 const { server, io } = configureServer(app);
-
-// Connect Redis client for dev if configured and not already connected for sessions
-if (!useRedisForSessions && ((process.env.NODE_ENV || 'development') === 'development')) {
-  connectRedis().then(() => console.log('Redis connected for development')).catch((err) => console.warn('Redis connect failed (dev):', err.message));
-}
 
 // ==========================================
 // ROUTES SETUP
@@ -146,6 +138,8 @@ app.get('/health', (req, res) => {
     uptime: process.uptime()
   });
 });
+
+
 
 // ==========================================
 // ERROR HANDLING

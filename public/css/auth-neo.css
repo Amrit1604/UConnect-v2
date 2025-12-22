@@ -23,6 +23,8 @@
     color: var(--white);
     position: relative;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Animated background geometric shapes */

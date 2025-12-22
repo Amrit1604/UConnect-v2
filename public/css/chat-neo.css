@@ -26,6 +26,8 @@ body.chat-inbox-page,
     color: var(--white);
     min-height: 100vh;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Override any parallax or blob effects on chat pages */

@@ -13,6 +13,8 @@
     padding-top: 100px;
     position: relative;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Parallax Background Layers (Same as feed-neo.ejs) */

@@ -20,11 +20,14 @@ function initializeClient() {
     return null;
   }
 
+  console.log('🔄 Redis: Initializing client...');
+  console.log('🔗 Redis URL:', REDIS_URL.replace(/:[^:@]+@/, ':****@')); // Hide password
+
   try {
     client = redis.createClient({
       url: REDIS_URL,
       socket: {
-        connectTimeout: 5000, // 5 second timeout
+        connectTimeout: 10000, // 10 second timeout for cloud Redis
         reconnectStrategy: (retries) => {
           if (retries > 3) {
             console.log('⚠️ Redis: Max reconnection attempts reached, giving up');
@@ -36,13 +39,17 @@ function initializeClient() {
     });
 
     client.on('error', (err) => {
-      if (!connectionAttempted) return; // Ignore errors before first connection attempt
       console.error('⚠️ Redis Client Error:', err.message);
       isConnected = false;
     });
 
     client.on('connect', () => {
       console.log('✅ Redis: Connected successfully');
+      isConnected = true;
+    });
+
+    client.on('ready', () => {
+      console.log('✅ Redis: Ready to accept commands');
       isConnected = true;
     });
 
@@ -73,19 +80,23 @@ async function connectRedis() {
   }
 
   if (client.isOpen) {
+    console.log('✅ Redis: Already connected');
     isConnected = true;
     return true;
   }
+
+  console.log('🔌 Redis: Attempting connection...');
 
   try {
     await Promise.race([
       client.connect(),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timeout')), 5000)
+        setTimeout(() => reject(new Error('Connection timeout after 10s')), 10000)
       )
     ]);
     isConnected = true;
     console.log('✅ Redis: Connection established');
+    console.log('🎯 Redis: Ready for caching and sessions');
     return true;
   } catch (err) {
     console.warn('⚠️ Redis: Connection failed -', err.message);

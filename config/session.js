@@ -3,8 +3,7 @@ const MongoStore = require('connect-mongo');
 
 /**
  * Session Configuration
- * Uses MongoDB by default (more reliable on Render free tier)
- * Redis is optional and only used if explicitly configured
+ * Uses MongoDB for session storage
  */
 const configureSession = (app) => {
   console.log('🔧 Configuring session store...');
@@ -26,48 +25,9 @@ const configureSession = (app) => {
     app.set('trust proxy', 1);
   }
 
-  // Determine session store: Redis only if explicitly requested AND available
-  const useRedis = process.env.SESSION_STORE === 'redis' && process.env.REDIS_URL;
-
-  if (useRedis) {
-    try {
-      const RedisStoreCreator = require('connect-redis');
-      const { client: redisClient, isAvailable } = require('../services/redisClient');
-
-      if (redisClient && isAvailable && isAvailable()) {
-        let RedisStoreFactory = typeof RedisStoreCreator === 'function'
-          ? RedisStoreCreator
-          : RedisStoreCreator.default;
-
-        if (RedisStoreFactory) {
-          let RedisStoreClass;
-          try {
-            RedisStoreClass = RedisStoreFactory(session);
-          } catch (e) {
-            RedisStoreClass = RedisStoreFactory;
-          }
-
-          sessionOptions.store = new RedisStoreClass({
-            client: redisClient,
-            prefix: 'sess:'
-          });
-          console.log('✅ Session store: Redis');
-        } else {
-          throw new Error('Redis store factory not available');
-        }
-      } else {
-        throw new Error('Redis client not connected');
-      }
-    } catch (err) {
-      console.warn('⚠️ Redis session store failed:', err.message);
-      console.log('ℹ️ Falling back to MongoDB session store');
-      sessionOptions.store = createMongoStore();
-    }
-  } else {
-    // Default: MongoDB store (reliable on all platforms)
-    sessionOptions.store = createMongoStore();
-    console.log('✅ Session store: MongoDB');
-  }
+  // MongoDB session store (reliable on all platforms)
+  sessionOptions.store = createMongoStore();
+  console.log('✅ Session store: MongoDB');
 
   app.use(session(sessionOptions));
 };
