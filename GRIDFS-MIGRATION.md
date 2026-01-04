@@ -179,7 +179,7 @@ node scripts/testGridFS.js
 
 ### 1. Environment Variables
 ```env
-MONGODB_URI=********** add your own uri *****************************
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname
 SESSION_SECRET=your_secret_here
 NODE_ENV=production
 PORT=10000
