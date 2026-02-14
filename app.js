@@ -197,5 +197,6 @@ if (require.main === module) {
     console.log(`⚡ Socket.IO enabled for real-time features!`);
   });
 }
+console.log("Mongo URI:", process.env.MONGO_URI);
 
 module.exports = app;
