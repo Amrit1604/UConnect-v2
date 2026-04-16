@@ -153,61 +153,95 @@
                                 <% } %>
 
                                 <!-- Post Media -->
-                                <% if (post.images && post.images.length > 0) { %>
-                                    <div class="post-media-neo">
-                                        <%
-                                        let imgSrc = '';
-                                        const img = post.images[0];
-                                        if (img.url) {
-                                            imgSrc = img.url;
-                                        } else if (img.filename) {
-                                            imgSrc = '/uploads/posts/' + img.filename;
-                                        } else if (typeof img === 'string') {
-                                            imgSrc = '/uploads/posts/' + img;
-                                        }
-                                        %>
-                                        <img src="<%= imgSrc %>"
-                                             alt="<%= img.originalName || 'Post image' %>"
-                                             class="post-image-neo"
-                                             loading="lazy"
-                                             onerror="this.src='/images/default-avatar.png'; this.onerror=null;">
-                                    </div>
-                                <% } else if (post.media && post.media.length > 0) { %>
-                                    <% const firstMedia = post.media[0]; %>
-                                    <% if (firstMedia.type === 'image') { %>
-                                        <div class="post-media-neo">
-                                            <img src="<%= firstMedia.url || '/uploads/posts/' + firstMedia.filename %>"
-                                                 alt="<%= firstMedia.originalName || 'Post image' %>"
-                                                 class="post-image-neo"
-                                                 loading="lazy"
-                                                 onerror="this.src='/images/default-avatar.png'; this.onerror=null;">
-                                        </div>
-                                    <% } else if (firstMedia.type === 'video') { %>
-                                        <div class="post-media-neo">
-                                            <video class="post-video-neo" controls playsinline preload="metadata">
-                                                <source src="<%= firstMedia.url %>"
-                                                        type="<%= firstMedia.mimetype || 'video/mp4' %>">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                        </div>
-                                    <% } %>
-                                <% } else if (post.videos && post.videos.length > 0) { %>
-                                    <div class="post-media-neo">
-                                        <%
-                                        let vidSrc = '';
-                                        const vid = post.videos[0];
-                                        if (vid.url) {
-                                            vidSrc = vid.url;
-                                        } else if (vid.filename) {
-                                            vidSrc = '/uploads/posts/' + vid.filename;
-                                        } else if (typeof vid === 'string') {
-                                            vidSrc = '/uploads/posts/' + vid;
-                                        }
-                                        %>
-                                        <video class="post-video-neo" controls playsinline preload="metadata">
-                                            <source src="<%= vidSrc %>" type="<%= vid.mimetype || 'video/mp4' %>">
-                                            Your browser does not support the video tag.
-                                        </video>
+                                <%
+                                    const postMediaItems = [];
+                                    const seenMediaSrc = new Set();
+
+                                    const pushMediaItem = (item) => {
+                                        if (!item || !item.src) return;
+                                        if (seenMediaSrc.has(item.src)) return;
+                                        seenMediaSrc.add(item.src);
+                                        postMediaItems.push(item);
+                                    };
+
+                                    if (post.images && post.images.length > 0) {
+                                        post.images.forEach((img) => {
+                                            let src = '';
+                                            if (img && img.url) {
+                                                src = img.url;
+                                            } else if (img && img.filename) {
+                                                src = '/uploads/posts/' + img.filename;
+                                            } else if (typeof img === 'string') {
+                                                src = '/uploads/posts/' + img;
+                                            }
+
+                                            pushMediaItem({
+                                                type: 'image',
+                                                src,
+                                                alt: (img && img.originalName) || 'Post image'
+                                            });
+                                        });
+                                    }
+
+                                    if (post.media && post.media.length > 0) {
+                                        post.media.forEach((m) => {
+                                            const inferredType = (m.type === 'video' || (m.mimetype && String(m.mimetype).startsWith('video/')))
+                                                ? 'video'
+                                                : 'image';
+                                            const src = m.url || (m.filename ? '/uploads/posts/' + m.filename : '');
+
+                                            pushMediaItem({
+                                                type: inferredType,
+                                                src,
+                                                alt: m.originalName || 'Post media',
+                                                mimetype: m.mimetype || (inferredType === 'video' ? 'video/mp4' : 'image/jpeg')
+                                            });
+                                        });
+                                    }
+
+                                    if (postMediaItems.length === 0 && post.videos && post.videos.length > 0) {
+                                        post.videos.forEach((vid) => {
+                                            let src = '';
+                                            if (vid && vid.url) {
+                                                src = vid.url;
+                                            } else if (vid && vid.filename) {
+                                                src = '/uploads/posts/' + vid.filename;
+                                            } else if (typeof vid === 'string') {
+                                                src = '/uploads/posts/' + vid;
+                                            }
+
+                                            pushMediaItem({
+                                                type: 'video',
+                                                src,
+                                                alt: (vid && vid.originalName) || 'Post video',
+                                                mimetype: (vid && vid.mimetype) || 'video/mp4'
+                                            });
+                                        });
+                                    }
+                                %>
+
+                                <% if (postMediaItems.length > 0) { %>
+                                    <div class="post-media-neo <%= postMediaItems.length > 1 ? 'is-grid' : '' %>">
+                                        <% postMediaItems.forEach((item, mediaIndex) => { %>
+                                            <div class="post-media-item-neo media-open-trigger-neo <%= item.type === 'video' ? 'is-video' : 'is-image' %>"
+                                                 data-media-index="<%= mediaIndex %>"
+                                                 data-media-type="<%= item.type %>"
+                                                 data-media-src="<%= item.src %>"
+                                                 data-media-mimetype="<%= item.mimetype || '' %>">
+                                                <% if (item.type === 'video') { %>
+                                                    <video class="post-video-neo" muted playsinline preload="metadata">
+                                                        <source src="<%= item.src %>" type="<%= item.mimetype || 'video/mp4' %>">
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                <% } else { %>
+                                                    <img src="<%= item.src %>"
+                                                         alt="<%= item.alt || 'Post image' %>"
+                                                         class="post-image-neo"
+                                                         loading="lazy"
+                                                         onerror="this.src='/images/default-avatar.png'; this.onerror=null;">
+                                                <% } %>
+                                            </div>
+                                        <% }); %>
                                     </div>
                                 <% } %>
 
@@ -420,6 +454,17 @@
     <div class="panel-overlay" id="panelOverlay"></div>
 </div>
 
+<!-- Full-screen media viewer -->
+<div id="mediaViewerNeo" class="media-viewer-neo" aria-hidden="true">
+    <button type="button" id="mediaViewerCloseNeo" class="media-viewer-close-neo" aria-label="Close viewer">✕</button>
+    <button type="button" id="mediaViewerPrevNeo" class="media-viewer-nav-neo prev" aria-label="Previous media">‹</button>
+    <div id="mediaViewerStageNeo" class="media-viewer-stage-neo"></div>
+    <button type="button" id="mediaViewerNextNeo" class="media-viewer-nav-neo next" aria-label="Next media">›</button>
+    <div class="media-viewer-footer-neo">
+        <span id="mediaViewerCounterNeo" class="media-viewer-counter-neo"></span>
+    </div>
+</div>
+
 <!-- Inline JavaScript for Quick Interactions -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -485,6 +530,139 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = currentUrl.toString();
         });
     }
+
+    // Full-screen media viewer (images as gallery, videos in player)
+    const viewer = document.getElementById('mediaViewerNeo');
+    const viewerStage = document.getElementById('mediaViewerStageNeo');
+    const viewerClose = document.getElementById('mediaViewerCloseNeo');
+    const viewerPrev = document.getElementById('mediaViewerPrevNeo');
+    const viewerNext = document.getElementById('mediaViewerNextNeo');
+    const viewerCounter = document.getElementById('mediaViewerCounterNeo');
+
+    let activeMediaList = [];
+    let activeMediaIndex = 0;
+
+    function getPostMediaList(postCard) {
+        return Array.from(postCard.querySelectorAll('.media-open-trigger-neo')).map((el, idx) => ({
+            index: idx,
+            type: el.dataset.mediaType || 'image',
+            src: el.dataset.mediaSrc || '',
+            mimetype: el.dataset.mediaMimetype || ''
+        })).filter(item => item.src);
+    }
+
+    function renderActiveMedia() {
+        if (!viewerStage || activeMediaList.length === 0) return;
+
+        const current = activeMediaList[activeMediaIndex];
+        if (!current) return;
+
+        viewerStage.innerHTML = '';
+
+        if (current.type === 'video') {
+            const video = document.createElement('video');
+            video.className = 'media-viewer-video-neo';
+            video.controls = true;
+            video.autoplay = true;
+            video.playsInline = true;
+            video.preload = 'metadata';
+            video.src = current.src;
+            viewerStage.appendChild(video);
+        } else {
+            const img = document.createElement('img');
+            img.className = 'media-viewer-image-neo';
+            img.src = current.src;
+            img.alt = 'Post media';
+            viewerStage.appendChild(img);
+        }
+
+        if (viewerCounter) {
+            viewerCounter.textContent = `${activeMediaIndex + 1} / ${activeMediaList.length}`;
+        }
+
+        const showNav = activeMediaList.length > 1;
+        if (viewerPrev) viewerPrev.style.display = showNav ? 'inline-flex' : 'none';
+        if (viewerNext) viewerNext.style.display = showNav ? 'inline-flex' : 'none';
+    }
+
+    function openMediaViewer(postCard, startIndex) {
+        if (!viewer) return;
+        activeMediaList = getPostMediaList(postCard);
+        if (!activeMediaList.length) return;
+
+        activeMediaIndex = Math.max(0, Math.min(startIndex, activeMediaList.length - 1));
+        viewer.classList.add('is-open');
+        viewer.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        renderActiveMedia();
+    }
+
+    function closeMediaViewer() {
+        if (!viewer) return;
+        viewer.classList.remove('is-open');
+        viewer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+
+        if (viewerStage) {
+            const video = viewerStage.querySelector('video');
+            if (video) {
+                video.pause();
+                video.removeAttribute('src');
+                video.load();
+            }
+            viewerStage.innerHTML = '';
+        }
+
+        activeMediaList = [];
+        activeMediaIndex = 0;
+    }
+
+    function showPrevMedia() {
+        if (!activeMediaList.length) return;
+        activeMediaIndex = (activeMediaIndex - 1 + activeMediaList.length) % activeMediaList.length;
+        renderActiveMedia();
+    }
+
+    function showNextMedia() {
+        if (!activeMediaList.length) return;
+        activeMediaIndex = (activeMediaIndex + 1) % activeMediaList.length;
+        renderActiveMedia();
+    }
+
+    document.body.addEventListener('click', function(e) {
+        const viewBtn = e.target.closest('.view-btn');
+        if (viewBtn) {
+            const postCard = viewBtn.closest('.post-card-neo');
+            if (postCard) {
+                const mediaList = getPostMediaList(postCard);
+                if (mediaList.length > 0) {
+                    e.preventDefault();
+                    openMediaViewer(postCard, 0);
+                    return;
+                }
+            }
+        }
+
+        if (viewer && viewer.classList.contains('is-open') && e.target === viewer) {
+            closeMediaViewer();
+        }
+    });
+
+    document.body.addEventListener('keydown', function(e) {
+        if (!viewer || !viewer.classList.contains('is-open')) return;
+
+        if (e.key === 'Escape') {
+            closeMediaViewer();
+        } else if (e.key === 'ArrowLeft') {
+            showPrevMedia();
+        } else if (e.key === 'ArrowRight') {
+            showNextMedia();
+        }
+    });
+
+    if (viewerClose) viewerClose.addEventListener('click', closeMediaViewer);
+    if (viewerPrev) viewerPrev.addEventListener('click', showPrevMedia);
+    if (viewerNext) viewerNext.addEventListener('click', showNextMedia);
 
     // Expand/collapse long post text
     document.body.addEventListener('click', function(e) {

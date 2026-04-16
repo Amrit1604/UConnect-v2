@@ -711,7 +711,7 @@
                         <select id="mediaType" class="form-select">
                             <option value="none">None</option>
                             <option value="images" selected>Images</option>
-                            <option value="video">Video</option>
+                            <option value="video">Videos</option>
                         </select>
 
                         <select id="mediaSource" class="form-select">
@@ -725,8 +725,8 @@
                     </div>
 
                     <input type="file" name="images" id="images" multiple accept="image/*" style="display:none;">
-                    <input type="file" name="videos" id="videos" accept="video/*" style="display:none;">
-                    <small class="form-help">Images: up to 5 files (max 5MB each). Video: single file (max 50MB).</small>
+                    <input type="file" name="videos" id="videos" multiple accept="video/*" style="display:none;">
+                    <small class="form-help">Images: up to 5 files (max 5MB each). Videos: up to 2 files (max 50MB each).</small>
                     <div id="selectedFiles" class="selected-files"></div>
                 </div>
 
@@ -826,10 +826,34 @@
                 mediaBtn.style.display = 'none';
             } else {
                 mediaBtn.style.display = 'inline-flex';
-                const icon = source === 'camera' ? 'fa-camera' : 'fa-images';
-                const text = source === 'camera' ? 'Take Photo' : 'Choose';
+                const isVideo = type === 'video';
+                const icon = source === 'camera'
+                    ? (isVideo ? 'fa-video' : 'fa-camera')
+                    : (isVideo ? 'fa-film' : 'fa-images');
+                const text = source === 'camera'
+                    ? (isVideo ? 'Record Video' : 'Take Photo')
+                    : (isVideo ? 'Choose Videos' : 'Choose Images');
                 mediaBtn.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
             }
+        }
+
+        function syncSelectedFilesFromActiveType() {
+            const type = mediaTypeSelect.value;
+
+            if (type === 'images') {
+                selectedFiles = Array.from(imagesInput.files || []);
+                displaySelectedFiles(selectedFiles, 'images');
+                return;
+            }
+
+            if (type === 'video') {
+                selectedFiles = Array.from(videosInput.files || []);
+                displaySelectedFiles(selectedFiles, 'video');
+                return;
+            }
+
+            selectedFiles = [];
+            renderNoFilesState();
         }
 
         updateMediaButton();
@@ -846,14 +870,17 @@
 
         // Media type change
         mediaTypeSelect.addEventListener('change', function() {
-            resetMediaInputs();
+            if (mediaTypeSelect.value === 'none') {
+                resetMediaInputs();
+            } else {
+                syncSelectedFilesFromActiveType();
+            }
             updateMediaButton();
         });
 
         // Media source change
         mediaSourceSelect.addEventListener('change', function() {
             const source = mediaSourceSelect.value;
-            resetMediaInputs();
 
             if (source === 'camera') {
                 imagesInput.setAttribute('capture', 'environment');
@@ -988,10 +1015,14 @@
             if (index < 0 || index >= selectedFiles.length) return;
 
             selectedFiles.splice(index, 1);
+            const activeType = mediaTypeSelect.value;
 
             if (selectedFiles.length === 0) {
-                imagesInput.value = '';
-                videosInput.value = '';
+                if (activeType === 'images') {
+                    imagesInput.value = '';
+                } else if (activeType === 'video') {
+                    videosInput.value = '';
+                }
                 selectedFilesDiv.innerHTML = '<div class="success-message"><i class="fas fa-check-circle"></i> All files removed successfully!</div>';
                 setTimeout(() => renderNoFilesState(), 2000);
             } else {
@@ -1006,8 +1037,11 @@
             const input = type === 'images' ? imagesInput : videosInput;
 
             if (selectedFiles.length === 0) {
-                imagesInput.value = '';
-                videosInput.value = '';
+                if (type === 'images') {
+                    imagesInput.value = '';
+                } else if (type === 'video') {
+                    videosInput.value = '';
+                }
                 return;
             }
 
@@ -1059,8 +1093,8 @@
         videosInput.addEventListener('change', function(e) {
             const files = Array.from(e.target.files);
 
-            if (files.length > 1) {
-                alert('Only one video allowed.');
+            if (files.length > 2) {
+                alert('Maximum 2 videos allowed.');
                 e.target.value = '';
                 selectedFiles = [];
                 previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
@@ -1122,13 +1156,19 @@
                         }
                     });
 
-                    selectedFiles.forEach(file => {
-                        if (type === 'images') {
-                            formData.append('images', file);
-                        } else {
-                            formData.append('videos', file);
-                        }
-                    });
+                    const imageFiles = Array.from(imagesInput.files || []);
+                    const videoFiles = Array.from(videosInput.files || []);
+
+                    imageFiles.forEach(file => formData.append('images', file));
+                    videoFiles.forEach(file => formData.append('videos', file));
+
+                    if (type === 'images' && imageFiles.length !== selectedFiles.length) {
+                        selectedFiles.forEach(file => formData.append('images', file));
+                    }
+
+                    if (type === 'video' && videoFiles.length !== selectedFiles.length) {
+                        selectedFiles.forEach(file => formData.append('videos', file));
+                    }
 
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
