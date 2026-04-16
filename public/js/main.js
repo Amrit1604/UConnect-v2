@@ -351,7 +351,7 @@ function handleFileUpload(e) {
     console.log('📁 Skipping global file handler for media-input:', input.id || input.name);
     return;
   }
-  
+
   // Skip chat file input (has its own handler)
   if (input.id === 'fileInput') {
     console.log('📁 Skipping global file handler for chat file input');

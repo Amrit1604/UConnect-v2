@@ -12,13 +12,13 @@ const notificationSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  
+
   sender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
   },
-  
+
   type: {
     type: String,
     enum: [
@@ -32,48 +32,48 @@ const notificationSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  
+
   title: {
     type: String,
     required: true,
     maxlength: 200
   },
-  
+
   message: {
     type: String,
     required: true,
     maxlength: 500
   },
-  
+
   // Reference to related entity
   relatedId: {
     type: mongoose.Schema.Types.ObjectId,
     default: null
   },
-  
+
   relatedType: {
     type: String,
     enum: ['FollowRequest', 'Message', 'User', null],
     default: null
   },
-  
+
   // Action URL for clicking notification
   actionUrl: {
     type: String,
     default: null
   },
-  
+
   isRead: {
     type: Boolean,
     default: false,
     index: true
   },
-  
+
   readAt: {
     type: Date,
     default: null
   },
-  
+
   // Priority for sorting (admin notifications = high priority)
   priority: {
     type: String,
@@ -81,7 +81,7 @@ const notificationSchema = new mongoose.Schema({
     default: 'normal',
     index: true
   },
-  
+
   createdAt: {
     type: Date,
     default: Date.now,
@@ -156,10 +156,10 @@ notificationSchema.statics.createAdminWarningNotification = async function(userI
 
 // Static method to create admin block notification
 notificationSchema.statics.createAdminBlockNotification = async function(userId, reason, duration) {
-  const message = duration 
+  const message = duration
     ? `${reason} You have been temporarily blocked for ${duration}.`
     : `${reason} Your account has been restricted.`;
-    
+
   return await this.create({
     recipient: userId,
     sender: null,
@@ -182,12 +182,12 @@ notificationSchema.statics.getUnreadCount = async function(userId) {
 // Static method to get user notifications
 notificationSchema.statics.getUserNotifications = async function(userId, page = 1, limit = 20, unreadOnly = false) {
   const skip = (page - 1) * limit;
-  
+
   const query = { recipient: userId };
   if (unreadOnly) {
     query.isRead = false;
   }
-  
+
   return await this.find(query)
     .sort({ priority: -1, createdAt: -1 })
     .skip(skip)
@@ -241,7 +241,7 @@ notificationSchema.methods.markRead = async function() {
 // Static method to delete old read notifications (cleanup)
 notificationSchema.statics.deleteOldNotifications = async function(daysOld = 30) {
   const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
-  
+
   return await this.deleteMany({
     isRead: true,
     readAt: { $lt: cutoffDate }

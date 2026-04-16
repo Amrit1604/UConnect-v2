@@ -458,9 +458,10 @@ router.post('/api/run-jest', async (req, res) => {
   try {
     const { spawn } = require('child_process');
     const path = require('path');
+    const projectRoot = path.resolve(__dirname, '..');
     const scriptPath = path.resolve(__dirname, '..', 'scripts', 'runAllTests.js');
 
-    const child = spawn(process.execPath, [scriptPath], { cwd: process.cwd(), windowsHide: true });
+    const child = spawn(process.execPath, [scriptPath], { cwd: projectRoot, windowsHide: true });
     let outBuf = '';
     let closed = false;
 
@@ -536,6 +537,7 @@ router.get('/api/run-jest-stream', async (req, res) => {
   try {
     const { spawn } = require('child_process');
     const path = require('path');
+    const projectRoot = path.resolve(__dirname, '..');
     const scriptPath = path.resolve(__dirname, '..', 'scripts', 'runAllTests.js');
 
     // SSE headers
@@ -546,7 +548,7 @@ router.get('/api/run-jest-stream', async (req, res) => {
     });
     res.write(':ok\n\n');
 
-    const child = spawn(process.execPath, [scriptPath], { cwd: process.cwd(), windowsHide: true });
+    const child = spawn(process.execPath, [scriptPath], { cwd: projectRoot, windowsHide: true });
     let outBuf = '';
 
     function sendEvent(obj) {

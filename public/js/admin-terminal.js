@@ -37,7 +37,7 @@
     try {
       switch (cmd) {
         case 'help':
-          appendLine('<div class="help-list">\n  <div><strong>help</strong> — show this help</div>\n  <div><strong>status</strong> — show system status</div>\n  <div><strong>users [limit]</strong> — list users (numbered)</div>\n  <div><strong>posts [limit]</strong> — list posts (numbered)</div>\n  <div><strong>audit [limit]</strong> — recent admin logs</div>\n  <div><strong>finduser &lt;q&gt;</strong> — lookup user by username/email/displayName</div>\n  <div><strong>deactivate &lt;username|userId|#n&gt;</strong> — toggle active status</div>\n  <div><strong>deleteuser &lt;username|userId|#n&gt;</strong> — delete user and posts</div>\n  <div><strong>deletepost &lt;postId|#n&gt;</strong> — delete a post (use <code>posts</code> to get numbers)</div>\n  <div><strong>run &lt;script&gt;</strong> — run allowed script (fixCampus, testGridFS)</div>\n  <div><strong>jest</strong> — run tests (blocking)</div>\n  <div><strong>jeststream</strong> — run tests with live stream</div>\n  <div><strong>clear</strong> — clear terminal output</div>\n  <div style="margin-top:8px;color:rgba(183,255,183,0.7);">Tip: After listing, reference items by number: <code>posts</code> then <code>deletepost 3</code></div>\n</div>');
+          appendLine('<div class="help-list">\n  <div><strong>help</strong> — show this help</div>\n  <div><strong>status</strong> — show system status</div>\n  <div><strong>users [limit]</strong> — list users (numbered)</div>\n  <div><strong>posts [limit]</strong> — list posts (numbered)</div>\n  <div><strong>audit [limit]</strong> — recent admin logs</div>\n  <div><strong>finduser &lt;q&gt;</strong> — lookup user by username/email/displayName</div>\n  <div><strong>deactivate &lt;username|userId|#n&gt;</strong> — toggle active status</div>\n  <div><strong>deleteuser &lt;username|userId|#n&gt;</strong> — delete user and posts</div>\n  <div><strong>deletepost &lt;postId|#n&gt;</strong> — delete a post (use <code>posts</code> to get numbers)</div>\n  <div><strong>run &lt;script&gt;</strong> — run allowed script (fixCampus, testGridFS)</div>\n  <div><strong>fixcampus</strong> / <strong>testgridfs</strong> — script shortcuts</div>\n  <div><strong>jest</strong> — run tests (blocking)</div>\n  <div><strong>jeststream</strong> — run tests with live stream</div>\n  <div><strong>clear</strong> — clear terminal output</div>\n  <div style="margin-top:8px;color:rgba(183,255,183,0.7);">Tip: After listing, reference items by number: <code>posts</code> then <code>deletepost 3</code></div>\n</div>');
           break;
 
         case 'clear':
@@ -93,6 +93,21 @@
           appendLine('Running script: ' + escapeHtml(script), 'term-info');
           const res = await fetch('/admin/api/run', {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ script })
+          });
+          const json = await res.json();
+          appendLine(prettyJSON(json), 'term-json');
+          break;
+        }
+
+        // shorthand aliases for common scripts typed directly in terminal
+        case 'testgridfs':
+        case 'fixcampus': {
+          const script = cmd === 'testgridfs' ? 'testGridFS' : 'fixCampus';
+          appendLine('Running script: ' + escapeHtml(script), 'term-info');
+          const res = await fetch('/admin/api/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script })
           });
           const json = await res.json();
           appendLine(prettyJSON(json), 'term-json');

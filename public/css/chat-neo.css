@@ -292,11 +292,11 @@ body.chat-inbox-page .blob {
         box-shadow: none;
         padding-bottom: 100px;
     }
-    
+
     .inbox-header {
         padding: 10px 4px;
     }
-    
+
     .inbox-search input {
         background: rgba(255, 255, 255, 0.08);
     }
@@ -676,18 +676,18 @@ body.chat-inbox-page .blob {
         border: none;
         max-width: 100%;
     }
-    
+
     .chat-sidebar-instagram {
         width: 100%;
         min-width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--glass-border);
     }
-    
+
     .chat-main-instagram {
         display: none; /* Hidden until conversation selected */
     }
-    
+
     .chat-main-instagram.active {
         display: flex;
         position: fixed;
@@ -698,7 +698,7 @@ body.chat-inbox-page .blob {
         z-index: 1500;
         background: var(--black);
     }
-    
+
     .chat-window {
         margin: 0;
         height: 100vh;
@@ -706,7 +706,7 @@ body.chat-inbox-page .blob {
         border: none;
         background: #000;
     }
-    
+
     .chat-header {
         padding: 12px 16px;
         position: sticky;
@@ -715,7 +715,7 @@ body.chat-inbox-page .blob {
         background: #000;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
     .chat-messages {
         padding: 16px;
         padding-bottom: 180px;
@@ -723,12 +723,12 @@ body.chat-inbox-page .blob {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     .chat-typing {
         padding: 0 16px 10px;
         margin-bottom: 60px;
     }
-    
+
     .chat-input {
         padding: 12px 16px 16px;
         position: fixed;
@@ -739,29 +739,29 @@ body.chat-inbox-page .blob {
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         z-index: 99;
     }
-    
+
     .chat-text-input {
         font-size: 16px !important;
         padding: 12px 16px;
         border-radius: 24px;
     }
-    
+
     .send-btn {
         padding: 12px 20px;
         font-size: 14px;
         border-radius: 24px;
         white-space: nowrap;
     }
-    
+
     .msg {
         max-width: 80%;
     }
-    
+
     .bubble {
         padding: 10px 14px;
         font-size: 15px;
     }
-    
+
     .back-btn {
         display: inline-flex !important;
     }
@@ -772,7 +772,7 @@ body.chat-inbox-page .blob {
     body.chat-page {
         padding-bottom: 0 !important;
     }
-    
+
     .chat-window {
         max-width: none;
         height: calc(100vh - 90px);
@@ -781,34 +781,34 @@ body.chat-inbox-page .blob {
         border: none;
         border-left: 1px solid var(--glass-border);
     }
-    
+
     .back-btn {
         display: none !important;
     }
-    
+
     .chat-header {
         padding: 20px 24px;
         border-bottom: 1px solid var(--glass-border);
     }
-    
+
     .chat-messages {
         padding: 24px;
         flex: 1;
     }
-    
+
     .chat-input {
         padding: 20px 24px;
         position: relative;
         bottom: auto;
         border-top: 1px solid var(--glass-border);
     }
-    
+
     .chat-typing {
         padding: 0 24px 10px;
         position: relative;
         bottom: auto;
     }
-    
+
     .msg {
         max-width: 60%;
     }

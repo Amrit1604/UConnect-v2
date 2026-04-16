@@ -6,9 +6,9 @@
   <!-- Header -->
   <div class="chat-header">
     <a href="/chat" class="chat-back-btn">←</a>
-    
+
     <div class="chat-user-info">
-      <% 
+      <%
       let avatarUrl = '/images/default-avatar.png';
       if (otherUser.avatarType === 'upload' && otherUser.avatar) {
           avatarUrl = '/uploads/avatars/' + otherUser.avatar;
@@ -21,7 +21,7 @@
       }
       %>
       <img src="<%= avatarUrl %>" alt="<%= otherUser.username %>" class="chat-avatar">
-      
+
       <div class="chat-user-details">
         <h3><%= otherUser.username %></h3>
         <p class="chat-status" id="userStatus">Offline</p>
@@ -35,7 +35,7 @@
       <% messages.forEach(m => { %>
         <% const isMe = (m.sender && m.sender._id && m.sender._id.toString() === user._id.toString()); %>
         <% const isDeletedForMe = m.deletedBy && m.deletedBy.some(id => id.toString() === user._id.toString()); %>
-        
+
         <% if (!isDeletedForMe) { %>
         <div class="message <%= isMe ? 'sent' : 'received' %>" data-msg-id="<%= m._id %>">
           <div class="message-bubble">
@@ -45,7 +45,7 @@
               <button class="message-action-btn delete-msg-btn" data-msg-id="<%= m._id %>" title="Delete">🗑️</button>
             </div>
             <% } %>
-            
+
             <div class="message-info">
               <span class="message-sender"><%= isMe ? 'You' : m.sender.username %></span>
               <span class="message-time"><%= new Date(m.sentAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) %></span>
@@ -58,14 +58,14 @@
                 </span>
               <% } %>
             </div>
-            
+
             <% if (m.messageType === 'image' && m.fileGridFSId) { %>
               <img src="/gridfs/<%= m.fileGridFSId %>" alt="Image" class="message-image" onclick="window.open(this.src, '_blank')">
               <% if (m.content) { %>
                 <div class="message-text"><%= m.content %></div>
               <% } %>
             <% } else if (m.messageType === 'file' && m.fileGridFSId) { %>
-              <% 
+              <%
               let fileIcon = '📄';
               if (m.fileName) {
                 let ext = m.fileName.split('.').pop().toLowerCase();
@@ -111,18 +111,18 @@
   <div class="chat-input-container">
     <form class="chat-input-form" id="messageForm">
       <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
-      
+
       <button type="button" class="chat-attach-btn" id="attachBtn" title="Attach file">
         📎
       </button>
-      
+
       <button type="button" class="chat-mic-btn" id="micBtn" title="Record voice message">
         🎤
       </button>
-      
-      <input 
-        type="text" 
-        class="chat-input-field" 
+
+      <input
+        type="text"
+        class="chat-input-field"
         id="messageInput"
         placeholder="Type a message..."
         autocomplete="off"
@@ -139,67 +139,67 @@ console.log('🔥 SCRIPT TAG REACHED');
 // Wait for everything to load
 document.addEventListener('DOMContentLoaded', function() {
   console.log('📦 DOM Ready');
-  
+
   // Check if socket.io is available
   if (typeof io === 'undefined') {
     console.error('❌ Socket.IO not loaded!');
     alert('Chat error: Socket.IO not loaded');
     return;
   }
-  
+
   console.log('✅ Socket.IO available');
-  
+
   const currentUserId = '<%= user._id %>';
   const otherUserId = '<%= otherUser._id %>';
-  
+
   console.log('🚀 Chat initialized');
   console.log('👤 Current user ID:', currentUserId);
   console.log('👥 Other user ID:', otherUserId);
-  
+
   const messagesContainer = document.getElementById('messagesContainer');
   const messageForm = document.getElementById('messageForm');
   const messageInput = document.getElementById('messageInput');
   const typingIndicator = document.getElementById('typingIndicator');
   const userStatus = document.getElementById('userStatus');
-  
+
   if (!messageForm) {
     console.error('❌ messageForm not found!');
     return;
   }
-  
+
   console.log('✅ All elements found');
-  
+
   // Initialize Socket.IO
   const socket = io();
-  
+
   // Scroll to bottom
   function scrollToBottom() {
     if (messagesContainer) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
   }
-  
+
   // Add message to UI
   function addMessage(content, isSent, senderName, timestamp, status) {
     senderName = senderName || 'You';
     timestamp = timestamp || new Date();
     status = status || 'sent';
-    
+
     // Remove empty state
     const emptyState = messagesContainer.querySelector('.chat-empty');
     if (emptyState) emptyState.remove();
-    
+
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
-    
+
     const time = timestamp.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    
+
     var statusHtml = '';
     if (isSent) {
       statusHtml = '<span class="message-status ' + status + '"><span class="checkmark"></span></span>';
     }
-    
-    messageDiv.innerHTML = 
+
+    messageDiv.innerHTML =
       '<div class="message-bubble">' +
         '<div class="message-info">' +
           '<span class="message-sender">' + escapeHtml(senderName) + '</span>' +
@@ -208,11 +208,11 @@ document.addEventListener('DOMContentLoaded', function() {
         '</div>' +
         '<div class="message-text">' + escapeHtml(content) + '</div>' +
       '</div>';
-    
+
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
   }
-  
+
   // Escape HTML
   function escapeHtml(str) {
     if (!str) return '';
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
     div.textContent = str;
     return div.innerHTML;
   }
-  
+
   // Socket: Connect
   socket.on('connect', function() {
     console.log('✅ Socket connected, socket ID:', socket.id);
@@ -229,12 +229,12 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('📡 Joining conversation with:', otherUserId);
     socket.emit('join_conversation', { userId: currentUserId, otherUserId: otherUserId });
   });
-  
+
   // Socket: Any event (debug)
   socket.onAny(function(eventName, data) {
     console.log('🔔 Socket event received:', eventName, data);
   });
-  
+
   // Socket: New message received
   socket.on('new_message', function(data) {
     console.log('📨 NEW MESSAGE EVENT FIRED!');
@@ -242,12 +242,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var msg = data.message;
     var senderId = msg.sender && (msg.sender._id || msg.sender.id);
     console.log('📨 Sender ID:', senderId, 'Other User ID:', otherUserId);
-    
+
     // Only add if from other user (not ourselves)
     if (senderId && String(senderId) === String(otherUserId)) {
       console.log('📨 Adding message to UI');
       var senderName = (data.sender && data.sender.username) || 'User';
-      
+
       // Handle different message types
       if (msg.messageType === 'image' && msg.fileGridFSId) {
         addImageMessage(msg.fileGridFSId, msg.content, false, new Date(msg.sentAt));
@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('📨 Ignoring - from self or mismatch');
     }
   });
-  
+
   // Socket: User online
   socket.on('user_online', function(data) {
     if (data.userId === otherUserId) {
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
       userStatus.className = 'chat-status online';
     }
   });
-  
+
   // Socket: User offline
   socket.on('user_offline', function(data) {
     if (data.userId === otherUserId) {
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
       userStatus.className = 'chat-status';
     }
   });
-  
+
   // Socket: Typing indicator
   socket.on('user_typing', function(data) {
     if (data.userId === otherUserId) {
@@ -288,13 +288,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
-  
+
   // Socket: Message delivered
   socket.on('message_delivered', function(data) {
     console.log('✅ Message delivered:', data.messageId);
     updateMessageStatus(data.messageId, 'delivered');
   });
-  
+
   // Socket: Messages read
   socket.on('messages_read_receipt', function(data) {
     console.log('✅ Messages read by:', data.to);
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
-  
+
   // Update message status checkmark
   function updateMessageStatus(messageId, status) {
     var msgEl = messagesContainer.querySelector('[data-msg-id="' + messageId + '"]');
@@ -318,46 +318,46 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   }
-  
+
   // Handle typing
   var typingTimeout = null;
   messageInput.addEventListener('input', function() {
     socket.emit('typing_start', { userId: currentUserId, otherUserId: otherUserId });
-    
+
     if (typingTimeout) clearTimeout(typingTimeout);
     typingTimeout = setTimeout(function() {
       socket.emit('typing_stop', { userId: currentUserId, otherUserId: otherUserId });
     }, 1500);
   });
-  
+
   // File upload handler
   var fileInput = document.getElementById('fileInput');
   var attachBtn = document.getElementById('attachBtn');
-  
+
   attachBtn.addEventListener('click', function() {
     fileInput.click();
   });
-  
+
   fileInput.addEventListener('change', function(e) {
     var file = e.target.files[0];
     if (!file) return;
-    
+
     console.log('📎 File selected:', file.name, file.type);
-    
+
     // Check file size (max 25MB to match server)
     if (file.size > 25 * 1024 * 1024) {
       alert('File too large! Max 25MB');
       fileInput.value = '';
       return;
     }
-    
+
     // Upload file
     var formData = new FormData();
     formData.append('file', file);
     formData.append('caption', '');
-    
+
     console.log('📤 Uploading file...');
-    
+
     fetch('/chat/' + otherUserId + '/upload', {
       method: 'POST',
       credentials: 'same-origin',
@@ -370,14 +370,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (data.success) {
         console.log('✅ File uploaded!');
         var msg = data.message;
-        
+
         // Add to UI
         if (msg.messageType === 'image') {
           addImageMessage(msg.fileGridFSId, msg.content, true, new Date());
         } else {
           addFileMessage(msg.fileName, msg.fileSize, msg.fileGridFSId, true, new Date());
         }
-        
+
         fileInput.value = '';
       } else {
         throw new Error(data.message || 'Upload failed');
@@ -389,18 +389,18 @@ document.addEventListener('DOMContentLoaded', function() {
       fileInput.value = '';
     });
   });
-  
+
   // Add image message to UI
   function addImageMessage(fileId, caption, isSent, timestamp) {
     var time = timestamp.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     var statusHtml = isSent ? '<span class="message-status sent"><span class="checkmark"></span></span>' : '';
-    
+
     var messageDiv = document.createElement('div');
     messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
-    
+
     var captionHtml = caption ? '<div class="message-text">' + escapeHtml(caption) + '</div>' : '';
-    
-    messageDiv.innerHTML = 
+
+    messageDiv.innerHTML =
       '<div class="message-bubble">' +
         '<div class="message-info">' +
           '<span class="message-sender">' + (isSent ? 'You' : 'User') + '</span>' +
@@ -410,17 +410,17 @@ document.addEventListener('DOMContentLoaded', function() {
         '<img src="/gridfs/' + fileId + '" alt="Image" class="message-image" onclick="window.open(this.src, \'_blank\')">' +
         captionHtml +
       '</div>';
-    
+
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
   }
-  
+
   // Add file message to UI
   function addFileMessage(fileName, fileSize, fileId, isSent, timestamp) {
     var time = timestamp.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     var statusHtml = isSent ? '<span class="message-status sent"><span class="checkmark"></span></span>' : '';
     var sizeKB = (fileSize / 1024).toFixed(1);
-    
+
     // Determine file icon based on extension
     var fileIcon = '📄';
     var ext = fileName.split('.').pop().toLowerCase();
@@ -429,11 +429,11 @@ document.addEventListener('DOMContentLoaded', function() {
     else if (ext === 'xls' || ext === 'xlsx') fileIcon = '📗';
     else if (ext === 'zip' || ext === 'rar') fileIcon = '📦';
     else if (ext === 'txt') fileIcon = '📝';
-    
+
     var messageDiv = document.createElement('div');
     messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
-    
-    messageDiv.innerHTML = 
+
+    messageDiv.innerHTML =
       '<div class="message-bubble">' +
         '<div class="message-info">' +
           '<span class="message-sender">' + (isSent ? 'You' : 'User') + '</span>' +
@@ -448,32 +448,32 @@ document.addEventListener('DOMContentLoaded', function() {
           '</div>' +
         '</a>' +
       '</div>';
-    
+
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
   }
-  
+
   // Send message
   messageForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     var content = messageInput.value.trim();
     if (!content) return;
-    
+
     console.log('📤 Sending message:', content);
-    
+
     // Save and clear
     var savedContent = content;
     messageInput.value = '';
-    
+
     // Stop typing
     socket.emit('typing_stop', { userId: currentUserId, otherUserId: otherUserId });
     if (typingTimeout) clearTimeout(typingTimeout);
-    
+
     // Send via fetch
     fetch('/chat/' + otherUserId + '/message', {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(function(text) {
       console.log('📥 Response text:', text.substring(0, 200));
-      
+
       var data;
       try {
         data = JSON.parse(text);
@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('❌ JSON parse error');
         throw new Error('Server error');
       }
-      
+
       if (data.success) {
         var newMsg = addMessage(savedContent, true, 'You', new Date());
         // Store message ID for status updates
@@ -515,35 +515,35 @@ document.addEventListener('DOMContentLoaded', function() {
       messageInput.value = savedContent;
     });
   });
-  
+
   // Initial scroll and focus
   scrollToBottom();
   setTimeout(function() { messageInput.focus(); }, 300);
-  
+
   // Mark messages as read when viewing
   setTimeout(function() {
     socket.emit('messages_read', { userId: currentUserId, otherUserId: otherUserId });
   }, 500);
-  
+
   // Also mark as read when receiving new messages (if chat is visible)
   document.addEventListener('visibilitychange', function() {
     if (!document.hidden) {
       socket.emit('messages_read', { userId: currentUserId, otherUserId: otherUserId });
     }
   });
-  
+
   // Delete message functionality
   messagesContainer.addEventListener('click', function(e) {
     var deleteBtn = e.target.closest('.delete-msg-btn');
     if (!deleteBtn) return;
-    
+
     var messageId = deleteBtn.getAttribute('data-msg-id');
     if (!messageId) return;
-    
+
     if (!confirm('Delete this message?')) return;
-    
+
     console.log('🗑️ Deleting message:', messageId);
-    
+
     fetch('/chat/message/' + messageId, {
       method: 'DELETE',
       credentials: 'same-origin'
@@ -571,57 +571,57 @@ document.addEventListener('DOMContentLoaded', function() {
       alert('Failed to delete message');
     });
   });
-  
+
   // Edit message functionality
   messagesContainer.addEventListener('click', function(e) {
     var editBtn = e.target.closest('.edit-msg-btn');
     if (!editBtn) return;
-    
+
     var messageId = editBtn.getAttribute('data-msg-id');
     if (!messageId) return;
-    
+
     var msgEl = messagesContainer.querySelector('[data-msg-id="' + messageId + '"]');
     if (!msgEl) return;
-    
+
     var textEl = msgEl.querySelector('.message-text');
     if (!textEl) return;
-    
+
     var currentText = textEl.textContent;
-    
+
     // Create inline edit input
     var originalHtml = textEl.innerHTML;
     textEl.innerHTML = '';
-    
+
     var editInput = document.createElement('textarea');
     editInput.value = currentText;
     editInput.className = 'message-edit-input';
     editInput.style.cssText = 'width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:8px;color:#fff;font-size:15px;font-family:inherit;resize:vertical;min-height:60px;';
-    
+
     var btnContainer = document.createElement('div');
     btnContainer.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
-    
+
     var saveBtn = document.createElement('button');
     saveBtn.textContent = 'Save';
     saveBtn.style.cssText = 'padding:6px 16px;background:#2b7cff;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:13px;';
-    
+
     var cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.style.cssText = 'padding:6px 16px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:13px;';
-    
+
     btnContainer.appendChild(saveBtn);
     btnContainer.appendChild(cancelBtn);
-    
+
     textEl.appendChild(editInput);
     textEl.appendChild(btnContainer);
-    
+
     editInput.focus();
     editInput.setSelectionRange(editInput.value.length, editInput.value.length);
-    
+
     // Cancel edit
     cancelBtn.onclick = function() {
       textEl.innerHTML = originalHtml;
     };
-    
+
     // Save edit
     saveBtn.onclick = function() {
       var newText = editInput.value.trim();
@@ -629,14 +629,14 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Message cannot be empty');
         return;
       }
-      
+
       if (newText === currentText) {
         textEl.innerHTML = originalHtml;
         return;
       }
-      
+
       console.log('✏️ Editing message:', messageId);
-      
+
       fetch('/chat/message/' + messageId, {
         method: 'PUT',
         headers: {
@@ -652,7 +652,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.success) {
           console.log('✅ Message edited');
           textEl.textContent = newText;
-          
+
           // Add edited label if not already there
           var infoEl = msgEl.querySelector('.message-info');
           if (infoEl && !infoEl.querySelector('.message-edited-label')) {
@@ -676,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     };
   });
-  
+
   // Socket: Message edited by other user
   socket.on('message_edited', function(data) {
     console.log('✏️ Message edited:', data.messageId);
@@ -686,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (textEl) {
         textEl.textContent = data.content;
       }
-      
+
       // Add edited label
       var infoEl = msgEl.querySelector('.message-info');
       if (infoEl && !infoEl.querySelector('.message-edited-label')) {
@@ -700,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
-  
+
   // Socket: Message deleted by other user
   socket.on('message_deleted', function(data) {
     console.log('🗑️ Message deleted by other user:', data.messageId);

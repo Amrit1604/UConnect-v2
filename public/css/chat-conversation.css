@@ -510,14 +510,14 @@ body.chat-conversation-page {
         position: fixed;
         width: 100%;
     }
-    
+
     .chat-container {
         height: 100vh;
         display: flex;
         flex-direction: column;
         border-radius: 0;
     }
-    
+
     /* Fixed Header at Top */
     .chat-header {
         position: relative;
@@ -526,26 +526,26 @@ body.chat-conversation-page {
         flex-shrink: 0;
         height: auto;
     }
-    
+
     .chat-back-btn {
         width: 34px;
         height: 34px;
         font-size: 18px;
     }
-    
+
     .chat-avatar {
         width: 38px;
         height: 38px;
     }
-    
+
     .chat-user-details h3 {
         font-size: 15px;
     }
-    
+
     .chat-status {
         font-size: 11px;
     }
-    
+
     /* Scrollable Messages Area */
     .chat-messages-container {
         flex: 1;
@@ -554,12 +554,12 @@ body.chat-conversation-page {
         padding: 15px 12px 120px 12px;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     /* Typing Indicator */
     .typing-indicator-container {
         padding: 0 12px 10px;
     }
-    
+
     /* Fixed Input at Bottom (85px from bottom for nav) */
     .chat-input-container {
         position: absolute;
@@ -571,98 +571,98 @@ body.chat-conversation-page {
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         z-index: 50;
     }
-    
+
     .chat-input-form {
         gap: 8px;
     }
-    
+
     .chat-attach-btn,
     .chat-mic-btn {
         width: 38px;
         height: 38px;
         font-size: 17px;
     }
-    
+
     .chat-input-field {
         font-size: 16px !important;
         padding: 10px 16px;
         border-radius: 20px;
     }
-    
+
     .chat-send-btn {
         padding: 10px 20px;
         font-size: 14px;
         border-radius: 20px;
     }
-    
+
     /* Message Bubbles */
     .message {
         max-width: 80%;
     }
-    
+
     .message-bubble {
         padding: 10px 14px;
         padding-right: 36px;
         font-size: 14px;
         border-radius: 16px;
     }
-    
+
     .message.sent .message-bubble {
         border-bottom-right-radius: 4px;
     }
-    
+
     .message.received .message-bubble {
         padding-right: 14px;
         border-bottom-left-radius: 4px;
     }
-    
+
     .message-info {
         font-size: 10px;
         gap: 6px;
         margin-bottom: 2px;
     }
-    
+
     .message-text {
         font-size: 14px;
         line-height: 1.45;
     }
-    
+
     .message-actions {
         top: 5px;
         right: 5px;
         gap: 4px;
     }
-    
+
     .message-action-btn {
         width: 28px;
         height: 28px;
         font-size: 13px;
         background: rgba(0, 0, 0, 0.7);
     }
-    
+
     /* Media */
     .message-image {
         max-width: 240px;
         max-height: 320px;
         border-radius: 10px;
     }
-    
+
     .message-file {
         padding: 10px 12px;
     }
-    
+
     .message-file-icon {
         font-size: 22px;
     }
-    
+
     .message-file-name {
         font-size: 13px;
     }
-    
+
     .message-file-size {
         font-size: 11px;
     }
-    
+
     /* Empty State */
     .chat-empty {
         padding: 40px 20px;
@@ -680,7 +680,7 @@ body.chat-conversation-page {
         border: 1px solid rgba(255, 255, 255, 0.1);
         overflow: hidden;
     }
-    
+
     .chat-back-btn {
         display: none;
     }

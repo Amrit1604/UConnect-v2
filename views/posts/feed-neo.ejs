@@ -305,7 +305,7 @@
             <!-- Mobile Profile Quick Access -->
             <div class="mobile-profile-section">
                 <a href="/users/profile" class="mobile-profile-link">
-                    <% 
+                    <%
                     let mobileAvatarUrl = '/images/default-avatar.png';
                     if (user.avatarType === 'upload' && user.avatar) {
                         mobileAvatarUrl = '/uploads/avatars/' + user.avatar;
@@ -350,7 +350,7 @@
                         <a href="/gossip" class="view-all-gossip" title="View full gossip box">→</a>
                     </div>
                 </div>
-                
+
                 <div class="mini-gossip-input-section">
                     <textarea id="miniGossipInput" class="mini-gossip-textarea" placeholder="Share a secret..." maxlength="300"></textarea>
                     <div class="mini-gossip-footer">
@@ -529,26 +529,26 @@ document.addEventListener('DOMContentLoaded', function() {
         async function handleFollowClick(btn) {
             const id = btn.getAttribute('data-user-id');
             const isCurrentlyFollowing = btn.getAttribute('data-following') === 'true';
-            
+
             if (!id) {
                 console.error('No user ID found on button');
                 alert('Unable to follow: missing user ID');
                 return;
             }
-            
+
             const action = isCurrentlyFollowing ? 'unfollow' : 'follow';
             console.log(`${action} user:`, id);
-            
+
             try {
-                const res = await fetch(`/users/${id}/${action}`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' } 
+                const res = await fetch(`/users/${id}/${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 const data = await res.json();
                 console.log('Follow response:', data);
-                
+
                 if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
-                
+
                 btn.textContent = data.following ? '✓' : '+';
                 btn.setAttribute('data-following', data.following);
                 btn.classList.toggle('following', data.following);

@@ -17,7 +17,7 @@ router.get('/proxy', async (req, res) => {
 
     // Fetch from Supabase (using native fetch in Node 18+)
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       return res.status(response.status).send('Failed to fetch media');
     }
@@ -32,7 +32,7 @@ router.get('/proxy', async (req, res) => {
 
     // Stream the response (convert ReadableStream to Node stream)
     const reader = response.body.getReader();
-    
+
     const stream = async () => {
       while (true) {
         const { done, value } = await reader.read();
@@ -41,7 +41,7 @@ router.get('/proxy', async (req, res) => {
       }
       res.end();
     };
-    
+
     stream().catch(err => {
       console.error('Stream error:', err);
       res.end();

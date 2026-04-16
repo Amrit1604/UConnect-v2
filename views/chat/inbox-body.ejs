@@ -61,7 +61,7 @@
                             <div class="online-indicator"></div>
                         <% } %>
                     </div>
-                    
+
                     <div class="conversation-details">
                         <div class="conversation-top">
                             <div class="conversation-name"><%= c.otherUser.name || c.otherUser.username %></div>
@@ -110,7 +110,7 @@
             <% if (friendsList && friendsList.length > 0) { %>
                 <% friendsList.forEach(friend => { %>
                     <a href="/chat/<%= friend._id %>" class="neo-user-item">
-                        <% 
+                        <%
                         let fAvatarUrl = '/images/default-avatar.png';
                         if (friend.avatarType === 'upload' && friend.avatar) {
                             fAvatarUrl = '/uploads/avatars/' + friend.avatar;
@@ -151,7 +151,7 @@
             }
         });
     });
-    
+
     // Provide current user id to client chat script
     window.__USER_ID__ = '<%= user ? user._id : '' %>';
 </script>

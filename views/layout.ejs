@@ -315,7 +315,7 @@
           try {
             const card = document.querySelector(`[data-post-id="${data.postId}"]`);
             if (!card) return;
-            
+
             // Skip if the comment author is the current user (they already see it locally)
             const currentUsername = '<%= user ? user.username : "" %>';
             if (data.comment && data.comment.author && data.comment.author.username === currentUsername) {
@@ -327,7 +327,7 @@
               }
               return;
             }
-            
+
             // Update comment count on the action bar
             const countSpan = card.querySelector('.comment-btn .action-count, .comment-btn span');
             if (countSpan) {
@@ -407,7 +407,7 @@
                 <h2>Menu</h2>
                 <button class="mobile-menu-close" id="mobileMenuClose">✕</button>
             </div>
-            
+
             <div class="mobile-menu-content">
                 <!-- User Profile -->
                 <% if (user) { %>
@@ -538,7 +538,7 @@
         mobileSearchInput?.addEventListener('input', function(e) {
             const query = e.target.value.trim();
             clearTimeout(mobileSearchTimeout);
-            
+
             if (query.length < 2) {
                 mobileSearchResults.innerHTML = '';
                 mobileSearchResults.style.display = 'none';
@@ -593,8 +593,8 @@
                                         <span>${name}</span>
                                     </div>
                                 </a>
-                                <button class="mobile-follow-btn ${isFollowing ? 'following' : ''}" 
-                                        data-user-id="${id}" 
+                                <button class="mobile-follow-btn ${isFollowing ? 'following' : ''}"
+                                        data-user-id="${id}"
                                         data-following="${isFollowing}">
                                     ${isFollowing ? '✓' : '+'}
                                 </button>
@@ -608,7 +608,7 @@
                             const userId = this.getAttribute('data-user-id');
                             const isFollowing = this.getAttribute('data-following') === 'true';
                             const action = isFollowing ? 'unfollow' : 'follow';
-                            
+
                             try {
                                 const res = await fetch(`/users/${userId}/${action}`, {
                                     method: 'POST',

@@ -5,7 +5,7 @@
 ### **Passing Tests (31/33)** ✅
 1. **admin.routes.test.js** - Admin access control
 2. **app.sanity.test.js** - Homepage loads
-3. **auth.routes.test.js** - Login/register pages  
+3. **auth.routes.test.js** - Login/register pages
 4. **chat.test.js** - Chat system (follow requests, messaging, spam detection) - 25+ tests
 5. **user.model.test.js** - User CRUD ⚠️ (needs connection fix)
 6. **post.model.test.js** - Post CRUD ⚠️ (needs connection fix)

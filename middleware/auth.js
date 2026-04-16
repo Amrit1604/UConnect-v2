@@ -5,16 +5,25 @@
 
 const User = require('../models/User');
 
+const isAuthDebugEnabled = String(process.env.AUTH_DEBUG || '').toLowerCase() === '1' ||
+  String(process.env.AUTH_DEBUG || '').toLowerCase() === 'true';
+
+function authDebug(...args) {
+  if (isAuthDebugEnabled) {
+    console.log(...args);
+  }
+}
+
 /**
  * Middleware to require authentication
  */
 const requireAuth = async (req, res, next) => {
   try {
     // Debug logging
-    console.log('🔍 AUTH MIDDLEWARE DEBUG:');
-    console.log('Session exists:', !!req.session);
-    console.log('Session user:', req.session?.user);
-    console.log('Request path:', req.path);
+    authDebug('🔍 AUTH MIDDLEWARE DEBUG:');
+    authDebug('Session exists:', !!req.session);
+    authDebug('Session user:', req.session?.user);
+    authDebug('Request path:', req.path);
 
     // Check if session is available
     if (!req.session) {
@@ -24,7 +33,7 @@ const requireAuth = async (req, res, next) => {
 
     // Check if user is logged in via session
     if (!req.session.user || !req.session.user.id) {
-      console.log('❌ No user in session');
+      authDebug('❌ No user in session');
       // Only use flash if session exists
       if (req.session && typeof req.flash === 'function') {
         req.flash('error', 'Please log in to access this page');
@@ -54,7 +63,7 @@ const requireAuth = async (req, res, next) => {
       return res.redirect('/auth/verify-email');
     }
 
-    console.log('✅ Auth successful for user:', user.username);
+    authDebug('✅ Auth successful for user:', user.username);
     // Attach user to request object
     req.user = user;
 

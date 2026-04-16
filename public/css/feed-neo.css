@@ -1923,7 +1923,7 @@ body.light-theme .load-more-btn-neo {
     /* ========================================
        iOS PREMIUM FEEL OVERRIDES (Mobile Only)
        ======================================== */
-    
+
     /* Global Typography */
     body {
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -1949,7 +1949,7 @@ body.light-theme .load-more-btn-neo {
         border: none;
         transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
     }
-    
+
     .action-btn-neo:active {
         transform: scale(0.96);
         background: rgba(255, 255, 255, 0.15);
@@ -1962,7 +1962,7 @@ body.light-theme .load-more-btn-neo {
         background: rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(10px);
     }
-    
+
     .category-chip-neo.active {
         background: #FF0000;
         border-color: #FF0000;

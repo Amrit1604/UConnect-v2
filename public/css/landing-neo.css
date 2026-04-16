@@ -757,8 +757,8 @@ body.landing-neo:hover .cursor-outline {
         justify-items: center;
     }
 
-    .nav-brand-neo { 
-        grid-area: brand; 
+    .nav-brand-neo {
+        grid-area: brand;
         justify-self: flex-start;
         position: absolute;
         left: 50%;

@@ -79,9 +79,9 @@ function initializeChatHandlers(io) {
         await Message.markAsDelivered(userId, otherUserId);
 
         // Notify other user
-        io.to(`user:${otherUserId}`).emit('messages_delivered', { 
+        io.to(`user:${otherUserId}`).emit('messages_delivered', {
           from: otherUserId,
-          to: userId 
+          to: userId
         });
       } catch (error) {
         console.error('Join conversation error:', error);
@@ -91,17 +91,17 @@ function initializeChatHandlers(io) {
     // Leave a conversation room
     socket.on('leave_conversation', ({ userId, otherUserId }) => {
       if (!userId || !otherUserId) return;
-      
+
       const roomName = [userId, otherUserId].sort().join('_');
       socket.leave(roomName);
-      
+
       console.log(`👋 User ${userId} left conversation: ${roomName}`);
     });
 
     // Send typing indicator
     socket.on('typing_start', ({ userId, otherUserId }) => {
       if (!userId || !otherUserId) return;
-      
+
       io.to(`user:${otherUserId}`).emit('user_typing', {
         userId,
         isTyping: true
@@ -150,7 +150,7 @@ function initializeChatHandlers(io) {
 
     socket.on('typing_stop', ({ userId, otherUserId }) => {
       if (!userId || !otherUserId) return;
-      
+
       io.to(`user:${otherUserId}`).emit('user_typing', {
         userId,
         isTyping: false
@@ -266,8 +266,8 @@ function initializeChatHandlers(io) {
           const friendships = await Friendship.getUserFriendships(socket.userId, 1, 100);
           friendships.forEach(friendship => {
             const friendId = friendship.getOtherUserId(socket.userId);
-            io.to(`user:${friendId}`).emit('user_offline', { 
-              userId: socket.userId 
+            io.to(`user:${friendId}`).emit('user_offline', {
+              userId: socket.userId
             });
           });
         } catch (error) {

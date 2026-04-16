@@ -19,14 +19,28 @@ jest.setTimeout(30000);
 
 let user1Session, user2Session, user3Session;
 
+async function safeCleanup(model, filter = {}) {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return;
+    }
+    await model.deleteMany(filter);
+  } catch (err) {
+    // Teardown should never fail the suite because of connection timing.
+    if (!String(err && err.message || '').includes('MongoNotConnectedError')) {
+      throw err;
+    }
+  }
+}
+
 // Setup before tests
 beforeAll(async () => {
   // Clear relevant collections
-  await User.deleteMany({ email: /@test-chat\.com$/ });
-  await FollowRequest.deleteMany({});
-  await Friendship.deleteMany({});
-  await Message.deleteMany({});
-  await Notification.deleteMany({});
+  await safeCleanup(User, { email: /@test-chat\.com$/ });
+  await safeCleanup(FollowRequest, {});
+  await safeCleanup(Friendship, {});
+  await safeCleanup(Message, {});
+  await safeCleanup(Notification, {});
 
   // Create test users
   user1 = await User.create({
@@ -59,19 +73,19 @@ beforeAll(async () => {
 
 // Cleanup between tests (keep test users intact)
 afterEach(async () => {
-  await FollowRequest.deleteMany({});
-  await Friendship.deleteMany({});
-  await Message.deleteMany({});
-  await Notification.deleteMany({});
+  await safeCleanup(FollowRequest, {});
+  await safeCleanup(Friendship, {});
+  await safeCleanup(Message, {});
+  await safeCleanup(Notification, {});
 });
 
 // Cleanup after tests
 afterAll(async () => {
-  await User.deleteMany({ email: /@test-chat\.com$/ });
-  await FollowRequest.deleteMany({});
-  await Friendship.deleteMany({});
-  await Message.deleteMany({});
-  await Notification.deleteMany({});
+  await safeCleanup(User, { email: /@test-chat\.com$/ });
+  await safeCleanup(FollowRequest, {});
+  await safeCleanup(Friendship, {});
+  await safeCleanup(Message, {});
+  await safeCleanup(Notification, {});
   // Mongoose connection will be closed by jest.setup.js
 });
 
@@ -80,7 +94,7 @@ async function loginUser(email, password) {
   const response = await request(app)
     .post('/auth/login')
     .send({ email, password });
-  
+
   const cookies = response.headers['set-cookie'];
   return cookies;
 }
@@ -281,7 +295,7 @@ describe('Spam Detection', () => {
       user1._id,
       user2._id
     );
-    
+
     expect(count).toBeGreaterThanOrEqual(0);
   });
 });
@@ -429,18 +443,18 @@ describe('Messaging System', () => {
 describe('Friendship Model', () => {
   test('should create friendship with sorted user IDs', async () => {
     const friendship = await Friendship.createFriendship(user2._id, user1._id);
-    
+
     expect(friendship.users).toHaveLength(2);
     expect(friendship.user1).toBeTruthy();
     expect(friendship.user2).toBeTruthy();
-    
+
     // Verify sorting (user1 < user2 alphabetically)
     expect(friendship.user1.toString() < friendship.user2.toString()).toBe(true);
   });
 
   test('should check if users are friends', async () => {
     await Friendship.createFriendship(user1._id, user2._id);
-    
+
     const areFriends = await Friendship.areFriends(user1._id, user2._id);
     expect(areFriends).toBe(true);
 
@@ -450,10 +464,10 @@ describe('Friendship Model', () => {
 
   test('should increment and reset unread counts', async () => {
     const friendship = await Friendship.createFriendship(user1._id, user3._id);
-    
+
     await friendship.incrementUnread(user1._id);
     await friendship.incrementUnread(user1._id);
-    
+
     let unreadCount = friendship.unreadCount.get(user1._id.toString());
     expect(unreadCount).toBe(2);
 
@@ -476,7 +490,7 @@ describe('Friendship Model', () => {
 
   test('should get other user ID', async () => {
     const friendship = await Friendship.createFriendship(user1._id, user2._id);
-    
+
     const otherUser = friendship.getOtherUserId(user1._id);
     expect(otherUser.toString()).toBe(user2._id.toString());
 
@@ -492,7 +506,7 @@ describe('Notification System', () => {
 
   test('should create follow request notification', async () => {
     const followRequestId = new mongoose.Types.ObjectId();
-    
+
     const notification = await Notification.createFollowRequestNotification(
       user1,
       user2._id,
@@ -518,7 +532,7 @@ describe('Notification System', () => {
 
   test('should create message notification', async () => {
     const messageId = new mongoose.Types.ObjectId();
-    
+
     const notification = await Notification.createMessageNotification(
       user1,
       user2._id,

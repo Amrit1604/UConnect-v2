@@ -28,7 +28,7 @@
       <% if (users && users.length) { %>
         <% users.forEach(u => { %>
           <div class="post-card-neo" style="padding:16px;display:flex;flex-direction:column;align-items:center;text-align:center;">
-            <% 
+            <%
               const baseAvatar = (u.avatarUrl || '/images/default-avatar.png');
               const isDicebearAvatar = typeof baseAvatar === 'string' && baseAvatar.includes('api.dicebear.com');
               const ver = (u.updatedAt ? new Date(u.updatedAt).getTime() : null);

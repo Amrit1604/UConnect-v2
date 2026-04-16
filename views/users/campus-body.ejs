@@ -14,7 +14,7 @@
         <div class="feed-layout-neo">
             <!-- Main Content -->
             <main class="feed-main-neo" style="width: 100%; max-width: 1000px; margin: 0 auto;">
-                
+
                 <!-- Header -->
                 <div class="profile-card-neo" style="margin-bottom: 30px; text-align: left; display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -71,9 +71,9 @@
                         <% if (currentPage > 1) { %>
                             <a href="/users/campus?page=<%= currentPage - 1 %>" class="action-btn-neo">← PREV</a>
                         <% } %>
-                        
+
                         <span class="action-btn-neo" style="background: var(--red); color: white; border-color: var(--red);"><%= currentPage %></span>
-                        
+
                         <% if (hasNextPage) { %>
                             <a href="/users/campus?page=<%= currentPage + 1 %>" class="action-btn-neo">NEXT →</a>
                         <% } %>

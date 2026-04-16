@@ -28,16 +28,16 @@ router.use(requireAuth);
 router.get('/requests', async (req, res) => {
   try {
     const [receivedRequests, sentRequests] = await Promise.all([
-      FollowRequest.find({ 
-        receiver: req.user._id, 
-        status: 'pending' 
+      FollowRequest.find({
+        receiver: req.user._id,
+        status: 'pending'
       })
         .populate('sender', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl stats')
         .sort({ sentAt: -1 }),
-      
-      FollowRequest.find({ 
-        sender: req.user._id, 
-        status: 'pending' 
+
+      FollowRequest.find({
+        sender: req.user._id,
+        status: 'pending'
       })
         .populate('receiver', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl stats')
         .sort({ sentAt: -1 })
@@ -69,77 +69,77 @@ router.post('/request/:userId',
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false, 
-          message: errors.array()[0].msg 
+        return res.status(400).json({
+          success: false,
+          message: errors.array()[0].msg
         });
       }
 
       const targetUserId = req.params.userId;
-      
+
       // Validate user ID
       if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid user ID' 
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid user ID'
         });
       }
 
       // Can't send request to yourself
       if (targetUserId === req.user._id.toString()) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "You can't send a request to yourself" 
+        return res.status(400).json({
+          success: false,
+          message: "You can't send a request to yourself"
         });
       }
 
       // Check if target user exists and is from same campus
       const targetUser = await User.findById(targetUserId);
       if (!targetUser || !targetUser.isActive) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'User not found' 
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
         });
       }
 
       if (targetUser.campus !== req.user.campus) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'You can only send requests to users from your campus' 
+        return res.status(403).json({
+          success: false,
+          message: 'You can only send requests to users from your campus'
         });
       }
 
       // Check if already friends
       const areFriends = await Friendship.areFriends(req.user._id, targetUserId);
       if (areFriends) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'You are already friends with this user' 
+        return res.status(400).json({
+          success: false,
+          message: 'You are already friends with this user'
         });
       }
 
       // Check if pending request already exists
       const existingRequest = await FollowRequest.checkExisting(req.user._id, targetUserId);
       if (existingRequest) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'You already have a pending request to this user' 
+        return res.status(400).json({
+          success: false,
+          message: 'You already have a pending request to this user'
         });
       }
 
       // Check for reversed pending request (they sent you a request)
       const reversedRequest = await FollowRequest.checkExisting(targetUserId, req.user._id);
       if (reversedRequest) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'This user has already sent you a request. Check your requests!' 
+        return res.status(400).json({
+          success: false,
+          message: 'This user has already sent you a request. Check your requests!'
         });
       }
 
       // SPAM DETECTION: Check if user has been rejected too many times
       const rejectedCount = await FollowRequest.countRejectedRequests(
-        req.user._id, 
-        targetUserId, 
+        req.user._id,
+        targetUserId,
         30 * 24 * 60 * 60 * 1000 // 30 days
       );
 
@@ -150,16 +150,16 @@ router.post('/request/:userId',
           'spam_detection',
           'User',
           req.user._id,
-          { 
-            targetUser: targetUserId, 
+          {
+            targetUser: targetUserId,
             rejectedCount,
             reason: 'Exceeded rejected follow request limit'
           }
         );
 
-        return res.status(429).json({ 
-          success: false, 
-          message: 'You have been blocked from sending more requests to this user' 
+        return res.status(429).json({
+          success: false,
+          message: 'You have been blocked from sending more requests to this user'
         });
       }
 
@@ -172,7 +172,7 @@ router.post('/request/:userId',
           'spam_detection',
           'User',
           req.user._id,
-          { 
+          {
             spamStats,
             reason: 'High rejection rate detected'
           }
@@ -217,16 +217,16 @@ router.post('/request/:userId',
         io.to(`user:${targetUserId}`).emit('notification', { notification });
       }
 
-      return res.json({ 
-        success: true, 
-        message: 'Follow request sent successfully!' 
+      return res.json({
+        success: true,
+        message: 'Follow request sent successfully!'
       });
 
     } catch (error) {
       console.error('Send follow request error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to send follow request' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send follow request'
       });
     }
   }
@@ -241,9 +241,9 @@ router.post('/request/:requestId/accept',
 
       // Validate request ID
       if (!mongoose.Types.ObjectId.isValid(requestId)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid request ID' 
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid request ID'
         });
       }
 
@@ -252,25 +252,25 @@ router.post('/request/:requestId/accept',
         .populate('sender', 'username name avatarSeed avatarType avatarGridFSId avatarSupabaseUrl');
 
       if (!followRequest) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Follow request not found' 
+        return res.status(404).json({
+          success: false,
+          message: 'Follow request not found'
         });
       }
 
       // Verify the current user is the receiver
       if (followRequest.receiver.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Unauthorized' 
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized'
         });
       }
 
       // Check if already accepted
       if (followRequest.status === 'accepted') {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Request already accepted' 
+        return res.status(400).json({
+          success: false,
+          message: 'Request already accepted'
         });
       }
 
@@ -303,17 +303,17 @@ router.post('/request/:requestId/accept',
         });
       }
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: 'Follow request accepted! You can now chat.',
         friendshipId: friendship._id
       });
 
     } catch (error) {
       console.error('Accept follow request error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to accept follow request' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to accept follow request'
       });
     }
   }
@@ -327,25 +327,25 @@ router.post('/request/:requestId/reject',
       const requestId = req.params.requestId;
 
       if (!mongoose.Types.ObjectId.isValid(requestId)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid request ID' 
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid request ID'
         });
       }
 
       const followRequest = await FollowRequest.findById(requestId);
 
       if (!followRequest) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Follow request not found' 
+        return res.status(404).json({
+          success: false,
+          message: 'Follow request not found'
         });
       }
 
       if (followRequest.receiver.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Unauthorized' 
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized'
         });
       }
 
@@ -373,16 +373,16 @@ router.post('/request/:requestId/reject',
         );
       }
 
-      return res.json({ 
-        success: true, 
-        message: 'Follow request rejected' 
+      return res.json({
+        success: true,
+        message: 'Follow request rejected'
       });
 
     } catch (error) {
       console.error('Reject follow request error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to reject follow request' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to reject follow request'
       });
     }
   }
@@ -396,25 +396,25 @@ router.post('/request/:requestId/block',
       const requestId = req.params.requestId;
 
       if (!mongoose.Types.ObjectId.isValid(requestId)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid request ID' 
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid request ID'
         });
       }
 
       const followRequest = await FollowRequest.findById(requestId);
 
       if (!followRequest) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Follow request not found' 
+        return res.status(404).json({
+          success: false,
+          message: 'Follow request not found'
         });
       }
 
       if (followRequest.receiver.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Unauthorized' 
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized'
         });
       }
 
@@ -433,16 +433,16 @@ router.post('/request/:requestId/block',
         }
       );
 
-      return res.json({ 
-        success: true, 
-        message: 'User blocked successfully' 
+      return res.json({
+        success: true,
+        message: 'User blocked successfully'
       });
 
     } catch (error) {
       console.error('Block user error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to block user' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to block user'
       });
     }
   }
@@ -622,14 +622,14 @@ router.post('/:userId/message',
     console.log('📩 Params:', req.params);
     console.log('📩 Body:', req.body);
     console.log('📩 User:', req.user?._id);
-    
+
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         console.log('❌ Validation errors:', errors.array());
-        return res.status(400).json({ 
-          success: false, 
-          message: errors.array()[0].msg 
+        return res.status(400).json({
+          success: false,
+          message: errors.array()[0].msg
         });
       }
 
@@ -638,9 +638,9 @@ router.post('/:userId/message',
 
       if (!mongoose.Types.ObjectId.isValid(receiverId)) {
         console.log('❌ Invalid ObjectId');
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid user ID' 
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid user ID'
         });
       }
 
@@ -648,11 +648,11 @@ router.post('/:userId/message',
       console.log('🔍 Checking friendship...');
       const areFriends = await Friendship.areFriends(req.user._id, receiverId);
       console.log('🔍 Are friends:', areFriends);
-      
+
       if (!areFriends) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'You must be friends to send messages' 
+        return res.status(403).json({
+          success: false,
+          message: 'You must be friends to send messages'
         });
       }
 
@@ -692,7 +692,7 @@ router.post('/:userId/message',
         const roomName = `user:${receiverId}`;
         console.log('📡 Emitting new_message to room:', roomName);
         console.log('📡 Message ID:', message._id);
-        
+
         io.to(roomName).emit('new_message', {
           message: message.toObject({ virtuals: true }),
           sender: {
@@ -702,36 +702,36 @@ router.post('/:userId/message',
             avatarUrl: req.user.avatarUrl
           }
         });
-        
+
         // Mark as delivered if receiver is online
         const chatHandlers = require('../sockets/chatHandlers');
         if (chatHandlers.isUserOnline(receiverId)) {
           message.isDelivered = true;
           message.deliveredAt = new Date();
           await message.save();
-          
+
           // Notify sender about delivery
           io.to(`user:${req.user._id}`).emit('message_delivered', {
             messageId: message._id,
             deliveredAt: message.deliveredAt
           });
         }
-        
+
         console.log('📡 Emit completed');
       } else {
         console.log('❌ No Socket.IO instance!');
       }
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: message.toObject({ virtuals: true })
       });
 
     } catch (error) {
       console.error('Send message error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to send message' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send message'
       });
     }
   }
@@ -744,27 +744,27 @@ router.post('/:userId/upload',
   async (req, res) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'No file uploaded' 
+        return res.status(400).json({
+          success: false,
+          message: 'No file uploaded'
         });
       }
 
       const receiverId = req.params.userId;
 
       if (!mongoose.Types.ObjectId.isValid(receiverId)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid user ID' 
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid user ID'
         });
       }
 
       // Check if users are friends
       const areFriends = await Friendship.areFriends(req.user._id, receiverId);
       if (!areFriends) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'You must be friends to send messages' 
+        return res.status(403).json({
+          success: false,
+          message: 'You must be friends to send messages'
         });
       }
 
@@ -815,16 +815,16 @@ router.post('/:userId/upload',
         });
       }
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: message.toObject({ virtuals: true })
       });
 
     } catch (error) {
       console.error('Upload media error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to upload media' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to upload media'
       });
     }
   }
@@ -838,25 +838,25 @@ router.get('/:userId/messages', async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
 
     if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid user ID' 
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID'
       });
     }
 
     // Check if users are friends
     const areFriends = await Friendship.areFriends(req.user._id, otherUserId);
     if (!areFriends) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Unauthorized' 
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized'
       });
     }
 
     const messages = await Message.getConversation(req.user._id, otherUserId, page, limit);
 
-    return res.json({ 
-      success: true, 
+    return res.json({
+      success: true,
       messages: messages.map(m => m.toObject({ virtuals: true })),
       page,
       hasMore: messages.length === limit
@@ -864,9 +864,9 @@ router.get('/:userId/messages', async (req, res) => {
 
   } catch (error) {
     console.error('Get messages error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to load messages' 
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to load messages'
     });
   }
 });
@@ -879,27 +879,27 @@ router.delete('/message/:messageId',
       const messageId = req.params.messageId;
 
       if (!mongoose.Types.ObjectId.isValid(messageId)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid message ID' 
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid message ID'
         });
       }
 
       const message = await Message.findById(messageId);
 
       if (!message) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Message not found' 
+        return res.status(404).json({
+          success: false,
+          message: 'Message not found'
         });
       }
 
       // Check if user is sender or receiver
-      if (message.sender.toString() !== req.user._id.toString() && 
+      if (message.sender.toString() !== req.user._id.toString() &&
           message.receiver.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Unauthorized' 
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized'
         });
       }
 
@@ -909,10 +909,10 @@ router.delete('/message/:messageId',
       // Emit Socket.IO event to notify other user
       const io = req.app.get('io');
       if (io) {
-        const otherUserId = message.sender.toString() === req.user._id.toString() 
-          ? message.receiver 
+        const otherUserId = message.sender.toString() === req.user._id.toString()
+          ? message.receiver
           : message.sender;
-        
+
         console.log('📡 Emitting message_deleted to room:', `user:${otherUserId}`);
         io.to(`user:${otherUserId}`).emit('message_deleted', {
           messageId: message._id,
@@ -923,16 +923,16 @@ router.delete('/message/:messageId',
         console.log('❌ No Socket.IO instance for delete!');
       }
 
-      return res.json({ 
-        success: true, 
-        message: 'Message deleted' 
+      return res.json({
+        success: true,
+        message: 'Message deleted'
       });
 
     } catch (error) {
       console.error('Delete message error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to delete message' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to delete message'
       });
     }
   }
@@ -951,44 +951,44 @@ router.put('/message/:messageId',
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false, 
-          message: errors.array()[0].msg 
+        return res.status(400).json({
+          success: false,
+          message: errors.array()[0].msg
         });
       }
 
       const messageId = req.params.messageId;
 
       if (!mongoose.Types.ObjectId.isValid(messageId)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid message ID' 
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid message ID'
         });
       }
 
       const message = await Message.findById(messageId);
 
       if (!message) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Message not found' 
+        return res.status(404).json({
+          success: false,
+          message: 'Message not found'
         });
       }
 
       // Only sender can edit
       if (message.sender.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Only sender can edit message' 
+        return res.status(403).json({
+          success: false,
+          message: 'Only sender can edit message'
         });
       }
 
       // Check if message is within 5 minutes
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
       if (message.sentAt < fiveMinutesAgo) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Can only edit messages within 5 minutes' 
+        return res.status(403).json({
+          success: false,
+          message: 'Can only edit messages within 5 minutes'
         });
       }
 
@@ -1013,16 +1013,16 @@ router.put('/message/:messageId',
         console.log('❌ No Socket.IO instance for edit!');
       }
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: message.toObject({ virtuals: true })
       });
 
     } catch (error) {
       console.error('Edit message error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to edit message' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to edit message'
       });
     }
   }
@@ -1040,9 +1040,9 @@ router.post('/search',
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false, 
-          message: errors.array()[0].msg 
+        return res.status(400).json({
+          success: false,
+          message: errors.array()[0].msg
         });
       }
 
@@ -1051,17 +1051,17 @@ router.post('/search',
 
       const messages = await Message.searchMessages(req.user._id, query, page);
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         messages: messages.map(m => m.toObject({ virtuals: true })),
         page
       });
 
     } catch (error) {
       console.error('Search messages error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Search failed' 
+      return res.status(500).json({
+        success: false,
+        message: 'Search failed'
       });
     }
   }

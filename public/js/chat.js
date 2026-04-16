@@ -31,17 +31,17 @@
       const msg = payload.message;
       const senderId = (msg && msg.sender && (msg.sender._id || msg.sender.id)) || (payload.sender && payload.sender.id);
       const isMe = senderId && String(senderId) === String(userId);
-      
+
       // Only render if we're in a conversation and it matches current chat
       const currentOtherId = window.__CHAT_OTHER_USER_ID__;
       const convList = document.getElementById('conversationMessages');
-      
+
       // Check if this message is for the current conversation
       const isCurrentConv = currentOtherId && (
-        String(senderId) === String(currentOtherId) || 
+        String(senderId) === String(currentOtherId) ||
         (payload.recipient && String(payload.recipient) === String(currentOtherId))
       );
-      
+
       if (convList && isCurrentConv) {
         // Check if message already exists (avoid duplicates)
         const msgId = msg._id || msg.id;
@@ -49,14 +49,14 @@
           console.log('Message already exists, skipping');
           return;
         }
-        
+
         const msgDiv = document.createElement('div');
         msgDiv.className = 'msg ' + (isMe ? 'msg--sent' : 'msg--received');
         if (msgId) msgDiv.setAttribute('data-msg-id', msgId);
-        
+
         const time = new Date(msg.sentAt || Date.now()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         const senderName = isMe ? 'You' : ((payload.sender && payload.sender.username) || (msg.sender && msg.sender.username) || 'User');
-        
+
         msgDiv.innerHTML = `
           <div class="bubble">
             <div class="bubble-meta">
@@ -67,9 +67,9 @@
             <div class="bubble-content">${escapeHtml(msg.content || '')}</div>
           </div>
         `;
-        
+
         convList.appendChild(msgDiv);
-        
+
         // Smooth auto-scroll
         setTimeout(() => {
           convList.scrollTo({
@@ -85,7 +85,7 @@
       if (convItem) {
         const last = convItem.querySelector('.conversation-preview');
         if (last) last.textContent = msg.content ? (msg.content.slice(0,50) + '...') : '';
-        
+
         const timeEl = convItem.querySelector('.conversation-time');
         if (timeEl) timeEl.textContent = 'Just now';
       }
@@ -223,7 +223,7 @@
   // Typing helpers with debounce
   let typingTimer = null;
   let isCurrentlyTyping = false;
-  
+
   window.chatTyping = function(otherUserId, isStart) {
     if (isStart) {
       // Only emit if not already typing

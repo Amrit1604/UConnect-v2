@@ -8,7 +8,7 @@ describe('User Model', () => {
     // Clean up test user
     await User.deleteMany({ email: 'testuser@gmail.com' });
   });
-  
+
   it('should create a user', async () => {
     const user = new User({
       name: 'Test User',

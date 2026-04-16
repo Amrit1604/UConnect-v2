@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 global.console = {
   ...console,
   log: jest.fn(), // Mock console.log
-  debug: jest.fn(), // Mock console.debug  
+  debug: jest.fn(), // Mock console.debug
   info: jest.fn(), // Mock console.info
   // Keep error and warn for debugging
   error: console.error,

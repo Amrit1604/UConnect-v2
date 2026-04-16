@@ -99,7 +99,7 @@ function getPublicUrl(filePath) {
   const { data } = supabase.storage
     .from(BUCKET_NAME)
     .getPublicUrl(filePath);
-  
+
   return data.publicUrl;
 }
 

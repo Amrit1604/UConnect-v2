@@ -37,7 +37,7 @@ const Interactions = {
             <span class="toast-icon">${type === 'success' ? '✅' : '⚠️'}</span>
             <span class="toast-message">${message}</span>
         `;
-        
+
         // Inline styles for the toast
         toast.style.cssText = `
             background: rgba(10, 10, 10, 0.9);
@@ -88,7 +88,7 @@ const Interactions = {
     // Double Tap to Like
     initDoubleTapLike: function() {
         const posts = document.querySelectorAll('.post-card-neo');
-        
+
         posts.forEach(post => {
             const media = post.querySelector('.post-media-neo, .post-image-neo');
             if (!media) return;
@@ -97,7 +97,7 @@ const Interactions = {
             media.addEventListener('click', (e) => {
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - lastTap;
-                
+
                 if (tapLength < 300 && tapLength > 0) {
                     // Double tap detected
                     e.preventDefault();
@@ -153,7 +153,7 @@ const Interactions = {
                 const btn = e.target.closest('.share-btn-neo');
                 const postId = btn.dataset.postId || window.location.pathname.split('/').pop();
                 const url = `${window.location.origin}/posts/${postId}`;
-                
+
                 navigator.clipboard.writeText(url).then(() => {
                     this.showToast('Link copied to clipboard! 🔗');
                 }).catch(() => {

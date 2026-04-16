@@ -19,7 +19,7 @@ const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
 const fileFilter = (req, file, cb) => {
   const allowedImageTypes = /jpeg|jpg|png|gif|webp/;
   const allowedVideoTypes = /mp4|webm|mov|avi/;
-  
+
   const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
   const mimetype = file.mimetype;
 
@@ -152,7 +152,7 @@ async function handlePostMediaUpload(req, res, next) {
     // Process images
     if (req.files.images) {
       console.log(`📸 Processing ${req.files.images.length} images`);
-      
+
       for (const file of req.files.images) {
         const result = await processAndUploadImage(
           file.buffer,
@@ -181,7 +181,7 @@ async function handlePostMediaUpload(req, res, next) {
     // Process videos
     if (req.files.videos) {
       console.log(`🎥 Processing ${req.files.videos.length} videos`);
-      
+
       for (const file of req.files.videos) {
         // Check size limit
         if (file.size > MAX_VIDEO_SIZE) {

@@ -12,123 +12,123 @@ const messageSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  
+
   receiver: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
     index: true
   },
-  
+
   friendship: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Friendship',
     required: true,
     index: true
   },
-  
+
   messageType: {
     type: String,
     enum: ['text', 'voice', 'image', 'video', 'file'],
     default: 'text',
     required: true
   },
-  
+
   content: {
     type: String,
     maxlength: [5000, 'Message cannot exceed 5000 characters'],
     default: ''
   },
-  
+
   // GridFS file reference for media
   fileGridFSId: {
     type: mongoose.Schema.Types.ObjectId,
     default: null
   },
-  
+
   fileName: {
     type: String,
     default: null
   },
-  
+
   fileSize: {
     type: Number,
     default: null
   },
-  
+
   fileMimeType: {
     type: String,
     default: null
   },
-  
+
   // Voice message metadata
   voiceDuration: {
     type: Number, // in seconds
     default: null
   },
-  
+
   // Message status
   isDelivered: {
     type: Boolean,
     default: false,
     index: true
   },
-  
+
   deliveredAt: {
     type: Date,
     default: null
   },
-  
+
   isRead: {
     type: Boolean,
     default: false,
     index: true
   },
-  
+
   readAt: {
     type: Date,
     default: null
   },
-  
+
   isDelivered: {
     type: Boolean,
     default: false
   },
-  
+
   deliveredAt: {
     type: Date,
     default: null
   },
-  
+
   // Soft delete
   isDeleted: {
     type: Boolean,
     default: false
   },
-  
+
   deletedBy: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-  
+
   // Edit tracking
   isEdited: {
     type: Boolean,
     default: false
   },
-  
+
   editedAt: {
     type: Date,
     default: null
   },
-  
+
   // Reply to another message
   replyTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Message',
     default: null
   },
-  
+
   sentAt: {
     type: Date,
     default: Date.now,
@@ -155,7 +155,7 @@ messageSchema.virtual('fileUrl').get(function() {
 // Static method to get conversation messages
 messageSchema.statics.getConversation = async function(userId1, userId2, page = 1, limit = 50) {
   const skip = (page - 1) * limit;
-  
+
   const messages = await this.find({
     $or: [
       { sender: userId1, receiver: userId2 },
@@ -169,7 +169,7 @@ messageSchema.statics.getConversation = async function(userId1, userId2, page = 
     .populate('sender', 'username name avatarSeed avatarType avatarGridFSId')
     .populate('receiver', 'username name avatarSeed avatarType avatarGridFSId')
     .populate('replyTo', 'content messageType sender');
-  
+
   return messages.reverse(); // Return in chronological order
 };
 
@@ -208,7 +208,7 @@ messageSchema.statics.markAsRead = async function(receiverId, senderId) {
       }
     }
   );
-  
+
   return result.modifiedCount;
 };
 
@@ -244,12 +244,12 @@ messageSchema.methods.markRead = async function() {
 messageSchema.methods.deleteForUser = async function(userId) {
   if (!this.deletedBy.includes(userId)) {
     this.deletedBy.push(userId);
-    
+
     // If both users deleted, mark as fully deleted
     if (this.deletedBy.length >= 2) {
       this.isDeleted = true;
     }
-    
+
     return await this.save();
   }
   return this;
@@ -272,7 +272,7 @@ messageSchema.statics.getLastMessage = async function(userId1, userId2) {
 messageSchema.statics.searchMessages = async function(userId, query, page = 1, limit = 20) {
   const skip = (page - 1) * limit;
   const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-  
+
   return await this.find({
     $or: [
       { sender: userId },

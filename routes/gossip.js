@@ -38,7 +38,7 @@ function generateAnonIdOld(req) {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const anonId = generateAnonId(req);
-    
+
     // Get paginated gossips
     const page = parseInt(req.query.page) || 1;
     const limit = 20;
@@ -91,9 +91,9 @@ router.get('/api/all', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error fetching gossips:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch gossips' 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch gossips'
     });
   }
 });
@@ -120,7 +120,7 @@ router.post(
       }
 
       const anonId = generateAnonId(req);
-      
+
       const newGossip = new Gossip({
         content: req.body.content,
         anonId,

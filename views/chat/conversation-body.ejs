@@ -85,7 +85,7 @@
 
       // Debounced typing indicator
       let typingTimeout = null;
-      input.addEventListener('input', () => { 
+      input.addEventListener('input', () => {
         if (window.chatTyping) {
           window.chatTyping(otherId, true);
         }
@@ -93,15 +93,15 @@
 
       // Scroll to bottom on load
       const msgs = document.getElementById('conversationMessages');
-      if (msgs) { 
-        msgs.scrollTop = msgs.scrollHeight; 
+      if (msgs) {
+        msgs.scrollTop = msgs.scrollHeight;
       }
-      
+
       // Focus input after delay for mobile
       setTimeout(() => {
         input.focus();
       }, 500);
-      
+
       // Auto-scroll on keyboard open
       input.addEventListener('focus', () => {
         setTimeout(() => {
