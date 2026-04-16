@@ -690,6 +690,29 @@
     font-size: 15px;
     line-height: 1.6;
     margin-bottom: 16px;
+    white-space: pre-line;
+}
+
+.post-text-neo.is-collapsible {
+    margin-bottom: 12px;
+}
+
+.post-text-toggle-neo {
+    margin-left: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #ff5a5a;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.post-text-toggle-neo:hover {
+    color: #ff7a7a;
+    text-decoration: underline;
 }
 
 .post-media-neo {

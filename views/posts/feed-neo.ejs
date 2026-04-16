@@ -136,7 +136,20 @@
                                     <h2 class="post-title-neo"><%= post.title %></h2>
                                 <% } %>
                                 <% if (post.content) { %>
-                                    <p class="post-text-neo"><%= post.content.substring(0, 200) %><%= post.content.length > 200 ? '...' : '' %></p>
+                                    <%
+                                        const contentText = String(post.content);
+                                        const previewLimit = 280;
+                                        const isLongContent = contentText.length > previewLimit;
+                                        const previewText = isLongContent ? contentText.substring(0, previewLimit).trimEnd() : contentText;
+                                    %>
+                                    <p class="post-text-neo <%= isLongContent ? 'is-collapsible' : '' %>"
+                                       <% if (isLongContent) { %>
+                                       data-expanded="false"
+                                       data-preview="<%= encodeURIComponent(previewText) %>"
+                                       data-full="<%= encodeURIComponent(contentText) %>"
+                                       <% } %>>
+                                        <span class="post-text-value"><%= previewText %></span><% if (isLongContent) { %><span class="post-text-ellipsis">...</span><button type="button" class="post-text-toggle-neo">See more</button><% } %>
+                                    </p>
                                 <% } %>
 
                                 <!-- Post Media -->
@@ -472,6 +485,35 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = currentUrl.toString();
         });
     }
+
+    // Expand/collapse long post text
+    document.body.addEventListener('click', function(e) {
+        const toggleBtn = e.target.closest('.post-text-toggle-neo');
+        if (!toggleBtn) return;
+
+        const textEl = toggleBtn.closest('.post-text-neo');
+        if (!textEl) return;
+
+        const valueEl = textEl.querySelector('.post-text-value');
+        const ellipsisEl = textEl.querySelector('.post-text-ellipsis');
+        if (!valueEl) return;
+
+        const isExpanded = textEl.dataset.expanded === 'true';
+        const preview = decodeURIComponent(textEl.dataset.preview || '');
+        const full = decodeURIComponent(textEl.dataset.full || preview);
+
+        if (isExpanded) {
+            valueEl.textContent = preview;
+            if (ellipsisEl) ellipsisEl.style.display = '';
+            toggleBtn.textContent = 'See more';
+            textEl.dataset.expanded = 'false';
+        } else {
+            valueEl.textContent = full;
+            if (ellipsisEl) ellipsisEl.style.display = 'none';
+            toggleBtn.textContent = 'See less';
+            textEl.dataset.expanded = 'true';
+        }
+    });
 });
 
 // OLD MENU REMOVED - Using mega menu in layout.ejs instead
