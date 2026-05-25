@@ -89,7 +89,7 @@
         }
         // Short delay for visual feedback
         setTimeout(() => {
-          window.location.href = '/admin';
+          window.location.href = '/admin/terminal';
         }, 700);
       } catch (err) {
         if (msg) {
@@ -144,7 +144,7 @@
         msg.classList.add('success');
         // Short delay for visual feedback
         setTimeout(() => {
-          window.location.href = '/admin';
+          window.location.href = '/admin/terminal';
         }, 700);
       } catch (err) {
         msg.textContent = 'Server error. Please try again.';

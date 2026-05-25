@@ -1,85 +1,115 @@
 <style>
-/* ===== INSTAGRAM-STYLE CHAT ===== */
+/* ===== PREMIUM INSTAGRAM-STYLE CHAT ===== */
+:root {
+  --chat-bg: #0a0a0a;
+  --bubble-received: #262626;
+  --bubble-sent-grad: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 .ig-chat-wrap {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 64px);
-  max-width: 760px;
+  max-width: 800px;
   margin: 0 auto;
-  background: #000;
+  background: var(--chat-bg);
   position: relative;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Header */
 .ig-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.95);
-  backdrop-filter: blur(12px);
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   position: sticky;
   top: 0;
   z-index: 10;
   flex-shrink: 0;
 }
 .ig-back {
-  color: #fff;
+  color: var(--text-primary);
   text-decoration: none;
-  font-size: 20px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-.ig-back:hover { background: rgba(255,255,255,0.08); }
-.ig-header-avatar {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  transition: background 0.2s;
+}
+.ig-back:hover { background: rgba(255, 255, 255, 0.1); }
+.ig-header-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #e63946;
+  border: 2px solid transparent;
+  background: var(--bubble-sent-grad);
+  padding: 2px;
+  background-clip: content-box;
 }
 .ig-header-info { flex: 1; }
-.ig-header-name { font-weight: 700; font-size: 15px; color: #fff; }
-.ig-header-status { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+.ig-header-name { font-weight: 700; font-size: 16px; color: var(--text-primary); letter-spacing: -0.3px; }
+.ig-header-status { font-size: 13px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
 .ig-header-status.online { color: #4ade80; }
 
 /* Messages scroll area */
 .ig-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 16px 8px;
+  padding: 24px 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   scroll-behavior: smooth;
 }
-.ig-messages::-webkit-scrollbar { width: 4px; }
+.ig-messages::-webkit-scrollbar { width: 6px; }
 .ig-messages::-webkit-scrollbar-track { background: transparent; }
-.ig-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.ig-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
 
 /* Empty state */
 .ig-empty {
   text-align: center;
   margin: auto;
-  color: rgba(255,255,255,0.3);
-  font-size: 15px;
+  color: var(--text-secondary);
+  font-size: 16px;
+  font-weight: 500;
   padding: 40px 20px;
 }
-.ig-empty-icon { font-size: 48px; margin-bottom: 12px; }
+.ig-empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.8; }
+
+/* Date Divider */
+.ig-date-divider {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 24px 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 /* Message row */
 .ig-msg-row {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  max-width: 75%;
-  animation: msgIn 0.2s ease;
+  max-width: 80%;
+  animation: msgIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-@keyframes msgIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+@keyframes msgIn { from { opacity:0; transform: translateY(10px) scale(0.95); } to { opacity:1; transform: translateY(0) scale(1); } }
 .ig-msg-row.sent { align-self: flex-end; flex-direction: row-reverse; }
 .ig-msg-row.received { align-self: flex-start; }
 
@@ -89,216 +119,226 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  margin-bottom: 2px;
+  margin-bottom: 20px; /* Align with bottom of bubble */
 }
 .ig-row-avatar.hidden { visibility: hidden; }
 
 /* Bubble */
 .ig-bubble {
-  padding: 10px 14px;
-  border-radius: 18px;
+  padding: 12px 16px;
+  border-radius: 22px;
   font-size: 15px;
   line-height: 1.4;
   max-width: 100%;
   word-break: break-word;
   position: relative;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .sent .ig-bubble {
-  background: #2b7cff;
+  background: var(--bubble-sent-grad);
   color: #fff;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 6px;
 }
 .received .ig-bubble {
-  background: rgba(255,255,255,0.1);
-  color: #fff;
-  border-bottom-left-radius: 4px;
+  background: var(--bubble-received);
+  color: var(--text-primary);
+  border-bottom-left-radius: 6px;
 }
 
 /* Image bubble */
 .ig-bubble.img-bubble {
-  padding: 3px;
+  padding: 4px;
   background: transparent !important;
+  box-shadow: none;
 }
 .ig-chat-img {
-  max-width: 220px;
-  max-height: 280px;
+  max-width: 260px;
+  max-height: 320px;
   width: 100%;
-  border-radius: 16px;
+  border-radius: 18px;
   object-fit: cover;
   display: block;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: transform 0.2s, opacity 0.2s;
 }
-.ig-chat-img:hover { opacity: 0.9; }
+.ig-chat-img:hover { transform: scale(0.98); opacity: 0.9; }
 
 /* File bubble */
 .ig-file-bubble {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   text-decoration: none;
   color: inherit;
 }
-.ig-file-icon { font-size: 26px; }
-.ig-file-name { font-size: 13px; font-weight: 600; }
-.ig-file-size { font-size: 11px; opacity: 0.65; }
+.ig-file-icon { font-size: 28px; }
+.ig-file-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.ig-file-size { font-size: 12px; opacity: 0.7; }
 
 /* Timestamp + status row */
 .ig-msg-meta {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 11px;
-  color: rgba(255,255,255,0.35);
-  margin-top: 3px;
+  color: var(--text-secondary);
+  margin-top: 4px;
   padding: 0 4px;
 }
 .sent .ig-msg-meta { justify-content: flex-end; }
-.ig-tick { font-size: 12px; }
-.ig-tick.read { color: #2b7cff; }
+.received .ig-msg-meta { justify-content: flex-start; }
 
-/* Typing */
+.ig-tick {
+  font-size: 10px;
+  color: var(--text-secondary);
+  letter-spacing: -1px;
+}
+.ig-tick.read { color: #38bdf8; }
+
+/* Typing indicator */
 .ig-typing {
   display: none;
-  align-self: flex-start;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 18px;
-  border-bottom-left-radius: 4px;
-  margin-bottom: 4px;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 18px;
+  background: var(--bubble-received);
+  border-radius: 20px;
+  width: fit-content;
+  margin-left: 36px;
+  margin-top: 8px;
+  animation: msgIn 0.3s;
 }
-.ig-typing.active { display: flex; gap: 4px; align-items: center; }
+.ig-typing.active { display: flex; }
 .ig-dot {
-  width: 7px; height: 7px;
-  background: rgba(255,255,255,0.5);
+  width: 6px;
+  height: 6px;
+  background: var(--text-secondary);
   border-radius: 50%;
-  animation: dotBounce 1.2s infinite;
+  animation: typing 1.4s infinite ease-in-out;
 }
-.ig-dot:nth-child(2) { animation-delay: 0.2s; }
-.ig-dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes dotBounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+.ig-dot:nth-child(1) { animation-delay: -0.32s; }
+.ig-dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes typing {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+}
 
 /* Input area */
 .ig-input-area {
-  padding: 10px 12px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.95);
-  backdrop-filter: blur(12px);
+  padding: 12px 16px 20px;
+  background: var(--chat-bg);
   flex-shrink: 0;
 }
 .ig-input-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255,0.07);
+  align-items: flex-end;
+  gap: 12px;
+  background: rgba(255,255,255,0.06);
   border-radius: 24px;
-  padding: 8px 12px;
+  padding: 8px 16px;
   border: 1px solid rgba(255,255,255,0.1);
   transition: border-color 0.2s;
 }
-.ig-input-row:focus-within { border-color: rgba(255,255,255,0.25); }
+.ig-input-row:focus-within { border-color: rgba(255,255,255,0.3); }
+
 .ig-input-btn {
-  background: none;
+  background: transparent;
   border: none;
-  color: rgba(255,255,255,0.5);
-  cursor: pointer;
+  color: var(--text-primary);
   font-size: 20px;
-  padding: 2px;
-  line-height: 1;
-  transition: color 0.2s;
-  flex-shrink: 0;
-}
-.ig-input-btn:hover { color: #fff; }
-.ig-text-input {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  color: #fff;
-  font-size: 15px;
-  font-family: inherit;
-  min-width: 0;
-}
-.ig-text-input::placeholder { color: rgba(255,255,255,0.35); }
-.ig-send-btn {
-  background: none;
-  border: none;
-  color: #2b7cff;
-  font-weight: 700;
-  font-size: 15px;
+  padding: 8px 0;
   cursor: pointer;
-  padding: 2px 6px;
-  flex-shrink: 0;
+  opacity: 0.7;
   transition: opacity 0.2s;
 }
-.ig-send-btn:disabled { opacity: 0.35; cursor: default; }
+.ig-input-btn:hover { opacity: 1; }
+
+.ig-text-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 15px;
+  padding: 10px 0;
+  max-height: 100px;
+  resize: none;
+  font-family: inherit;
+}
+.ig-text-input:focus { outline: none; }
+.ig-text-input::placeholder { color: rgba(255,255,255,0.4); }
+
+.ig-send-btn {
+  background: transparent;
+  border: none;
+  color: #f27121; /* Gradient color */
+  font-weight: 700;
+  font-size: 15px;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: color 0.2s, opacity 0.2s;
+}
+.ig-send-btn:hover { color: #e94057; }
+.ig-send-btn:disabled { opacity: 0.4; cursor: default; }
 
 /* Lightbox */
-#igLightbox {
-  display: none;
+.ig-lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.92);
+  background: rgba(0,0,0,0.95);
   z-index: 9999;
+  display: none;
   align-items: center;
   justify-content: center;
-  cursor: zoom-out;
+  backdrop-filter: blur(10px);
 }
-#igLightbox.open { display: flex; }
-#igLightbox img {
-  max-width: 92vw;
-  max-height: 92vh;
+.ig-lightbox.open { display: flex; animation: fade 0.2s; }
+@keyframes fade { from { opacity:0; } to { opacity:1; } }
+.ig-lightbox-img {
+  max-width: 90%;
+  max-height: 90vh;
+  border-radius: 12px;
   object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.8);
 }
-#igLightboxClose {
-  position: fixed;
-  top: 16px;
+.ig-lightbox-close {
+  position: absolute;
+  top: 20px;
   right: 20px;
   color: #fff;
-  font-size: 28px;
+  font-size: 30px;
   cursor: pointer;
-  background: none;
-  border: none;
-  line-height: 1;
-  z-index: 10000;
+  background: rgba(255,255,255,0.1);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
 }
-
-/* Date divider */
-.ig-date-divider {
-  text-align: center;
-  font-size: 12px;
-  color: rgba(255,255,255,0.3);
-  margin: 10px 0 6px;
-  position: relative;
-}
+.ig-lightbox-close:hover { background: rgba(255,255,255,0.2); }
 </style>
 
-<!-- Lightbox -->
-<div id="igLightbox">
-  <button id="igLightboxClose">✕</button>
-  <img id="igLightboxImg" src="" alt="Image">
-</div>
-
 <% 
+  // Helper for generating avatar URL
   let headerAvatar = '/images/default-avatar.png';
-  if (otherUser.avatarType === 'supabase' && otherUser.avatarSupabaseUrl) {
-    headerAvatar = otherUser.avatarSupabaseUrl;
-  } else if (otherUser.avatarUrl) {
-    headerAvatar = otherUser.avatarUrl;
-  } else if (otherUser.avatarSeed) {
-    headerAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
-  }
+  if (otherUser.avatarType === 'supabase' && otherUser.avatarSupabaseUrl) headerAvatar = otherUser.avatarSupabaseUrl;
+  else if (otherUser.avatarUrl) headerAvatar = otherUser.avatarUrl;
+  else if (otherUser.avatarSeed) headerAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
 %>
 
 <div class="ig-chat-wrap">
+  <!-- Lightbox -->
+  <div class="ig-lightbox" id="igLightbox">
+    <div class="ig-lightbox-close" id="igLightboxClose">×</div>
+    <img src="" class="ig-lightbox-img" id="igLightboxImg" alt="">
+  </div>
+
   <!-- Header -->
   <div class="ig-header">
-    <a href="/chat" class="ig-back">←</a>
+    <a href="/chat/requests" class="ig-back">‹</a>
     <img src="<%= headerAvatar %>" class="ig-header-avatar" onerror="this.src='/images/default-avatar.png'" alt="">
     <div class="ig-header-info">
-      <div class="ig-header-name"><%= otherUser.username %></div>
+      <div class="ig-header-name"><%= otherUser.name || otherUser.username %></div>
       <div class="ig-header-status" id="igStatus">Offline</div>
     </div>
   </div>
@@ -307,8 +347,8 @@
   <div class="ig-messages" id="igMessages">
     <% if (!messages || messages.length === 0) { %>
       <div class="ig-empty">
-        <div class="ig-empty-icon">💬</div>
-        No messages yet. Say hi! 👋
+        <div class="ig-empty-icon">✨</div>
+        Say hi to <%= otherUser.username %>!
       </div>
     <% } %>
 
@@ -327,11 +367,6 @@
         const nextSame = nextMsg && nextMsg.sender && nextMsg.sender._id &&
           nextMsg.sender._id.toString() === (m.sender && m.sender._id && m.sender._id.toString());
         const showAvatar = !isMe && !nextSame;
-
-        let otherAvatarStr = '/images/default-avatar.png';
-        if (otherUser.avatarType === 'supabase' && otherUser.avatarSupabaseUrl) otherAvatarStr = otherUser.avatarSupabaseUrl;
-        else if (otherUser.avatarUrl) otherAvatarStr = otherUser.avatarUrl;
-        else if (otherUser.avatarSeed) otherAvatarStr = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
     %>
       <% if (dateStr !== lastDateStr) { lastDateStr = dateStr; %>
         <div class="ig-date-divider"><%= dateStr %></div>
@@ -339,16 +374,16 @@
 
       <div class="ig-msg-row <%= isMe ? 'sent' : 'received' %>" data-msg-id="<%= m._id %>">
         <% if (!isMe) { %>
-          <img src="<%= otherAvatarStr %>" class="ig-row-avatar <%= showAvatar ? '' : 'hidden' %>" onerror="this.src='/images/default-avatar.png'" alt="">
+          <img src="<%= headerAvatar %>" class="ig-row-avatar <%= showAvatar ? '' : 'hidden' %>" onerror="this.src='/images/default-avatar.png'" alt="">
         <% } %>
 
         <div>
           <% if (m.messageType === 'image' && m.fileGridFSId) { %>
             <div class="ig-bubble img-bubble">
               <img
-                src="/gridfs/<%= m.fileGridFSId %>"
+                src="/gridfs/file/<%= m.fileGridFSId %>"
                 class="ig-chat-img"
-                data-src="/gridfs/<%= m.fileGridFSId %>"
+                data-src="/gridfs/file/<%= m.fileGridFSId %>"
                 alt="Image"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
               >
@@ -368,7 +403,7 @@
               }
             %>
             <div class="ig-bubble">
-              <a href="/gridfs/<%= m.fileGridFSId %>" download="<%= m.fileName %>" class="ig-file-bubble">
+              <a href="/gridfs/file/<%= m.fileGridFSId %>" download="<%= m.fileName %>" class="ig-file-bubble">
                 <span class="ig-file-icon"><%= fileIcon %></span>
                 <div>
                   <div class="ig-file-name"><%= m.fileName || 'File' %></div>
@@ -402,7 +437,9 @@
   <div class="ig-input-area">
     <div class="ig-input-row">
       <input type="file" id="igFileInput" class="media-input" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip" style="display:none">
-      <button type="button" class="ig-input-btn" id="igAttachBtn" title="Attach">📎</button>
+      <button type="button" class="ig-input-btn" id="igAttachBtn" title="Attach">
+        <svg aria-label="Attach File" color="currentColor" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M22.046 7.311L11.536 17.82a5.452 5.452 0 0 1-7.712-7.712l10.51-10.511a3.029 3.029 0 0 1 4.284 4.284l-10.511 10.51a.606.606 0 1 1-.856-.856l9.654-9.655a1 1 0 0 0-1.414-1.414l-9.654 9.654a2.606 2.606 0 1 0 3.685 3.685l10.51-10.511a5.029 5.029 0 0 0-7.112-7.112l-10.51 10.51a7.452 7.452 0 0 0 10.54 10.54l10.51-10.511a1 1 0 1 0-1.414-1.414Z"></path></svg>
+      </button>
       <input type="text" class="ig-text-input" id="igInput" placeholder="Message..." autocomplete="off" maxlength="2000">
       <button type="button" class="ig-send-btn" id="igSendBtn">Send</button>
     </div>
@@ -415,7 +452,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const ME_ID     = '<%= user._id %>';
   const OTHER_ID  = '<%= otherUser._id %>';
-  const OTHER_UN  = '<%= otherUser.username %>';
   const OTHER_AV  = '<%= headerAvatar %>';
 
   const messagesEl = document.getElementById('igMessages');
@@ -436,7 +472,9 @@ document.addEventListener('DOMContentLoaded', function () {
     lbImg.src = img.dataset.src || img.src;
     lightbox.classList.add('open');
   });
-  lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) lightbox.classList.remove('open');
+  });
   lbClose.addEventListener('click', () => lightbox.classList.remove('open'));
 
   /* ---- Scroll ---- */
@@ -457,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let inner = '';
     if (msg.messageType === 'image' && msg.fileGridFSId) {
       inner = `<div class="ig-bubble img-bubble">
-        <img src="/gridfs/${msg.fileGridFSId}" data-src="/gridfs/${msg.fileGridFSId}"
+        <img src="/gridfs/file/${msg.fileGridFSId}" data-src="/gridfs/file/${msg.fileGridFSId}"
              class="ig-chat-img" alt="Image"
              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
         <div style="display:none;padding:10px;color:rgba(255,255,255,0.5);font-size:13px;">📷 Image</div>
@@ -468,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const icon = {pdf:'📕',doc:'📘',docx:'📘',xls:'📗',xlsx:'📗',zip:'📦',rar:'📦',txt:'📝'}[ext] || '📄';
       const sizeKB = msg.fileSize ? (msg.fileSize / 1024).toFixed(1) + ' KB' : '';
       inner = `<div class="ig-bubble">
-        <a href="/gridfs/${msg.fileGridFSId}" download="${esc(msg.fileName || 'file')}" class="ig-file-bubble">
+        <a href="/gridfs/file/${msg.fileGridFSId}" download="${esc(msg.fileName || 'file')}" class="ig-file-bubble">
           <span class="ig-file-icon">${icon}</span>
           <div><div class="ig-file-name">${esc(msg.fileName || 'File')}</div><div class="ig-file-size">${sizeKB}</div></div>
         </a>
@@ -521,6 +559,22 @@ document.addEventListener('DOMContentLoaded', function () {
     socket.emit('messages_read', { userId: ME_ID, otherUserId: OTHER_ID });
   });
 
+  /* Real-time: acknowledgment that OUR message was sent (since we don't receive new_message for our own sends) */
+  socket.on('send_message_ok', function (data) {
+    const msg = data.message || data;
+    
+    // Find the temporary optimistic row by matching content if possible, 
+    // but the easiest is just let the REST API response handle the opacity.
+    // However, if we sent via socket directly, we'd append here.
+    // For now, our REST API handles the success callback, so we don't strictly need to append again here
+    // BUT we can use this to update status to "Delivered" if needed.
+    const row = messagesEl.querySelector(`.ig-msg-row.sent[data-msg-id=""]`);
+    if (row && msg._id) {
+      row.dataset.msgId = msg._id;
+      row.style.opacity = '1';
+    }
+  });
+
   socket.on('user_online',  d => { if (d.userId === OTHER_ID) { statusEl.textContent = 'Active now'; statusEl.className = 'ig-header-status online'; } });
   socket.on('user_offline', d => { if (d.userId === OTHER_ID) { statusEl.textContent = 'Offline'; statusEl.className = 'ig-header-status'; } });
 
@@ -537,9 +591,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  socket.on('message_delivered', function (d) {
-    const row = messagesEl.querySelector(`[data-msg-id="${d.messageId}"]`);
-    if (row) { const t = row.querySelector('.ig-tick'); if (t) t.textContent = '✓✓'; }
+  socket.on('messages_delivered', function () {
+    messagesEl.querySelectorAll('.ig-msg-row.sent .ig-tick:not(.read)').forEach(el => {
+      el.textContent = '✓✓';
+    });
   });
 
   socket.on('message_deleted', function (d) {
@@ -569,6 +624,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const tmpMsg = { content, sentAt: new Date(), messageType: 'text', isDelivered: false, isRead: false };
     const tmpRow = buildBubble(tmpMsg, true);
     tmpRow.style.opacity = '0.6';
+    tmpRow.dataset.msgId = ""; // mark as pending
     messagesEl.insertBefore(tmpRow, typingEl);
     scrollBottom(true);
 
@@ -583,14 +639,21 @@ document.addEventListener('DOMContentLoaded', function () {
       if (data.success && data.message) {
         tmpRow.style.opacity = '1';
         if (data.message._id) tmpRow.dataset.msgId = data.message._id;
+        
+        // Make sure socket tells the other user immediately!
+        // The REST route does this internally, but if it's lagging, the socket event `new_message` fired by backend does the job.
       } else {
         tmpRow.remove();
         inputEl.value = content;
+        sendBtn.disabled = false;
+        alert('Failed to send message: ' + (data.message || ''));
       }
     })
-    .catch(() => {
+    .catch((e) => {
+      console.error(e);
       tmpRow.remove();
       inputEl.value = content;
+      sendBtn.disabled = false;
     });
   }
 
@@ -612,7 +675,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Show uploading state
     const uploadRow = document.createElement('div');
     uploadRow.className = 'ig-msg-row sent';
-    uploadRow.innerHTML = '<div><div class="ig-bubble" style="opacity:.5">Uploading…</div></div>';
+    uploadRow.innerHTML = '<div><div class="ig-bubble" style="opacity:.5">Uploading media...</div></div>';
     messagesEl.insertBefore(uploadRow, typingEl);
     scrollBottom(true);
 
@@ -627,10 +690,10 @@ document.addEventListener('DOMContentLoaded', function () {
       if (data.success && data.message) {
         appendMessage(data.message, true);
       } else {
-        alert('Upload failed');
+        alert('Upload failed: ' + (data.message || ''));
       }
     })
-    .catch(() => { uploadRow.remove(); alert('Upload failed'); });
+    .catch(() => { uploadRow.remove(); alert('Upload failed. Network error.'); });
 
     fileInput.value = '';
   });
@@ -641,5 +704,5 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!document.hidden) socket.emit('messages_read', { userId: ME_ID, otherUserId: OTHER_ID });
   });
 
-  });
+});
 </script>

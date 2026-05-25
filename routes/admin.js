@@ -113,62 +113,8 @@ router.use(requireAdminOrSession);
 
 // GET /admin - Admin dashboard
 router.get('/', async (req, res) => {
-  try {
-    // Get overall statistics
-    const userStats = await User.getStats();
-    const totalPosts = await Post.countDocuments({ isActive: true });
-    const reportedPosts = await Post.countDocuments({ isReported: true });
-    const totalCampuses = await User.distinct('campus').then(campuses => campuses.length);
-
-    // Get recent activity
-    const recentUsers = await User.find({ isVerified: true })
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .select('displayName email campus createdAt');
-
-    const recentPosts = await Post.find({ isActive: true })
-      .populate('author', 'displayName email campus')
-      .sort({ createdAt: -1 })
-      .limit(10);
-
-    // Get campus statistics
-    const campusStats = await User.aggregate([
-      {
-        $match: { isVerified: true, isActive: true }
-      },
-      {
-        $group: {
-          _id: '$campus',
-          userCount: { $sum: 1 },
-          totalPosts: { $sum: '$stats.postsCount' },
-          totalLikes: { $sum: '$stats.likesReceived' }
-        }
-      },
-      {
-        $sort: { userCount: -1 }
-      },
-      {
-        $limit: 10
-      }
-    ]);
-
-    res.render('admin/dashboard', {
-      title: 'Admin Dashboard',
-      userStats,
-      totalPosts,
-      reportedPosts,
-      totalCampuses,
-      recentUsers,
-      recentPosts,
-      campusStats,
-      user: req.user
-    });
-
-  } catch (error) {
-    console.error('Admin dashboard error:', error);
-    req.flash('error', 'Failed to load admin dashboard');
-    res.redirect('/posts');
-  }
+  // Redirect to terminal as requested
+  res.redirect('/admin/terminal');
 });
 
 // GET /admin/terminal - Terminal-style admin UI
