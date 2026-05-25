@@ -14,13 +14,18 @@
 .ig-chat-wrap {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 64px);
+  height: 100vh;
+  height: 100dvh;
   max-width: 800px;
   margin: 0 auto;
   background: var(--chat-bg);
   position: relative;
   font-family: 'Inter', sans-serif;
 }
+
+/* Hide global navbars on this specific page */
+.navbar-neo, .mobile-bottom-nav-neo { display: none !important; }
+body { padding-bottom: 0 !important; overflow: hidden; }
 
 /* Header */
 .ig-header {
@@ -440,7 +445,7 @@
       <button type="button" class="ig-input-btn" id="igAttachBtn" title="Attach">
         <svg aria-label="Attach File" color="currentColor" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24"><path d="M22.046 7.311L11.536 17.82a5.452 5.452 0 0 1-7.712-7.712l10.51-10.511a3.029 3.029 0 0 1 4.284 4.284l-10.511 10.51a.606.606 0 1 1-.856-.856l9.654-9.655a1 1 0 0 0-1.414-1.414l-9.654 9.654a2.606 2.606 0 1 0 3.685 3.685l10.51-10.511a5.029 5.029 0 0 0-7.112-7.112l-10.51 10.51a7.452 7.452 0 0 0 10.54 10.54l10.51-10.511a1 1 0 1 0-1.414-1.414Z"></path></svg>
       </button>
-      <input type="text" class="ig-text-input" id="igInput" placeholder="Message..." autocomplete="off" maxlength="2000">
+      <input type="text" name="chat_message_input" inputmode="text" class="ig-text-input" id="igInput" placeholder="Message..." autocomplete="new-password" data-lpignore="true" data-form-type="other" maxlength="2000">
       <button type="button" class="ig-send-btn" id="igSendBtn">Send</button>
     </div>
   </div>
