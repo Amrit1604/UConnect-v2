@@ -238,7 +238,10 @@
 		}
 
 		try {
-			const data = await requestJson(`/posts/${postId}`, { method: 'DELETE' });
+			const data = await requestJson(`/posts/${postId}`, {
+				method: 'DELETE',
+				headers: { 'Accept': 'application/json' }
+			});
 
 			// Check if we're on a single post page
 			const isSinglePostPage = window.location.pathname.includes(`/posts/${postId}`);
@@ -247,8 +250,9 @@
 			const postEl = document.querySelector(`[data-post-id="${postId}"]`);
 			if (postEl) {
 				postEl.remove();
-				showToast('Post deleted successfully');
 			}
+			// Always show success toast (even on single post page before redirect)
+			showToast('Post deleted successfully');
 
 			// If on single post page, redirect to feed
 			if (isSinglePostPage) {

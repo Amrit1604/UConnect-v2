@@ -1,147 +1,219 @@
-<div class="chat-requests neo-requests">
-  <h2>Follow Requests</h2>
+<style>
+  .req-page {
+    max-width: 700px;
+    margin: 32px auto;
+    padding: 20px;
+    font-family: var(--font-body, 'Inter', sans-serif);
+  }
+  .req-page h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 24px 0;
+    letter-spacing: -0.5px;
+  }
+  .req-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin: 0 0 12px 0;
+  }
+  .req-section { margin-bottom: 32px; }
+  .req-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 10px;
+    transition: background 0.2s;
+  }
+  .req-item:hover { background: rgba(255,255,255,0.08); }
+  .req-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid rgba(230,57,70,0.5);
+    flex-shrink: 0;
+  }
+  .req-info { flex: 1; min-width: 0; }
+  .req-username { font-weight: 700; color: #fff; font-size: 15px; }
+  .req-msg { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .req-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-req-accept {
+    padding: 7px 16px;
+    background: #e63946;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-req-accept:hover { background: #c1121f; }
+  .btn-req-reject {
+    padding: 7px 14px;
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-req-reject:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+  .btn-req-block {
+    padding: 7px 12px;
+    background: transparent;
+    color: rgba(255,80,80,0.7);
+    border: 1px solid rgba(255,80,80,0.25);
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-req-block:hover { background: rgba(255,80,80,0.12); color: #ff5050; }
+  .sent-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+  }
+  .sent-item strong { color: #fff; }
+  .req-empty {
+    text-align: center;
+    padding: 32px 20px;
+    color: rgba(255,255,255,0.3);
+    font-size: 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.08);
+  }
+</style>
 
-  <section class="received">
-    <h3>Received</h3>
-    <div id="receivedRequests">
-      <% if (receivedRequests && receivedRequests.length>0) { %>
+<div class="req-page">
+  <h1>🤝 Friend Requests</h1>
+
+  <!-- RECEIVED REQUESTS -->
+  <div class="req-section">
+    <p class="req-section-title">Received</p>
+    <div id="receivedList">
+      <% if (receivedRequests && receivedRequests.length > 0) { %>
         <% receivedRequests.forEach(r => { %>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <div class="request-meta">
-              <strong>@<%= r.sender.username %></strong>
-              <p><%= r.message %></p>
+          <div class="req-item" id="req-<%= r._id %>">
+            <img
+              class="req-avatar"
+              src="<%= r.sender && r.sender.avatarUrl ? r.sender.avatarUrl : '/images/default-avatar.png' %>"
+              onerror="this.src='/images/default-avatar.png'"
+              alt="<%= r.sender.username %>"
+            >
+            <div class="req-info">
+              <div class="req-username">@<%= r.sender.username %></div>
+              <div class="req-msg"><%= r.message || 'Wants to connect!' %></div>
             </div>
-            <div class="request-actions">
-              <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
-              <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
+            <div class="req-actions">
+              <button class="btn-req-accept" data-id="<%= r._id %>">Accept</button>
+              <button class="btn-req-reject" data-id="<%= r._id %>">Reject</button>
+              <button class="btn-req-block"  data-id="<%= r._id %>" title="Block">🚫</button>
             </div>
           </div>
         <% }) %>
       <% } else { %>
-        <div class="chat-empty">No received requests</div>
+        <div class="req-empty">No received requests</div>
       <% } %>
     </div>
-  </section>
-
-  <section class="sent" style="margin-top:18px">
-    <h3>Sent</h3>
-    <div id="sentRequests">
-      <% if (sentRequests && sentRequests.length>0) { %>
-        <% sentRequests.forEach(r => { %>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <div>To: <strong>@<%= r.receiver.username %></strong> - <%= r.message %></div>
-          </div>
-        <% }) %>
-      <% } else { %>
-        <div class="chat-empty">No sent requests</div>
-      <% } %>
-    </div>
-  </section>
-
-  <script>window.__USER_ID__ = '<%= user ? user._id : '' %>';</script>
-  <script>
-    (function(){
-      document.querySelectorAll('.neo-accept-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed');
-        });
-      });
-
-      document.querySelectorAll('.neo-reject-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed');
-        });
-      });
-    })();
-  </script>
-</div>
-<div class="chat-requests">
-  <h2>Follow Requests</h2>
-
-  <div>
-    <h3>Received</h3>
-    <% if (receivedRequests && receivedRequests.length) { %>
-      <% receivedRequests.forEach(r => { %>
-        <div class="request-item" data-id="<%= r._id %>">
-          <div><strong><%= r.sender.username %></strong> - <%= r.message %></div>
-          <div style="margin-top:8px"><button class="accept-btn" data-id="<%= r._id %>">Accept</button><button class="reject-btn" data-id="<%= r._id %>">Reject</button><button class="block-btn" data-id="<%= r._id %>">Block</button></div>
-        </div>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <div><strong>@<%= r.sender.username %></strong> - <%= r.message %></div>
-            <div style="margin-top:8px">
-              <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
-              <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
-              <button class="block-btn" data-id="<%= r._id %>">Block</button>
-            </div>
-          </div>
-      <% }) %>
-    <% } else { %>
-      <div class="chat-empty">No received requests</div>
-    <% } %>
   </div>
 
-  <div style="margin-top:16px">
-    <h3>Sent</h3>
-    <% if (sentRequests && sentRequests.length) { %>
+  <!-- SENT REQUESTS -->
+  <div class="req-section">
+    <p class="req-section-title">Sent</p>
+    <% if (sentRequests && sentRequests.length > 0) { %>
       <% sentRequests.forEach(r => { %>
-        <div class="request-item" data-id="<%= r._id %>">
-          <div>To: <strong><%= r.receiver.username %></strong> - <%= r.message %></div>
+        <div class="sent-item">
+          <img
+            class="req-avatar"
+            src="<%= r.receiver && r.receiver.avatarUrl ? r.receiver.avatarUrl : '/images/default-avatar.png' %>"
+            onerror="this.src='/images/default-avatar.png'"
+            alt="<%= r.receiver.username %>"
+            style="width:36px;height:36px;border-radius:6px;"
+          >
+          <span>To <strong>@<%= r.receiver.username %></strong> — <%= r.message || 'Connection request' %></span>
+          <span style="margin-left:auto;font-size:12px;color:rgba(255,255,255,0.3)">Pending</span>
         </div>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <div>To: <strong>@<%= r.receiver.username %></strong> - <%= r.message %></div>
-          </div>
       <% }) %>
     <% } else { %>
-      <div class="chat-empty">No sent requests</div>
+      <div class="req-empty">No sent requests</div>
     <% } %>
   </div>
 </div>
 
-<script>window.__USER_ID__ = '<%= user._id %>';</script>
-<div class="chat-requests">
-  <h2>Follow Requests</h2>
-  <div id="receivedRequests">
-    <% if (receivedRequests && receivedRequests.length>0) { %>
-      <% receivedRequests.forEach(r => { %>
-        <div class="request-item" data-id="<%= r._id %>">
-          <strong>@<%= r.sender.username %></strong>
-          <p><%= r.message %></p>
-          <button class="accept-btn" data-id="<%= r._id %>">Accept</button>
-          <button class="reject-btn" data-id="<%= r._id %>">Reject</button>
-          </div>
-          <div class="request-item neo-request-item" data-id="<%= r._id %>">
-            <strong>@<%= r.sender.username %></strong>
-            <p><%= r.message %></p>
-            <button class="neo-accept-btn" data-id="<%= r._id %>">Accept</button>
-            <button class="neo-reject-btn" data-id="<%= r._id %>">Reject</button>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <div>No requests.</div>
-    <% } %>
-  </div>
+<script>
+  window.__USER_ID__ = '<%= user ? user._id : "" %>';
 
-  <script>
-    (function(){
-      document.querySelectorAll('.accept-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed');
-        });
+  (function () {
+    function handleAction(btn, url, successHtml) {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = '…';
+        try {
+          const res = await fetch(url.replace(':id', id), { method: 'POST' });
+          if (res.ok) {
+            const item = document.getElementById('req-' + id);
+            if (item) {
+              item.style.transition = 'opacity 0.3s';
+              item.style.opacity = '0';
+              setTimeout(() => {
+                item.outerHTML = successHtml;
+                const remaining = document.querySelectorAll('.req-item').length;
+                if (remaining === 0) {
+                  document.getElementById('receivedList').innerHTML =
+                    '<div class="req-empty">No received requests</div>';
+                }
+              }, 300);
+            }
+          } else {
+            btn.disabled = false;
+            btn.textContent = originalText;
+            alert('Action failed. Please try again.');
+          }
+        } catch (e) {
+          btn.disabled = false;
+          btn.textContent = originalText;
+          alert('Network error. Please try again.');
+        }
       });
+    }
 
-      document.querySelectorAll('.reject-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed');
-        });
-      });
-    })();
-  </script>
-</div>
+    document.querySelectorAll('.btn-req-accept').forEach(btn => {
+      handleAction(btn, '/chat/request/:id/accept',
+        '<div style="padding:12px 16px;border-radius:10px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;font-size:14px;margin-bottom:10px;">✅ Friend added! <a href="/chat" style="color:#4ade80;text-decoration:underline;">Open chat →</a></div>'
+      );
+    });
+
+    document.querySelectorAll('.btn-req-reject').forEach(btn => {
+      handleAction(btn, '/chat/request/:id/reject',
+        '<div style="padding:10px 16px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.08);color:rgba(255,255,255,0.3);font-size:13px;margin-bottom:10px;">Request rejected</div>'
+      );
+    });
+
+    document.querySelectorAll('.btn-req-block').forEach(btn => {
+      handleAction(btn, '/chat/request/:id/block',
+        '<div style="padding:10px 16px;border-radius:10px;background:rgba(255,80,80,0.05);border:1px dashed rgba(255,80,80,0.15);color:rgba(255,80,80,0.5);font-size:13px;margin-bottom:10px;">🚫 User blocked</div>'
+      );
+    });
+  })();
+</script>

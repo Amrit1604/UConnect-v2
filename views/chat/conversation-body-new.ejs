@@ -1,717 +1,645 @@
-<link rel="stylesheet" href="/css/chat-conversation.css">
+<style>
+/* ===== INSTAGRAM-STYLE CHAT ===== */
+*, *::before, *::after { box-sizing: border-box; }
 
-<script>console.log('🔥 PAGE LOADED - TOP OF BODY');</script>
+.ig-chat-wrap {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  max-width: 760px;
+  margin: 0 auto;
+  background: #000;
+  position: relative;
+}
 
-<div class="chat-container">
+/* Header */
+.ig-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.95);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+.ig-back {
+  color: #fff;
+  text-decoration: none;
+  font-size: 20px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.ig-back:hover { background: rgba(255,255,255,0.08); }
+.ig-header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e63946;
+}
+.ig-header-info { flex: 1; }
+.ig-header-name { font-weight: 700; font-size: 15px; color: #fff; }
+.ig-header-status { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+.ig-header-status.online { color: #4ade80; }
+
+/* Messages scroll area */
+.ig-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  scroll-behavior: smooth;
+}
+.ig-messages::-webkit-scrollbar { width: 4px; }
+.ig-messages::-webkit-scrollbar-track { background: transparent; }
+.ig-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+/* Empty state */
+.ig-empty {
+  text-align: center;
+  margin: auto;
+  color: rgba(255,255,255,0.3);
+  font-size: 15px;
+  padding: 40px 20px;
+}
+.ig-empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+/* Message row */
+.ig-msg-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 75%;
+  animation: msgIn 0.2s ease;
+}
+@keyframes msgIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+.ig-msg-row.sent { align-self: flex-end; flex-direction: row-reverse; }
+.ig-msg-row.received { align-self: flex-start; }
+
+.ig-row-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+.ig-row-avatar.hidden { visibility: hidden; }
+
+/* Bubble */
+.ig-bubble {
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.4;
+  max-width: 100%;
+  word-break: break-word;
+  position: relative;
+}
+.sent .ig-bubble {
+  background: #2b7cff;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.received .ig-bubble {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border-bottom-left-radius: 4px;
+}
+
+/* Image bubble */
+.ig-bubble.img-bubble {
+  padding: 3px;
+  background: transparent !important;
+}
+.ig-chat-img {
+  max-width: 220px;
+  max-height: 280px;
+  width: 100%;
+  border-radius: 16px;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.ig-chat-img:hover { opacity: 0.9; }
+
+/* File bubble */
+.ig-file-bubble {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+.ig-file-icon { font-size: 26px; }
+.ig-file-name { font-size: 13px; font-weight: 600; }
+.ig-file-size { font-size: 11px; opacity: 0.65; }
+
+/* Timestamp + status row */
+.ig-msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 3px;
+  padding: 0 4px;
+}
+.sent .ig-msg-meta { justify-content: flex-end; }
+.ig-tick { font-size: 12px; }
+.ig-tick.read { color: #2b7cff; }
+
+/* Typing */
+.ig-typing {
+  display: none;
+  align-self: flex-start;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
+  margin-bottom: 4px;
+}
+.ig-typing.active { display: flex; gap: 4px; align-items: center; }
+.ig-dot {
+  width: 7px; height: 7px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 50%;
+  animation: dotBounce 1.2s infinite;
+}
+.ig-dot:nth-child(2) { animation-delay: 0.2s; }
+.ig-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotBounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+
+/* Input area */
+.ig-input-area {
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.95);
+  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+}
+.ig-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 24px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: border-color 0.2s;
+}
+.ig-input-row:focus-within { border-color: rgba(255,255,255,0.25); }
+.ig-input-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  font-size: 20px;
+  padding: 2px;
+  line-height: 1;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+.ig-input-btn:hover { color: #fff; }
+.ig-text-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+  min-width: 0;
+}
+.ig-text-input::placeholder { color: rgba(255,255,255,0.35); }
+.ig-send-btn {
+  background: none;
+  border: none;
+  color: #2b7cff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 2px 6px;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.ig-send-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* Lightbox */
+#igLightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+#igLightbox.open { display: flex; }
+#igLightbox img {
+  max-width: 92vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+}
+#igLightboxClose {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  line-height: 1;
+  z-index: 10000;
+}
+
+/* Date divider */
+.ig-date-divider {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  margin: 10px 0 6px;
+  position: relative;
+}
+</style>
+
+<!-- Lightbox -->
+<div id="igLightbox">
+  <button id="igLightboxClose">✕</button>
+  <img id="igLightboxImg" src="" alt="Image">
+</div>
+
+<% 
+  let headerAvatar = '/images/default-avatar.png';
+  if (otherUser.avatarType === 'supabase' && otherUser.avatarSupabaseUrl) {
+    headerAvatar = otherUser.avatarSupabaseUrl;
+  } else if (otherUser.avatarUrl) {
+    headerAvatar = otherUser.avatarUrl;
+  } else if (otherUser.avatarSeed) {
+    headerAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
+  }
+%>
+
+<div class="ig-chat-wrap">
   <!-- Header -->
-  <div class="chat-header">
-    <a href="/chat" class="chat-back-btn">←</a>
-
-    <div class="chat-user-info">
-      <%
-      let avatarUrl = '/images/default-avatar.png';
-      if (otherUser.avatarType === 'upload' && otherUser.avatar) {
-          avatarUrl = '/uploads/avatars/' + otherUser.avatar;
-      } else if (otherUser.avatarType === 'supabase' && otherUser.avatarSupabaseUrl) {
-          avatarUrl = otherUser.avatarSupabaseUrl;
-      } else if (otherUser.avatarUrl) {
-          avatarUrl = otherUser.avatarUrl;
-      } else if (otherUser.avatarSeed) {
-          avatarUrl = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
-      }
-      %>
-      <img src="<%= avatarUrl %>" alt="<%= otherUser.username %>" class="chat-avatar">
-
-      <div class="chat-user-details">
-        <h3><%= otherUser.username %></h3>
-        <p class="chat-status" id="userStatus">Offline</p>
-      </div>
+  <div class="ig-header">
+    <a href="/chat" class="ig-back">←</a>
+    <img src="<%= headerAvatar %>" class="ig-header-avatar" onerror="this.src='/images/default-avatar.png'" alt="">
+    <div class="ig-header-info">
+      <div class="ig-header-name"><%= otherUser.username %></div>
+      <div class="ig-header-status" id="igStatus">Offline</div>
     </div>
   </div>
 
-  <!-- Messages Container -->
-  <div class="chat-messages-container" id="messagesContainer">
-    <% if (messages && messages.length > 0) { %>
-      <% messages.forEach(m => { %>
-        <% const isMe = (m.sender && m.sender._id && m.sender._id.toString() === user._id.toString()); %>
-        <% const isDeletedForMe = m.deletedBy && m.deletedBy.some(id => id.toString() === user._id.toString()); %>
+  <!-- Messages -->
+  <div class="ig-messages" id="igMessages">
+    <% if (!messages || messages.length === 0) { %>
+      <div class="ig-empty">
+        <div class="ig-empty-icon">💬</div>
+        No messages yet. Say hi! 👋
+      </div>
+    <% } %>
 
-        <% if (!isDeletedForMe) { %>
-        <div class="message <%= isMe ? 'sent' : 'received' %>" data-msg-id="<%= m._id %>">
-          <div class="message-bubble">
-            <% if (isMe) { %>
-            <div class="message-actions">
-              <button class="message-action-btn edit-msg-btn" data-msg-id="<%= m._id %>" title="Edit">✏️</button>
-              <button class="message-action-btn delete-msg-btn" data-msg-id="<%= m._id %>" title="Delete">🗑️</button>
+    <% 
+      let lastDateStr = '';
+      messages && messages.forEach((m, i) => {
+        const isMe = m.sender && m.sender._id && m.sender._id.toString() === user._id.toString();
+        const isDeleted = m.deletedBy && m.deletedBy.some(id => id.toString() === user._id.toString());
+        if (isDeleted) return;
+
+        const msgDate = new Date(m.sentAt);
+        const dateStr = msgDate.toLocaleDateString([], { month:'short', day:'numeric' });
+        const timeStr = msgDate.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+
+        const nextMsg = messages[i + 1];
+        const nextSame = nextMsg && nextMsg.sender && nextMsg.sender._id &&
+          nextMsg.sender._id.toString() === (m.sender && m.sender._id && m.sender._id.toString());
+        const showAvatar = !isMe && !nextSame;
+
+        let otherAvatarStr = '/images/default-avatar.png';
+        if (otherUser.avatarType === 'supabase' && otherUser.avatarSupabaseUrl) otherAvatarStr = otherUser.avatarSupabaseUrl;
+        else if (otherUser.avatarUrl) otherAvatarStr = otherUser.avatarUrl;
+        else if (otherUser.avatarSeed) otherAvatarStr = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + otherUser.avatarSeed;
+    %>
+      <% if (dateStr !== lastDateStr) { lastDateStr = dateStr; %>
+        <div class="ig-date-divider"><%= dateStr %></div>
+      <% } %>
+
+      <div class="ig-msg-row <%= isMe ? 'sent' : 'received' %>" data-msg-id="<%= m._id %>">
+        <% if (!isMe) { %>
+          <img src="<%= otherAvatarStr %>" class="ig-row-avatar <%= showAvatar ? '' : 'hidden' %>" onerror="this.src='/images/default-avatar.png'" alt="">
+        <% } %>
+
+        <div>
+          <% if (m.messageType === 'image' && m.fileGridFSId) { %>
+            <div class="ig-bubble img-bubble">
+              <img
+                src="/gridfs/<%= m.fileGridFSId %>"
+                class="ig-chat-img"
+                data-src="/gridfs/<%= m.fileGridFSId %>"
+                alt="Image"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+              >
+              <div style="display:none;padding:10px;color:rgba(255,255,255,0.5);font-size:13px;">📷 Image</div>
+              <% if (m.content) { %><div class="ig-bubble" style="margin-top:4px"><%= m.content %></div><% } %>
             </div>
-            <% } %>
-
-            <div class="message-info">
-              <span class="message-sender"><%= isMe ? 'You' : m.sender.username %></span>
-              <span class="message-time"><%= new Date(m.sentAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) %></span>
-              <% if (m.isEdited) { %>
-                <span class="message-edited-label">(edited)</span>
-              <% } %>
-              <% if (isMe) { %>
-                <span class="message-status <%= m.isRead ? 'read' : (m.isDelivered ? 'delivered' : 'sent') %>">
-                  <span class="checkmark"></span>
-                </span>
-              <% } %>
-            </div>
-
-            <% if (m.messageType === 'image' && m.fileGridFSId) { %>
-              <img src="/gridfs/<%= m.fileGridFSId %>" alt="Image" class="message-image" onclick="window.open(this.src, '_blank')">
-              <% if (m.content) { %>
-                <div class="message-text"><%= m.content %></div>
-              <% } %>
-            <% } else if (m.messageType === 'file' && m.fileGridFSId) { %>
-              <%
+          <% } else if (m.messageType === 'file' && m.fileGridFSId) { %>
+            <%
               let fileIcon = '📄';
               if (m.fileName) {
-                let ext = m.fileName.split('.').pop().toLowerCase();
+                const ext = m.fileName.split('.').pop().toLowerCase();
                 if (ext === 'pdf') fileIcon = '📕';
                 else if (ext === 'doc' || ext === 'docx') fileIcon = '📘';
-                else if (ext === 'xls' || ext === 'xlsx') fileIcon = '📗';
-                else if (ext === 'zip' || ext === 'rar') fileIcon = '📦';
+                else if (['xls','xlsx'].includes(ext)) fileIcon = '📗';
+                else if (['zip','rar'].includes(ext)) fileIcon = '📦';
                 else if (ext === 'txt') fileIcon = '📝';
               }
-              %>
-              <a href="/gridfs/<%= m.fileGridFSId %>" download="<%= m.fileName %>" class="message-file">
-                <span class="message-file-icon"><%= fileIcon %></span>
-                <div class="message-file-info">
-                  <div class="message-file-name"><%= m.fileName %></div>
-                  <div class="message-file-size"><%= (m.fileSize / 1024).toFixed(1) %> KB</div>
+            %>
+            <div class="ig-bubble">
+              <a href="/gridfs/<%= m.fileGridFSId %>" download="<%= m.fileName %>" class="ig-file-bubble">
+                <span class="ig-file-icon"><%= fileIcon %></span>
+                <div>
+                  <div class="ig-file-name"><%= m.fileName || 'File' %></div>
+                  <div class="ig-file-size"><%= m.fileSize ? (m.fileSize/1024).toFixed(1) + ' KB' : '' %></div>
                 </div>
               </a>
-              <% if (m.content) { %>
-                <div class="message-text"><%= m.content %></div>
-              <% } %>
-            <% } else { %>
-              <div class="message-text"><%= m.content %></div>
+            </div>
+          <% } else { %>
+            <div class="ig-bubble"><%= m.content %></div>
+          <% } %>
+
+          <div class="ig-msg-meta">
+            <span><%= timeStr %></span>
+            <% if (isMe) { %>
+              <span class="ig-tick <%= m.isRead ? 'read' : '' %>"><%= m.isRead ? '✓✓' : (m.isDelivered ? '✓✓' : '✓') %></span>
             <% } %>
           </div>
         </div>
-        <% } %>
-      <% }) %>
-    <% } else { %>
-      <div class="chat-empty">No messages yet. Say hi! 👋</div>
-    <% } %>
-  </div>
+      </div>
+    <% }); %>
 
-  <!-- Typing Indicator -->
-  <div class="typing-indicator-container" id="typingIndicator">
-    <div class="typing-dots">
-      <span class="typing-dot"></span>
-      <span class="typing-dot"></span>
-      <span class="typing-dot"></span>
+    <!-- Typing indicator -->
+    <div class="ig-typing" id="igTyping">
+      <span class="ig-dot"></span>
+      <span class="ig-dot"></span>
+      <span class="ig-dot"></span>
     </div>
   </div>
 
-  <!-- Input Area -->
-  <div class="chat-input-container">
-    <form class="chat-input-form" id="messageForm">
-      <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
-
-      <button type="button" class="chat-attach-btn" id="attachBtn" title="Attach file">
-        📎
-      </button>
-
-      <button type="button" class="chat-mic-btn" id="micBtn" title="Record voice message">
-        🎤
-      </button>
-
-      <input
-        type="text"
-        class="chat-input-field"
-        id="messageInput"
-        placeholder="Type a message..."
-        autocomplete="off"
-        maxlength="1000"
-      />
-      <button type="submit" class="chat-send-btn">Send</button>
-    </form>
+  <!-- Input -->
+  <div class="ig-input-area">
+    <div class="ig-input-row">
+      <input type="file" id="igFileInput" class="media-input" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip" style="display:none">
+      <button type="button" class="ig-input-btn" id="igAttachBtn" title="Attach">📎</button>
+      <input type="text" class="ig-text-input" id="igInput" placeholder="Message..." autocomplete="off" maxlength="2000">
+      <button type="button" class="ig-send-btn" id="igSendBtn">Send</button>
+    </div>
   </div>
 </div>
 
 <script>
-console.log('🔥 SCRIPT TAG REACHED');
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
 
-// Wait for everything to load
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('📦 DOM Ready');
+  const ME_ID     = '<%= user._id %>';
+  const OTHER_ID  = '<%= otherUser._id %>';
+  const OTHER_UN  = '<%= otherUser.username %>';
+  const OTHER_AV  = '<%= headerAvatar %>';
 
-  // Check if socket.io is available
-  if (typeof io === 'undefined') {
-    console.error('❌ Socket.IO not loaded!');
-    alert('Chat error: Socket.IO not loaded');
-    return;
+  const messagesEl = document.getElementById('igMessages');
+  const inputEl    = document.getElementById('igInput');
+  const sendBtn    = document.getElementById('igSendBtn');
+  const attachBtn  = document.getElementById('igAttachBtn');
+  const fileInput  = document.getElementById('igFileInput');
+  const typingEl   = document.getElementById('igTyping');
+  const statusEl   = document.getElementById('igStatus');
+  const lightbox   = document.getElementById('igLightbox');
+  const lbImg      = document.getElementById('igLightboxImg');
+  const lbClose    = document.getElementById('igLightboxClose');
+
+  /* ---- Lightbox ---- */
+  document.addEventListener('click', function (e) {
+    const img = e.target.closest('.ig-chat-img');
+    if (!img) return;
+    lbImg.src = img.dataset.src || img.src;
+    lightbox.classList.add('open');
+  });
+  lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+  lbClose.addEventListener('click', () => lightbox.classList.remove('open'));
+
+  /* ---- Scroll ---- */
+  function scrollBottom(smooth) {
+    messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+  }
+  scrollBottom(false);
+
+  /* ---- Build bubble HTML ---- */
+  function buildBubble(msg, isSent) {
+    const time = new Date(msg.sentAt || Date.now())
+      .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const tick = isSent
+      ? `<span class="ig-tick ${msg.isRead ? 'read' : ''}">${msg.isRead ? '✓✓' : (msg.isDelivered ? '✓✓' : '✓')}</span>`
+      : '';
+    const meta = `<div class="ig-msg-meta"><span>${time}</span>${tick}</div>`;
+
+    let inner = '';
+    if (msg.messageType === 'image' && msg.fileGridFSId) {
+      inner = `<div class="ig-bubble img-bubble">
+        <img src="/gridfs/${msg.fileGridFSId}" data-src="/gridfs/${msg.fileGridFSId}"
+             class="ig-chat-img" alt="Image"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div style="display:none;padding:10px;color:rgba(255,255,255,0.5);font-size:13px;">📷 Image</div>
+        ${msg.content ? `<div class="ig-bubble" style="margin-top:4px">${esc(msg.content)}</div>` : ''}
+      </div>`;
+    } else if (msg.messageType === 'file' && msg.fileGridFSId) {
+      const ext = (msg.fileName || '').split('.').pop().toLowerCase();
+      const icon = {pdf:'📕',doc:'📘',docx:'📘',xls:'📗',xlsx:'📗',zip:'📦',rar:'📦',txt:'📝'}[ext] || '📄';
+      const sizeKB = msg.fileSize ? (msg.fileSize / 1024).toFixed(1) + ' KB' : '';
+      inner = `<div class="ig-bubble">
+        <a href="/gridfs/${msg.fileGridFSId}" download="${esc(msg.fileName || 'file')}" class="ig-file-bubble">
+          <span class="ig-file-icon">${icon}</span>
+          <div><div class="ig-file-name">${esc(msg.fileName || 'File')}</div><div class="ig-file-size">${sizeKB}</div></div>
+        </a>
+      </div>`;
+    } else {
+      inner = `<div class="ig-bubble">${esc(String(msg.content || ''))}</div>`;
+    }
+
+    const avatarHtml = !isSent
+      ? `<img src="${OTHER_AV}" class="ig-row-avatar" onerror="this.src='/images/default-avatar.png'" alt="">`
+      : '';
+
+    const row = document.createElement('div');
+    row.className = `ig-msg-row ${isSent ? 'sent' : 'received'}`;
+    if (msg._id) row.dataset.msgId = msg._id;
+    row.innerHTML = avatarHtml + `<div>${inner}${meta}</div>`;
+    return row;
   }
 
-  console.log('✅ Socket.IO available');
-
-  const currentUserId = '<%= user._id %>';
-  const otherUserId = '<%= otherUser._id %>';
-
-  console.log('🚀 Chat initialized');
-  console.log('👤 Current user ID:', currentUserId);
-  console.log('👥 Other user ID:', otherUserId);
-
-  const messagesContainer = document.getElementById('messagesContainer');
-  const messageForm = document.getElementById('messageForm');
-  const messageInput = document.getElementById('messageInput');
-  const typingIndicator = document.getElementById('typingIndicator');
-  const userStatus = document.getElementById('userStatus');
-
-  if (!messageForm) {
-    console.error('❌ messageForm not found!');
-    return;
+  function appendMessage(msg, isSent) {
+    const empty = messagesEl.querySelector('.ig-empty');
+    if (empty) empty.remove();
+    // Insert before typing indicator
+    messagesEl.insertBefore(buildBubble(msg, isSent), typingEl);
+    scrollBottom(true);
   }
 
-  console.log('✅ All elements found');
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
 
-  // Initialize Socket.IO
+  /* ---- Socket.IO ---- */
+  if (typeof io === 'undefined') { console.error('Socket.IO not loaded'); return; }
   const socket = io();
 
-  // Scroll to bottom
-  function scrollToBottom() {
-    if (messagesContainer) {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-  }
-
-  // Add message to UI
-  function addMessage(content, isSent, senderName, timestamp, status) {
-    senderName = senderName || 'You';
-    timestamp = timestamp || new Date();
-    status = status || 'sent';
-
-    // Remove empty state
-    const emptyState = messagesContainer.querySelector('.chat-empty');
-    if (emptyState) emptyState.remove();
-
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
-
-    const time = timestamp.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
-    var statusHtml = '';
-    if (isSent) {
-      statusHtml = '<span class="message-status ' + status + '"><span class="checkmark"></span></span>';
-    }
-
-    messageDiv.innerHTML =
-      '<div class="message-bubble">' +
-        '<div class="message-info">' +
-          '<span class="message-sender">' + escapeHtml(senderName) + '</span>' +
-          '<span class="message-time">' + time + '</span>' +
-          statusHtml +
-        '</div>' +
-        '<div class="message-text">' + escapeHtml(content) + '</div>' +
-      '</div>';
-
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
-  }
-
-  // Escape HTML
-  function escapeHtml(str) {
-    if (!str) return '';
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  // Socket: Connect
-  socket.on('connect', function() {
-    console.log('✅ Socket connected, socket ID:', socket.id);
-    console.log('📡 Authenticating as user:', currentUserId);
-    socket.emit('authenticate', currentUserId);
-    console.log('📡 Joining conversation with:', otherUserId);
-    socket.emit('join_conversation', { userId: currentUserId, otherUserId: otherUserId });
+  socket.on('connect', function () {
+    socket.emit('authenticate', ME_ID);
+    socket.emit('join_conversation', { userId: ME_ID, otherUserId: OTHER_ID });
   });
 
-  // Socket: Any event (debug)
-  socket.onAny(function(eventName, data) {
-    console.log('🔔 Socket event received:', eventName, data);
+  /* Real-time: incoming message from the OTHER user */
+  socket.on('new_message', function (data) {
+    const msg  = data.message || data;
+    const from = msg.sender && (msg.sender._id || msg.sender);
+    if (String(from) !== String(OTHER_ID)) return; // ignore own echoes
+    appendMessage(msg, false);
+    // send read receipt immediately (chat is open)
+    socket.emit('messages_read', { userId: ME_ID, otherUserId: OTHER_ID });
   });
 
-  // Socket: New message received
-  socket.on('new_message', function(data) {
-    console.log('📨 NEW MESSAGE EVENT FIRED!');
-    console.log('📨 Data:', JSON.stringify(data, null, 2));
-    var msg = data.message;
-    var senderId = msg.sender && (msg.sender._id || msg.sender.id);
-    console.log('📨 Sender ID:', senderId, 'Other User ID:', otherUserId);
+  socket.on('user_online',  d => { if (d.userId === OTHER_ID) { statusEl.textContent = 'Active now'; statusEl.className = 'ig-header-status online'; } });
+  socket.on('user_offline', d => { if (d.userId === OTHER_ID) { statusEl.textContent = 'Offline'; statusEl.className = 'ig-header-status'; } });
 
-    // Only add if from other user (not ourselves)
-    if (senderId && String(senderId) === String(otherUserId)) {
-      console.log('📨 Adding message to UI');
-      var senderName = (data.sender && data.sender.username) || 'User';
-
-      // Handle different message types
-      if (msg.messageType === 'image' && msg.fileGridFSId) {
-        addImageMessage(msg.fileGridFSId, msg.content, false, new Date(msg.sentAt));
-      } else if (msg.messageType === 'file' && msg.fileGridFSId) {
-        addFileMessage(msg.fileName, msg.fileSize, msg.fileGridFSId, false, new Date(msg.sentAt));
-      } else {
-        addMessage(msg.content, false, senderName, new Date(msg.sentAt));
-      }
-    } else {
-      console.log('📨 Ignoring - from self or mismatch');
-    }
+  socket.on('user_typing', function (d) {
+    if (d.userId !== OTHER_ID) return;
+    typingEl.classList.toggle('active', !!d.isTyping);
+    if (d.isTyping) scrollBottom(true);
   });
 
-  // Socket: User online
-  socket.on('user_online', function(data) {
-    if (data.userId === otherUserId) {
-      userStatus.textContent = 'Online';
-      userStatus.className = 'chat-status online';
-    }
-  });
-
-  // Socket: User offline
-  socket.on('user_offline', function(data) {
-    if (data.userId === otherUserId) {
-      userStatus.textContent = 'Offline';
-      userStatus.className = 'chat-status';
-    }
-  });
-
-  // Socket: Typing indicator
-  socket.on('user_typing', function(data) {
-    if (data.userId === otherUserId) {
-      if (data.isTyping) {
-        typingIndicator.classList.add('active');
-        scrollToBottom();
-      } else {
-        typingIndicator.classList.remove('active');
-      }
-    }
-  });
-
-  // Socket: Message delivered
-  socket.on('message_delivered', function(data) {
-    console.log('✅ Message delivered:', data.messageId);
-    updateMessageStatus(data.messageId, 'delivered');
-  });
-
-  // Socket: Messages read
-  socket.on('messages_read_receipt', function(data) {
-    console.log('✅ Messages read by:', data.to);
-    // Mark all messages as read
-    var sentMessages = messagesContainer.querySelectorAll('.message.sent');
-    sentMessages.forEach(function(msgEl) {
-      var statusEl = msgEl.querySelector('.message-status');
-      if (statusEl) {
-        statusEl.className = 'message-status read';
-      }
+  socket.on('messages_read_receipt', function () {
+    messagesEl.querySelectorAll('.ig-msg-row.sent .ig-tick').forEach(el => {
+      el.className = 'ig-tick read';
+      el.textContent = '✓✓';
     });
   });
 
-  // Update message status checkmark
-  function updateMessageStatus(messageId, status) {
-    var msgEl = messagesContainer.querySelector('[data-msg-id="' + messageId + '"]');
-    if (msgEl) {
-      var statusEl = msgEl.querySelector('.message-status');
-      if (statusEl) {
-        statusEl.className = 'message-status ' + status;
-      }
-    }
-  }
-
-  // Handle typing
-  var typingTimeout = null;
-  messageInput.addEventListener('input', function() {
-    socket.emit('typing_start', { userId: currentUserId, otherUserId: otherUserId });
-
-    if (typingTimeout) clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(function() {
-      socket.emit('typing_stop', { userId: currentUserId, otherUserId: otherUserId });
-    }, 1500);
+  socket.on('message_delivered', function (d) {
+    const row = messagesEl.querySelector(`[data-msg-id="${d.messageId}"]`);
+    if (row) { const t = row.querySelector('.ig-tick'); if (t) t.textContent = '✓✓'; }
   });
 
-  // File upload handler
-  var fileInput = document.getElementById('fileInput');
-  var attachBtn = document.getElementById('attachBtn');
-
-  attachBtn.addEventListener('click', function() {
-    fileInput.click();
+  socket.on('message_deleted', function (d) {
+    const row = messagesEl.querySelector(`[data-msg-id="${d.messageId}"]`);
+    if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 200); }
   });
 
-  fileInput.addEventListener('change', function(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-
-    console.log('📎 File selected:', file.name, file.type);
-
-    // Check file size (max 25MB to match server)
-    if (file.size > 25 * 1024 * 1024) {
-      alert('File too large! Max 25MB');
-      fileInput.value = '';
-      return;
-    }
-
-    // Upload file
-    var formData = new FormData();
-    formData.append('file', file);
-    formData.append('caption', '');
-
-    console.log('📤 Uploading file...');
-
-    fetch('/chat/' + otherUserId + '/upload', {
-      method: 'POST',
-      credentials: 'same-origin',
-      body: formData
-    })
-    .then(function(response) {
-      return response.json();
-    })
-    .then(function(data) {
-      if (data.success) {
-        console.log('✅ File uploaded!');
-        var msg = data.message;
-
-        // Add to UI
-        if (msg.messageType === 'image') {
-          addImageMessage(msg.fileGridFSId, msg.content, true, new Date());
-        } else {
-          addFileMessage(msg.fileName, msg.fileSize, msg.fileGridFSId, true, new Date());
-        }
-
-        fileInput.value = '';
-      } else {
-        throw new Error(data.message || 'Upload failed');
-      }
-    })
-    .catch(function(error) {
-      console.error('❌ Upload error:', error);
-      alert('Failed to upload: ' + error.message);
-      fileInput.value = '';
-    });
+  /* ---- Typing emit ---- */
+  let typingTimer;
+  inputEl.addEventListener('input', function () {
+    socket.emit('typing_start', { userId: ME_ID, otherUserId: OTHER_ID });
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => socket.emit('typing_stop', { userId: ME_ID, otherUserId: OTHER_ID }), 1500);
+    sendBtn.disabled = !inputEl.value.trim();
   });
+  sendBtn.disabled = true;
 
-  // Add image message to UI
-  function addImageMessage(fileId, caption, isSent, timestamp) {
-    var time = timestamp.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    var statusHtml = isSent ? '<span class="message-status sent"><span class="checkmark"></span></span>' : '';
-
-    var messageDiv = document.createElement('div');
-    messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
-
-    var captionHtml = caption ? '<div class="message-text">' + escapeHtml(caption) + '</div>' : '';
-
-    messageDiv.innerHTML =
-      '<div class="message-bubble">' +
-        '<div class="message-info">' +
-          '<span class="message-sender">' + (isSent ? 'You' : 'User') + '</span>' +
-          '<span class="message-time">' + time + '</span>' +
-          statusHtml +
-        '</div>' +
-        '<img src="/gridfs/' + fileId + '" alt="Image" class="message-image" onclick="window.open(this.src, \'_blank\')">' +
-        captionHtml +
-      '</div>';
-
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
-  }
-
-  // Add file message to UI
-  function addFileMessage(fileName, fileSize, fileId, isSent, timestamp) {
-    var time = timestamp.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    var statusHtml = isSent ? '<span class="message-status sent"><span class="checkmark"></span></span>' : '';
-    var sizeKB = (fileSize / 1024).toFixed(1);
-
-    // Determine file icon based on extension
-    var fileIcon = '📄';
-    var ext = fileName.split('.').pop().toLowerCase();
-    if (ext === 'pdf') fileIcon = '📕';
-    else if (ext === 'doc' || ext === 'docx') fileIcon = '📘';
-    else if (ext === 'xls' || ext === 'xlsx') fileIcon = '📗';
-    else if (ext === 'zip' || ext === 'rar') fileIcon = '📦';
-    else if (ext === 'txt') fileIcon = '📝';
-
-    var messageDiv = document.createElement('div');
-    messageDiv.className = 'message ' + (isSent ? 'sent' : 'received');
-
-    messageDiv.innerHTML =
-      '<div class="message-bubble">' +
-        '<div class="message-info">' +
-          '<span class="message-sender">' + (isSent ? 'You' : 'User') + '</span>' +
-          '<span class="message-time">' + time + '</span>' +
-          statusHtml +
-        '</div>' +
-        '<a href="/gridfs/' + fileId + '" download="' + fileName + '" class="message-file">' +
-          '<span class="message-file-icon">' + fileIcon + '</span>' +
-          '<div class="message-file-info">' +
-            '<div class="message-file-name">' + escapeHtml(fileName) + '</div>' +
-            '<div class="message-file-size">' + sizeKB + ' KB</div>' +
-          '</div>' +
-        '</a>' +
-      '</div>';
-
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
-  }
-
-  // Send message
-  messageForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    var content = messageInput.value.trim();
+  /* ---- Send text ---- */
+  function sendText() {
+    const content = inputEl.value.trim();
     if (!content) return;
+    inputEl.value = '';
+    sendBtn.disabled = true;
+    socket.emit('typing_stop', { userId: ME_ID, otherUserId: OTHER_ID });
 
-    console.log('📤 Sending message:', content);
+    // Optimistic bubble
+    const tmpMsg = { content, sentAt: new Date(), messageType: 'text', isDelivered: false, isRead: false };
+    const tmpRow = buildBubble(tmpMsg, true);
+    tmpRow.style.opacity = '0.6';
+    messagesEl.insertBefore(tmpRow, typingEl);
+    scrollBottom(true);
 
-    // Save and clear
-    var savedContent = content;
-    messageInput.value = '';
-
-    // Stop typing
-    socket.emit('typing_stop', { userId: currentUserId, otherUserId: otherUserId });
-    if (typingTimeout) clearTimeout(typingTimeout);
-
-    // Send via fetch
-    fetch('/chat/' + otherUserId + '/message', {
+    fetch('/chat/' + OTHER_ID + '/message', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ content: savedContent })
+      body: JSON.stringify({ content })
     })
-    .then(function(response) {
-      console.log('📥 Response status:', response.status);
-      return response.text();
-    })
-    .then(function(text) {
-      console.log('📥 Response text:', text.substring(0, 200));
-
-      var data;
-      try {
-        data = JSON.parse(text);
-      } catch (err) {
-        console.error('❌ JSON parse error');
-        throw new Error('Server error');
-      }
-
-      if (data.success) {
-        var newMsg = addMessage(savedContent, true, 'You', new Date());
-        // Store message ID for status updates
-        if (data.message && data.message._id) {
-          var lastMsg = messagesContainer.lastElementChild;
-          if (lastMsg) {
-            lastMsg.setAttribute('data-msg-id', data.message._id);
-          }
-        }
-        console.log('✅ Message sent!');
+    .then(r => r.json())
+    .then(data => {
+      if (data.success && data.message) {
+        tmpRow.style.opacity = '1';
+        if (data.message._id) tmpRow.dataset.msgId = data.message._id;
       } else {
-        throw new Error(data.message || 'Failed');
+        tmpRow.remove();
+        inputEl.value = content;
       }
     })
-    .catch(function(error) {
-      console.error('❌ Error:', error);
-      alert('Failed to send: ' + error.message);
-      messageInput.value = savedContent;
+    .catch(() => {
+      tmpRow.remove();
+      inputEl.value = content;
     });
+  }
+
+  sendBtn.addEventListener('click', sendText);
+  inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
   });
 
-  // Initial scroll and focus
-  scrollToBottom();
-  setTimeout(function() { messageInput.focus(); }, 300);
+  /* ---- Attach file ---- */
+  attachBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', function () {
+    const file = fileInput.files[0];
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) { alert('Max 25MB'); fileInput.value = ''; return; }
 
-  // Mark messages as read when viewing
-  setTimeout(function() {
-    socket.emit('messages_read', { userId: currentUserId, otherUserId: otherUserId });
-  }, 500);
+    const fd = new FormData();
+    fd.append('file', file);
 
-  // Also mark as read when receiving new messages (if chat is visible)
-  document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) {
-      socket.emit('messages_read', { userId: currentUserId, otherUserId: otherUserId });
-    }
-  });
+    // Show uploading state
+    const uploadRow = document.createElement('div');
+    uploadRow.className = 'ig-msg-row sent';
+    uploadRow.innerHTML = '<div><div class="ig-bubble" style="opacity:.5">Uploading…</div></div>';
+    messagesEl.insertBefore(uploadRow, typingEl);
+    scrollBottom(true);
 
-  // Delete message functionality
-  messagesContainer.addEventListener('click', function(e) {
-    var deleteBtn = e.target.closest('.delete-msg-btn');
-    if (!deleteBtn) return;
-
-    var messageId = deleteBtn.getAttribute('data-msg-id');
-    if (!messageId) return;
-
-    if (!confirm('Delete this message?')) return;
-
-    console.log('🗑️ Deleting message:', messageId);
-
-    fetch('/chat/message/' + messageId, {
-      method: 'DELETE',
-      credentials: 'same-origin'
+    fetch('/chat/' + OTHER_ID + '/upload', {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: fd
     })
-    .then(function(response) {
-      return response.json();
-    })
-    .then(function(data) {
-      if (data.success) {
-        console.log('✅ Message deleted');
-        var msgEl = messagesContainer.querySelector('[data-msg-id="' + messageId + '"]');
-        if (msgEl) {
-          msgEl.style.opacity = '0';
-          msgEl.style.transform = 'scale(0.8)';
-          setTimeout(function() {
-            msgEl.remove();
-          }, 200);
-        }
+    .then(r => r.json())
+    .then(data => {
+      uploadRow.remove();
+      if (data.success && data.message) {
+        appendMessage(data.message, true);
       } else {
-        alert('Failed to delete: ' + data.message);
+        alert('Upload failed');
       }
     })
-    .catch(function(error) {
-      console.error('❌ Delete error:', error);
-      alert('Failed to delete message');
-    });
+    .catch(() => { uploadRow.remove(); alert('Upload failed'); });
+
+    fileInput.value = '';
   });
 
-  // Edit message functionality
-  messagesContainer.addEventListener('click', function(e) {
-    var editBtn = e.target.closest('.edit-msg-btn');
-    if (!editBtn) return;
-
-    var messageId = editBtn.getAttribute('data-msg-id');
-    if (!messageId) return;
-
-    var msgEl = messagesContainer.querySelector('[data-msg-id="' + messageId + '"]');
-    if (!msgEl) return;
-
-    var textEl = msgEl.querySelector('.message-text');
-    if (!textEl) return;
-
-    var currentText = textEl.textContent;
-
-    // Create inline edit input
-    var originalHtml = textEl.innerHTML;
-    textEl.innerHTML = '';
-
-    var editInput = document.createElement('textarea');
-    editInput.value = currentText;
-    editInput.className = 'message-edit-input';
-    editInput.style.cssText = 'width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:8px;color:#fff;font-size:15px;font-family:inherit;resize:vertical;min-height:60px;';
-
-    var btnContainer = document.createElement('div');
-    btnContainer.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
-
-    var saveBtn = document.createElement('button');
-    saveBtn.textContent = 'Save';
-    saveBtn.style.cssText = 'padding:6px 16px;background:#2b7cff;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:13px;';
-
-    var cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = 'padding:6px 16px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:13px;';
-
-    btnContainer.appendChild(saveBtn);
-    btnContainer.appendChild(cancelBtn);
-
-    textEl.appendChild(editInput);
-    textEl.appendChild(btnContainer);
-
-    editInput.focus();
-    editInput.setSelectionRange(editInput.value.length, editInput.value.length);
-
-    // Cancel edit
-    cancelBtn.onclick = function() {
-      textEl.innerHTML = originalHtml;
-    };
-
-    // Save edit
-    saveBtn.onclick = function() {
-      var newText = editInput.value.trim();
-      if (!newText) {
-        alert('Message cannot be empty');
-        return;
-      }
-
-      if (newText === currentText) {
-        textEl.innerHTML = originalHtml;
-        return;
-      }
-
-      console.log('✏️ Editing message:', messageId);
-
-      fetch('/chat/message/' + messageId, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({ content: newText })
-      })
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(data) {
-        if (data.success) {
-          console.log('✅ Message edited');
-          textEl.textContent = newText;
-
-          // Add edited label if not already there
-          var infoEl = msgEl.querySelector('.message-info');
-          if (infoEl && !infoEl.querySelector('.message-edited-label')) {
-            var editedLabel = document.createElement('span');
-            editedLabel.className = 'message-edited-label';
-            editedLabel.textContent = '(edited)';
-            var timeEl = infoEl.querySelector('.message-time');
-            if (timeEl && timeEl.nextSibling) {
-              infoEl.insertBefore(editedLabel, timeEl.nextSibling);
-            }
-          }
-        } else {
-          alert('Failed to edit: ' + data.message);
-          textEl.innerHTML = originalHtml;
-        }
-      })
-      .catch(function(error) {
-        console.error('❌ Edit error:', error);
-        alert('Failed to edit message');
-        textEl.innerHTML = originalHtml;
-      });
-    };
+  /* ---- Mark read on open ---- */
+  setTimeout(() => socket.emit('messages_read', { userId: ME_ID, otherUserId: OTHER_ID }), 600);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) socket.emit('messages_read', { userId: ME_ID, otherUserId: OTHER_ID });
   });
 
-  // Socket: Message edited by other user
-  socket.on('message_edited', function(data) {
-    console.log('✏️ Message edited:', data.messageId);
-    var msgEl = messagesContainer.querySelector('[data-msg-id="' + data.messageId + '"]');
-    if (msgEl) {
-      var textEl = msgEl.querySelector('.message-text');
-      if (textEl) {
-        textEl.textContent = data.content;
-      }
-
-      // Add edited label
-      var infoEl = msgEl.querySelector('.message-info');
-      if (infoEl && !infoEl.querySelector('.message-edited-label')) {
-        var editedLabel = document.createElement('span');
-        editedLabel.className = 'message-edited-label';
-        editedLabel.textContent = '(edited)';
-        var timeEl = infoEl.querySelector('.message-time');
-        if (timeEl && timeEl.nextSibling) {
-          infoEl.insertBefore(editedLabel, timeEl.nextSibling);
-        }
-      }
-    }
   });
-
-  // Socket: Message deleted by other user
-  socket.on('message_deleted', function(data) {
-    console.log('🗑️ Message deleted by other user:', data.messageId);
-    var msgEl = messagesContainer.querySelector('[data-msg-id="' + data.messageId + '"]');
-    if (msgEl) {
-      msgEl.style.opacity = '0';
-      msgEl.style.transform = 'scale(0.8)';
-      setTimeout(function() {
-        msgEl.remove();
-      }, 200);
-    }
-  });
-});
 </script>

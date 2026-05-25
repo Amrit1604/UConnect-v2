@@ -1,86 +1,139 @@
-<!-- Explore Users (Neo) -->
-<div class="explore-page">
-  <div class="parallax-bg">
-    <div class="parallax-layer layer-1"></div>
-    <div class="parallax-layer layer-2"></div>
-    <div class="blob-container">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
-    </div>
+<style>
+  body {
+    background: #050505;
+  }
+  .explore-wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 20px;
+    color: #fff;
+    font-family: var(--font-body, 'Inter', sans-serif);
+  }
+  .explore-header { margin-bottom: 24px; }
+  .explore-title { font-size: 28px; font-weight: 800; margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px; }
+  .explore-subtitle { color: rgba(255,255,255,0.6); font-size: 15px; margin: 0; }
+  .explore-tabs {
+    display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; overflow-x: auto;
+  }
+  .explore-tab {
+    padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.6); text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; white-space: nowrap;
+  }
+  .explore-tab:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .explore-tab.active { background: #e63946; color: #fff; }
+  
+  .explore-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .explore-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .explore-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
+  .explore-avatar {
+    width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.1);
+  }
+  .explore-username { font-weight: 700; font-size: 15px; color: #fff; text-decoration: none; margin-bottom: 2px; }
+  .explore-username:hover { text-decoration: underline; }
+  .explore-name { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .explore-btn {
+    width: 100%; padding: 8px 0; border-radius: 8px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;
+  }
+  .explore-btn.follow { background: #e63946; color: #fff; }
+  .explore-btn.follow:hover { background: #c1121f; }
+  .explore-btn.following { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+  .explore-btn.following:hover { border-color: #e63946; color: #e63946; }
+
+  .explore-empty { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.4); grid-column: 1 / -1; }
+  .explore-empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+  .explore-pagination { display: flex; justify-content: center; gap: 12px; margin-top: 32px; }
+  .explore-page-btn { padding: 10px 20px; background: rgba(255,255,255,0.05); color: #fff; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); }
+  .explore-page-btn:hover { background: rgba(255,255,255,0.1); }
+</style>
+
+<div class="explore-wrap">
+  <div class="explore-header">
+    <h1 class="explore-title">✨ Explore Users</h1>
+    <p class="explore-subtitle">Discover students from <strong><%= user.campus || 'your campus' %></strong></p>
   </div>
 
-  <main class="profile-layout-neo" style="padding-top: 40px;">
-    <div class="profile-header-neo" style="margin-bottom: 16px;">
-      <h1 class="profile-name-large-neo">✨ Explore Users</h1>
-      <p class="profile-username-large-neo">Discover students from <strong><%= user.campus %></strong></p>
-    </div>
+  <% const currentSort = (typeof exploreSort !== 'undefined' ? exploreSort : 'popular'); %>
+  <div class="explore-tabs">
+    <a href="/users/explore?sort=popular" class="explore-tab <%= currentSort==='popular'?'active':'' %>">🔥 Popular</a>
+    <a href="/users/explore?sort=new" class="explore-tab <%= currentSort==='new'?'active':'' %>">🆕 New</a>
+    <a href="/users/explore?sort=suggested" class="explore-tab <%= currentSort==='suggested'?'active':'' %>">🎯 Suggested</a>
+  </div>
 
-    <!-- Sort Tabs -->
-    <div class="categories-bar-neo" style="margin-bottom:16px;">
-      <% const currentSort = (typeof exploreSort !== 'undefined' ? exploreSort : 'popular'); %>
-      <a href="/users/explore?sort=popular" class="category-chip-neo <%= currentSort==='popular'?'active':'' %>">🔥 POPULAR</a>
-      <a href="/users/explore?sort=new" class="category-chip-neo <%= currentSort==='new'?'active':'' %>">🆕 NEW</a>
-      <a href="/users/explore?sort=suggested" class="category-chip-neo <%= currentSort==='suggested'?'active':'' %>">🎯 SUGGESTED</a>
-    </div>
-
-    <div class="posts-grid-neo" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
-      <% if (users && users.length) { %>
-        <% users.forEach(u => { %>
-          <div class="post-card-neo" style="padding:16px;display:flex;flex-direction:column;align-items:center;text-align:center;">
-            <%
-              const baseAvatar = (u.avatarUrl || '/images/default-avatar.png');
-              const isDicebearAvatar = typeof baseAvatar === 'string' && baseAvatar.includes('api.dicebear.com');
-              const ver = (u.updatedAt ? new Date(u.updatedAt).getTime() : null);
-              const avatar = (!isDicebearAvatar && ver)
-                ? (baseAvatar + (baseAvatar.includes('?') ? '&' : '?') + 'v=' + ver)
-                : baseAvatar;
-            %>
-            <a href="/users/<%= u.username %>" style="text-decoration:none;">
-              <img src="<%= avatar %>" alt="@<%= u.username %>" class="author-avatar-neo" style="width:88px;height:88px;border-radius:50%;object-fit:cover;" onerror="this.src='/images/default-avatar.png'">
-            </a>
-            <div style="margin-top:10px;">
-              <a href="/users/<%= u.username %>" class="author-name-neo" style="text-decoration:none;">@<%= u.username %></a>
-              <div class="profile-username-large-neo" style="opacity:0.8;"><%= u.name %></div>
-            </div>
-            <button class="profile-action-btn-neo primary follow-inline-btn" data-user-id="<%= u._id %>" style="margin-top:12px;">+ FOLLOW</button>
-          </div>
-        <% }) %>
-      <% } else { %>
-        <div class="profile-empty-state-neo" style="grid-column:1/-1;">
-          <div class="empty-icon-large-neo">🔍</div>
-          <h3 class="empty-title-large-neo">No suggestions</h3>
-          <p class="empty-text-large-neo">Try searching users from the navbar.</p>
+  <div class="explore-grid">
+    <% if (users && users.length) { %>
+      <% users.forEach(u => { %>
+        <div class="explore-card">
+          <%
+            const baseAvatar = (u.avatarUrl || '/images/default-avatar.png');
+            const isDicebearAvatar = typeof baseAvatar === 'string' && baseAvatar.includes('api.dicebear.com');
+            const ver = (u.updatedAt ? new Date(u.updatedAt).getTime() : null);
+            const avatar = (!isDicebearAvatar && ver) ? (baseAvatar + (baseAvatar.includes('?') ? '&' : '?') + 'v=' + ver) : baseAvatar;
+          %>
+          <a href="/users/<%= u.username %>">
+            <img src="<%= avatar %>" class="explore-avatar" alt="@<%= u.username %>" onerror="this.src='/images/default-avatar.png'">
+          </a>
+          <a href="/users/<%= u.username %>" class="explore-username">@<%= u.username %></a>
+          <div class="explore-name"><%= u.name || 'User' %></div>
+          <!-- Assumes follow functionality updates client side, checks if following locally -->
+          <button class="explore-btn follow follow-inline-btn" data-user-id="<%= u._id %>">+ FOLLOW</button>
         </div>
-      <% } %>
-    </div>
-
-    <!-- Pagination -->
-    <% if (typeof page !== 'undefined') { %>
-      <div class="load-more-container" style="margin-top:16px;">
-        <% if (page > 1) { %>
-          <a class="load-more-btn-neo" href="/users/explore?sort=<%= currentSort %>&page=<%= page - 1 %>">← PREV</a>
-        <% } %>
-        <% if (hasNextPage) { %>
-          <a class="load-more-btn-neo" href="/users/explore?sort=<%= currentSort %>&page=<%= page + 1 %>" style="margin-left:8px;">NEXT →</a>
-        <% } %>
+      <% }) %>
+    <% } else { %>
+      <div class="explore-empty">
+        <div class="explore-empty-icon">🔍</div>
+        <h3>No users found</h3>
+        <p>Try exploring other categories or searching.</p>
       </div>
     <% } %>
-  </main>
+  </div>
+
+  <% if (typeof page !== 'undefined') { %>
+    <div class="explore-pagination">
+      <% if (page > 1) { %>
+        <a class="explore-page-btn" href="/users/explore?sort=<%= currentSort %>&page=<%= page - 1 %>">← Previous</a>
+      <% } %>
+      <% if (typeof hasNextPage !== 'undefined' && hasNextPage) { %>
+        <a class="explore-page-btn" href="/users/explore?sort=<%= currentSort %>&page=<%= page + 1 %>">Next →</a>
+      <% } %>
+    </div>
+  <% } %>
 </div>
 
 <script>
-  // Follow from Explore grid
   document.addEventListener('click', async function(e){
     const btn = e.target.closest('.follow-inline-btn');
     if (!btn) return;
     const id = btn.getAttribute('data-user-id');
     try {
-      const action = btn.textContent.includes('FOLLOWING') ? 'unfollow' : 'follow';
+      const isFollowing = btn.classList.contains('following');
+      const action = isFollowing ? 'unfollow' : 'follow';
       const res = await fetch(`/users/${id}/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }});
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
-      btn.textContent = data.following ? '✓ FOLLOWING' : '+ FOLLOW';
+      
+      if (data.following) {
+        btn.textContent = '✓ FOLLOWING';
+        btn.classList.remove('follow');
+        btn.classList.add('following');
+      } else {
+        btn.textContent = '+ FOLLOW';
+        btn.classList.remove('following');
+        btn.classList.add('follow');
+      }
     } catch (err) {
       alert(err.message || 'Failed to update follow');
     }

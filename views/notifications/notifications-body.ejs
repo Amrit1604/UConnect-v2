@@ -1,47 +1,146 @@
-<div class="notifications-page">
-  <h2>Notifications</h2>
+<style>
+  .notifs-page { max-width: 680px; margin: 32px auto; padding: 20px; }
+  .notifs-page h2 { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 20px 0; }
+  .notif-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #fff;
+  }
+  .notif-item.unread { border-left: 3px solid #e63946; background: rgba(230,57,70,0.07); }
+  .notif-title { font-weight: 700; font-size: 15px; }
+  .notif-msg { font-size: 13px; color: rgba(255,255,255,0.65); }
+  .notif-time { font-size: 11px; color: rgba(255,255,255,0.4); }
+  .notif-actions { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .btn-accept {
+    padding: 6px 16px; border-radius: 6px; border: none;
+    background: #e63946; color: #fff; font-weight: 700; cursor: pointer; font-size: 13px;
+  }
+  .btn-accept:hover { background: #c1121f; }
+  .btn-reject {
+    padding: 6px 16px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2); background: transparent;
+    color: rgba(255,255,255,0.7); font-weight: 600; cursor: pointer; font-size: 13px;
+  }
+  .btn-reject:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+  .btn-link {
+    padding: 6px 16px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2); background: transparent;
+    color: rgba(255,255,255,0.7); font-size: 13px; text-decoration: none; display: inline-block;
+  }
+  .btn-link:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+  .notifs-empty { text-align: center; padding: 48px 20px; color: rgba(255,255,255,0.4); font-size: 15px; }
+  .requests-banner {
+    background: rgba(230,57,70,0.12); border: 1px solid rgba(230,57,70,0.35);
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .requests-banner span { color: #fff; font-size: 14px; font-weight: 600; }
+  .requests-banner a {
+    background: #e63946; color: #fff; padding: 8px 18px; border-radius: 6px;
+    text-decoration: none; font-weight: 700; font-size: 13px; white-space: nowrap;
+  }
+</style>
 
-  <% if (notifications && notifications.length) { %>
-    <div class="notifications-list">
-      <% notifications.forEach(n => { %>
-        <div class="notification-item" data-id="<%= n._id %>">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <strong><%= n.title %></strong>
-              <div style="color:var(--muted);font-size:13px;margin-top:4px"><%= n.message %></div>
-              <% if (n.type === 'follow_request' && n.relatedId) { %>
-                <div style="margin-top:8px">
-                  <button class="accept-btn" data-id="<%= n.relatedId %>">Accept</button>
-                  <button class="reject-btn" data-id="<%= n.relatedId %>">Reject</button>
-                </div>
-              <% } %>
-            </div>
-            <div style="font-size:12px;color:var(--muted)"><%= new Date(n.createdAt).toLocaleString() %></div>
-          </div>
-        </div>
-      <% }) %>
+<div class="notifs-page">
+  <h2>🔔 Notifications</h2>
+
+  <% const hasPendingRequests = notifications && notifications.some(n => n.type === 'follow_request'); %>
+  <% if (hasPendingRequests) { %>
+    <div class="requests-banner">
+      <span>📬 You have pending friend requests!</span>
+      <a href="/chat/requests">View & Accept Requests</a>
     </div>
-  <% } else { %>
-    <div class="chat-empty">No notifications</div>
   <% } %>
 
-  <script>
-    (function(){
-      document.querySelectorAll('.accept-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/accept`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed to accept');
-        });
-      });
-
-      document.querySelectorAll('.reject-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          const res = await fetch(`/chat/request/${id}/reject`, { method: 'POST' });
-          if (res.ok) location.reload(); else alert('Failed to reject');
-        });
-      });
-    })();
-  </script>
+  <% if (notifications && notifications.length) { %>
+    <% notifications.forEach(n => { %>
+      <div class="notif-item <%= !n.isRead ? 'unread' : '' %>" data-id="<%= n._id %>">
+        <div class="notif-title"><%= n.title %></div>
+        <div class="notif-msg"><%= n.message %></div>
+        <div class="notif-time"><%= new Date(n.createdAt).toLocaleString() %></div>
+        <div class="notif-actions">
+          <% if (n.type === 'follow_request' && n.relatedId) { %>
+            <button class="btn-accept" data-request-id="<%= n.relatedId %>" data-notif-id="<%= n._id %>">✅ Accept</button>
+            <button class="btn-reject" data-request-id="<%= n.relatedId %>" data-notif-id="<%= n._id %>">✕ Reject</button>
+          <% } else if (n.actionUrl) { %>
+            <a class="btn-link" href="<%= n.actionUrl %>">Open →</a>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <div class="notifs-empty">
+      <div style="font-size:40px;margin-bottom:12px;">🔕</div>
+      No notifications yet
+    </div>
+  <% } %>
 </div>
+
+<script>
+  (function(){
+    // Accept follow request inline
+    document.querySelectorAll('.btn-accept').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const requestId = btn.getAttribute('data-request-id');
+        btn.disabled = true;
+        btn.textContent = 'Accepting...';
+        try {
+          const res = await fetch(`/chat/request/${requestId}/accept`, { method: 'POST' });
+          if (res.ok) {
+            const data = await res.json();
+            // Replace the action row with a success message
+            const notifItem = btn.closest('.notif-item');
+            notifItem.querySelector('.notif-actions').innerHTML =
+              `<span style="color:#4ade80;font-size:13px;font-weight:600">✅ Friend added! <a href="/chat" style="color:#4ade80;text-decoration:underline;">Go to chat →</a></span>`;
+            notifItem.classList.remove('unread');
+            // Hide the banner if no more pending requests
+            const remaining = document.querySelectorAll('.btn-accept').length;
+            if (remaining === 0) {
+              const banner = document.querySelector('.requests-banner');
+              if (banner) banner.remove();
+            }
+          } else {
+            btn.disabled = false;
+            btn.textContent = '✅ Accept';
+            alert('Failed to accept request. Try again.');
+          }
+        } catch(e) {
+          btn.disabled = false;
+          btn.textContent = '✅ Accept';
+          alert('Network error. Please try again.');
+        }
+      });
+    });
+
+    // Reject follow request inline
+    document.querySelectorAll('.btn-reject').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const requestId = btn.getAttribute('data-request-id');
+        btn.disabled = true;
+        btn.textContent = 'Rejecting...';
+        try {
+          const res = await fetch(`/chat/request/${requestId}/reject`, { method: 'POST' });
+          if (res.ok) {
+            const notifItem = btn.closest('.notif-item');
+            notifItem.style.opacity = '0.4';
+            notifItem.querySelector('.notif-actions').innerHTML =
+              '<span style="color:rgba(255,255,255,0.4);font-size:13px;">Request rejected</span>';
+          } else {
+            btn.disabled = false;
+            btn.textContent = '✕ Reject';
+            alert('Failed to reject.');
+          }
+        } catch(e) {
+          btn.disabled = false;
+          btn.textContent = '✕ Reject';
+        }
+      });
+    });
+  })();
+</script>
