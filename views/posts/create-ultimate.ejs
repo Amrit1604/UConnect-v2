@@ -726,7 +726,7 @@
 
                     <input type="file" name="images" id="images" multiple accept="image/*" style="display:none;">
                     <input type="file" name="videos" id="videos" multiple accept="video/*" style="display:none;">
-                    <small class="form-help">Images: up to 5 files (max 5MB each). Videos: up to 2 files (max 50MB each).</small>
+                    <small class="form-help">Images: up to 5 files (max 15MB each). Videos: up to 2 files (max 50MB each).</small>
                     <div id="selectedFiles" class="selected-files"></div>
                 </div>
 
@@ -1074,8 +1074,8 @@
             }
 
             for (let file of files) {
-                if (file.size > 5 * 1024 * 1024) {
-                    alert(`File "${file.name}" is too large. Maximum size is 5MB.`);
+                if (file.size > 15 * 1024 * 1024) {
+                    alert(`File "${file.name}" is too large. Maximum size is 15MB.`);
                     e.target.value = '';
                     selectedFiles = [];
                     previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
